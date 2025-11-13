@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-// Hum is screen ko agle step mein banayenge
-import 'package:mobile_app/features/auth/screens/role_selection_screen.dart'; 
+// NAYA IMPORT: Ab main.dart seedha splash screen ko jaanta hai
+import 'package:mobile_app/features/splash/screens/splash_screen.dart'; 
+import 'package:mobile_app/firebase_options.dart';
 
-// ----- THEME COLORS -----
-// Hum aapke web app wale brand colors use kar rahe hain
-const Color kPrimaryColor = Color(0xFF0b0f1a); // Cosmic Navy
-const Color kAccentColor = Color(0xFFd4a657); // Gold
-const Color kTextColor = Color(0xFFf5f5f5);   // White
-const Color kSecondaryTextColor = Color(0xFFa5a6ab); // Muted Gray
-const Color kSurfaceColor = Color(0xFF101622); // Soft Contrast
-// --------------------------
+// Color constants (Same as before)
+const Color kPrimaryColor = Color(0xFF0b0f1a); 
+const Color kAccentColor = Color(0xFFd4a657); 
+const Color kTextColor = Color(0xFFf5f5f5);   
+const Color kSecondaryTextColor = Color(0xFFa5a6ab);
+const Color kSurfaceColor = Color(0xFF101622); 
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -23,51 +33,58 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Aastrosphere',
-      debugShowCheckedModeBanner: false, // Disables the "DEBUG" banner
-      
-      // ----- APP THEME -----
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: kPrimaryColor,
         primaryColor: kAccentColor,
-        
-        // Font Theme (Inter for body, Cinzel for headings)
+        colorScheme: const ColorScheme.dark(
+          primary: kAccentColor,
+          secondary: kAccentColor,
+          surface: kSurfaceColor,
+          background: kPrimaryColor,
+          onPrimary: kPrimaryColor,
+          onBackground: kTextColor,
+          onSurface: kTextColor,
+        ),
         textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme).apply(
           bodyColor: kTextColor,
-          displayColor: kTextColor,
+          displayColor: kAccentColor,
         ).copyWith(
-          // Cinzel for Headings
-          headlineSmall: GoogleFonts.cinzel(
-            color: kAccentColor,
+          // Cinzel font for headings
+          headlineLarge: GoogleFonts.cinzel(
             fontWeight: FontWeight.bold,
+            color: kAccentColor,
           ),
           headlineMedium: GoogleFonts.cinzel(
-            color: kAccentColor,
             fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
-          ),
-          headlineLarge: GoogleFonts.cinzel(
             color: kAccentColor,
-            fontWeight: FontWeight.bold,
           ),
-          // Cinzel for Titles
+          headlineSmall: GoogleFonts.cinzel(
+            fontWeight: FontWeight.bold,
+            color: kAccentColor,
+          ),
           titleLarge: GoogleFonts.cinzel(
-            color: kTextColor,
             fontWeight: FontWeight.w600,
+            color: kTextColor,
           ),
         ),
-
-        // App Bar Theme
         appBarTheme: const AppBarTheme(
-          backgroundColor: kPrimaryColor,
+          backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
+          iconTheme: IconThemeData(color: kAccentColor),
+          titleTextStyle: TextStyle(
+            color: kAccentColor,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
-      // -----------------------
-
-      // Hamara Home Page ab yeh nayi screen hai
-      home: const RoleSelectionScreen(),
+      
+      // YEH UPDATE HUA HAI
+      // Humara home ab HAMESHA SplashScreen hai
+      home: const SplashScreen(),
     );
   }
 }

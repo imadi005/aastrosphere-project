@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "554790488195",
+    "project_id": "aastrosphere-mobile",
+    "storage_bucket": "aastrosphere-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:554790488195:android:2a1e448b814fbdd3b2b3b6",
+        "android_client_info": {
+          "package_name": "com.example.mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuQs_hP3hEIE8YnuBfqnx5Ek8EfzNX2Mo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

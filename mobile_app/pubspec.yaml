@@ -1,6 +1,6 @@
 name: mobile_app
 description: "A new Flutter project."
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
 version: 1.0.0+1
 
@@ -11,10 +11,19 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # --- Humein in packages ki zaroorat hai ---
-  google_fonts: ^6.2.1  # Premium fonts (Cinzel, Inter) ke liye
-  animate_do: ^3.3.4     # Simple animations ke liye
-  # ----------------------------------------
+  # --- UI Packages ---
+  google_fonts: ^6.2.1
+  animate_do: ^3.3.4
+  pinput: ^5.0.0
+  google_places_flutter: ^2.0.8 # <-- YEH NAYA ADD HUA HAI (Places API)
+
+  # --- Firebase Packages ---
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.20.0
+  cloud_firestore: ^4.17.5 
+
+  # --- State Management ---
+  flutter_riverpod: ^2.5.1 
 
   cupertino_icons: ^1.0.6
 
@@ -25,3 +34,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # --- Assets ---
+  assets:
+    - assets/images/wooden_door_texture.png
+    - assets/images/zodiac_circle_gold.png
