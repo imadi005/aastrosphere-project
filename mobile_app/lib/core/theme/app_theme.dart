@@ -124,11 +124,9 @@ class AppTheme {
         primary: gold,
         secondary: gold,
         surface: card,
-        background: bg,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: primary,
-        onBackground: primary,
         outline: border,
       ),
       textTheme: _buildTextTheme(primary, secondary),
@@ -153,7 +151,7 @@ class AppTheme {
         selectedLabelStyle: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w500),
         unselectedLabelStyle: GoogleFonts.dmSans(fontSize: 10),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: card,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -203,11 +201,9 @@ class AppTheme {
         primary: gold,
         secondary: gold,
         surface: card,
-        background: bg,
         onPrimary: AppColors.bgDark,
         onSecondary: AppColors.bgDark,
         onSurface: primary,
-        onBackground: primary,
         outline: border,
       ),
       textTheme: _buildTextTheme(primary, secondary),
@@ -232,7 +228,7 @@ class AppTheme {
         selectedLabelStyle: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w500),
         unselectedLabelStyle: GoogleFonts.dmSans(fontSize: 10),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: card,
         elevation: 0,
         shape: RoundedRectangleBorder(

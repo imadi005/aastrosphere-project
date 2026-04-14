@@ -133,7 +133,11 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => SignUpScreen(role: 'User')),
+      MaterialPageRoute(builder: (context) => SignUpScreen(
+        role: widget.role,
+        verificationId: widget.verificationId,
+        phoneNumber: widget.phoneNumber,
+      )),
       (route) => false,
     );
   }
