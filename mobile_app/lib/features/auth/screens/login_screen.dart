@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimaryLight),
+          icon: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimaryLight),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -151,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (_errorText != null)
                         Text(
                           _errorText!,
-                          style: const TextStyle(color: Colors.red, fontSize: 12),
+                          style: TextStyle(color: Colors.red, fontSize: 12),
                           textAlign: TextAlign.center,
                         ),
                       
@@ -216,11 +216,11 @@ class _CustomTextField extends StatelessWidget {
       controller: controller,
       keyboardType: TextInputType.phone,
       maxLength: 10, // NAYA: User ko 10 digit pe rok dega
-      style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 16, letterSpacing: 1.5),
+      style: TextStyle(color: AppColors.textPrimaryLight, fontSize: 16, letterSpacing: 1.5),
       decoration: InputDecoration(
         counterText: "", // MaxLength counter ko hide karega
         hintText: hintText,
-        hintStyle: const TextStyle(color: AppColors.textSecondaryLight, letterSpacing: 0),
+        hintStyle: TextStyle(color: AppColors.textSecondaryLight, letterSpacing: 0),
         
         // --- YEH PREFIX LOGIC NAYA ADD HUA HAI ---
         prefixIcon: Padding(
@@ -234,7 +234,7 @@ class _CustomTextField extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Text(
                     prefixText!,
-                    style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 16),
+                    style: TextStyle(color: AppColors.textPrimaryLight, fontSize: 16),
                   ),
                 ),
             ],
@@ -251,7 +251,7 @@ class _CustomTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.gold, width: 2),
+          borderSide: BorderSide(color: AppColors.gold, width: 2),
         ),
       ),
     );

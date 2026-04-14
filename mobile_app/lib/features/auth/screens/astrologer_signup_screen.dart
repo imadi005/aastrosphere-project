@@ -38,7 +38,7 @@ class _AstrologerSignUpScreenState extends State<AstrologerSignUpScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppColors.gold,
               onPrimary: AppColors.bgLight,
               surface: AppColors.bgCardLight,
@@ -181,7 +181,7 @@ class _AstrologerSignUpScreenState extends State<AstrologerSignUpScreen> {
                     if (_errorText != null)
                       Text(
                         _errorText!,
-                        style: const TextStyle(color: Colors.red),
+                        style: TextStyle(color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                     
@@ -249,10 +249,10 @@ class _CustomTextField extends StatelessWidget {
       readOnly: readOnly,
       onTap: onTap,
       keyboardType: keyboardType,
-      style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 16),
+      style: TextStyle(color: AppColors.textPrimaryLight, fontSize: 16),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: AppColors.textSecondaryLight),
+        hintStyle: TextStyle(color: AppColors.textSecondaryLight),
         prefixIcon: Icon(icon, color: AppColors.gold, size: 20),
         filled: true,
         fillColor: AppColors.bgLight.withOpacity(0.5),
@@ -263,7 +263,7 @@ class _CustomTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.gold, width: 2),
+          borderSide: BorderSide(color: AppColors.gold, width: 2),
         ),
       ),
     );

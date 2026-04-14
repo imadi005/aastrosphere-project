@@ -1,376 +1,251 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:aastrosphere/common/widgets/spinning_wheel.dart';
-import 'package:aastrosphere/core/theme/app_theme.dart';
-import 'package:aastrosphere/features/home/screens/home_screen.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// --- NAYE IMPORTS ---
-import 'package:google_places_flutter/google_places_flutter.dart';
-import 'package:google_places_flutter/model/prediction.dart'; 
-import 'package:aastrosphere/common/constants/api_keys.dart'; // API Key import
-// --------------------
+import 'package:aastrosphere/core/theme/app_theme.dart';
+import 'package:aastrosphere/features/shell/app_shell.dart';
 
 class SignUpScreen extends StatefulWidget {
   final String role;
-  const SignUpScreen({super.key, required this.role});
+  final String verificationId;
+  final String phoneNumber;
+
+  const SignUpScreen({
+    super.key,
+    required this.role,
+    required this.verificationId,
+    required this.phoneNumber,
+  });
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _dobController = TextEditingController();
-  final TextEditingController _tobController = TextEditingController();
-  final TextEditingController _pobController = TextEditingController(); 
-
-  String _dobRaw = ''; 
-  String _tobRaw = '';
-  String _pobName = '';
-  double? _pobLat;
-  double? _pobLng;
-  
+  final _nameController = TextEditingController();
+  final _dobController = TextEditingController();
+  DateTime? _selectedDob;
   bool _isLoading = false;
-  String? _errorText;
 
   @override
   void dispose() {
     _nameController.dispose();
     _dobController.dispose();
-    _tobController.dispose();
-    _pobController.dispose(); 
     super.dispose();
   }
 
-  // _selectDate() function
-  void _selectDate() async {
-    DateTime? picked = await showDatePicker(
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime(2000, 1, 1),
-      firstDate: DateTime(1920, 1, 1),
+      initialDate: DateTime(1995, 1, 1),
+      firstDate: DateTime(1930),
       lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.gold,
-              onPrimary: AppColors.bgLight,
-              surface: AppColors.bgCardLight,
-              onSurface: AppColors.textPrimaryLight,
-            ),
-            dialogBackgroundColor: AppColors.bgCardLight,
-          ),
-          child: child!,
-        );
-      },
     );
-
     if (picked != null) {
       setState(() {
-        _dobController.text = "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
-        _dobRaw = picked.toIso8601String(); 
+        _selectedDob = picked;
+        _dobController.text =
+            '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
       });
     }
   }
 
-  // _selectTime() function
-  void _selectTime() async {
-    TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.gold,
-              onPrimary: AppColors.bgLight,
-              surface: AppColors.bgCardLight,
-              onSurface: AppColors.textPrimaryLight,
-            ),
-            dialogBackgroundColor: AppColors.bgCardLight,
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        _tobController.text = picked.format(context); 
-        _tobRaw = "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
-      });
-    }
-  }
-
-  // _saveUserData() function
-  void _saveUserData() async {
-    if (_isLoading) return;
-
-    final String name = _nameController.text.trim();
-    final String dob = _dobController.text.trim();
-    final String pob = _pobName; 
-
-    if (name.isEmpty || dob.isEmpty) {
-      setState(() {
-        _errorText = 'Please fill in all mandatory fields (Name & DOB).';
-      });
+  Future<void> _saveProfile() async {
+    if (_nameController.text.trim().isEmpty || _selectedDob == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorText = null;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      final User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        throw Exception('No user found. Please login again.');
-      }
-      
-      final String uid = currentUser.uid;
-      final String? phoneNumber = currentUser.phoneNumber;
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-      final Map<String, dynamic> userData = {
-        'uid': uid,
-        'phone_number': phoneNumber,
-        'name': name,
-        'dob': _dobRaw, 
-        'role': widget.role,
-        'created_at': FieldValue.serverTimestamp(),
-      };
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'name': _nameController.text.trim(),
+        'dob': Timestamp.fromDate(_selectedDob!),
+        'phone': widget.phoneNumber,
+        'isAstrologer': widget.role == 'Astrologer',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-      if (_tobController.text.trim().isNotEmpty) {
-        userData['tob'] = _tobRaw; 
-      }
-      if (pob.isNotEmpty) {
-        userData['pob_name'] = _pobName;
-        userData['pob_lat'] = _pobLat;
-        userData['pob_lng'] = _pobLng;
-      }
-      
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid) 
-          .set(userData);
-          
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const AppShell()),
           (route) => false,
         );
       }
-
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorText = 'Failed to save data. Please try again.';
-      });
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gold = isDark ? AppColors.goldLight : AppColors.gold;
+    final bg = isDark ? AppColors.bgDark : AppColors.bgLight;
+    final cardBg = isDark ? AppColors.bgCardDark : AppColors.bgCardLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text('Create Your Profile (${widget.role})'),
-      ),
-      body: Stack(
-        children: [
-          Center(child: SpinningWheel()),
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32.0),
-              child: Container(
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  color: AppColors.bgCardLight.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.gold.withOpacity(0.3)),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'One Last Step',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'We need your Name and Date of Birth for predictions.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textSecondaryLight,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
+      backgroundColor: bg,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
+              FadeInDown(
+                child: Text('Tell us about yourself',
+                    style: Theme.of(context).textTheme.headlineMedium),
+              ),
+              const SizedBox(height: 8),
+              FadeInDown(
+                delay: const Duration(milliseconds: 100),
+                child: Text('Your chart will be calculated from this',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: secondary)),
+              ),
+              const SizedBox(height: 40),
 
-                    // Name Field
-                    _CustomTextField(
-                      controller: _nameController,
-                      hintText: 'Enter your full name',
-                      icon: Icons.person,
-                      keyboardType: TextInputType.name,
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    // DOB Field
-                    _CustomTextField(
-                      controller: _dobController,
-                      hintText: 'Select Date of Birth',
-                      icon: Icons.calendar_today,
-                      readOnly: true,
-                      onTap: _selectDate,
-                    ),
-                    const SizedBox(height: 20),
+              // Name
+              _FieldLabel('Full name', gold),
+              const SizedBox(height: 8),
+              _InputField(
+                controller: _nameController,
+                hint: 'Enter your full name',
+                icon: Icons.person_outline,
+                gold: gold,
+                isDark: isDark,
+              ),
+              const SizedBox(height: 24),
 
-                    // TOB Field
-                    _CustomTextField(
-                      controller: _tobController,
-                      hintText: 'Time of Birth (Optional)',
-                      icon: Icons.access_time,
-                      readOnly: true,
-                      onTap: _selectTime,
-                    ),
-                    
-                    // POB Field
-                    const SizedBox(height: 20),
-                    GooglePlaceAutoCompleteTextField(
-                      textEditingController: _pobController,
-                      googleAPIKey: kGooglePlacesApiKey, 
-                      countries: const ["in", "us", "ca", "au", "gb", "sg"], 
-                      inputDecoration: InputDecoration(
-                        hintText: 'Place of Birth (Optional)',
-                        hintStyle: TextStyle(color: AppColors.textSecondaryLight),
-                        prefixIcon: Icon(Icons.location_on, color: AppColors.gold, size: 20),
-                        filled: true,
-                        fillColor: AppColors.bgLight.withOpacity(0.5),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.gold.withOpacity(0.5)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.gold, width: 2),
-                        ),
-                      ),
-                      textStyle: TextStyle(color: AppColors.textPrimaryLight, fontSize: 16),
-                      
-                      itemClick: (Prediction place) {
-                        _pobController.text = place.description ?? 'Unknown Location';
-                        setState(() {
-                          _pobName = place.description ?? 'Unknown Location';
-                          _pobLat = double.tryParse(place.lat ?? '');
-                          _pobLng = double.tryParse(place.lng ?? '');
-                        });
-                        FocusScope.of(context).unfocus(); 
-                      },
-                      
-                      itemBuilder: (context, i, Prediction place) {
-                        return Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          child: Text(place.description ?? '', style: TextStyle(color: AppColors.textPrimaryLight)),
-                        );
-                      },
-                      isLatLngRequired: true, 
-                      containerHorizontalPadding: 10,
-                      containerVerticalPadding: 10,
-                    ),
-
-                    const SizedBox(height: 16),
-                    if (_errorText != null)
+              // DOB
+              _FieldLabel('Date of birth', gold),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _pickDate,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.bgSubtleDark : AppColors.bgSubtleLight,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: border, width: 0.5),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today_outlined, color: gold, size: 18),
+                      const SizedBox(width: 10),
                       Text(
-                        _errorText!,
-                        style: TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
-                    
-                    const SizedBox(height: 24),
-                    // Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.gold,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                        _dobController.text.isEmpty ? 'Select date of birth' : _dobController.text,
+                        style: TextStyle(
+                          color: _dobController.text.isEmpty ? secondary : 
+                            (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+                          fontSize: 14,
                         ),
-                        onPressed: _isLoading ? null : _saveUserData,
-                        child: _isLoading
-                            ? SizedBox(
-                                height: 28,
-                                width: 28,
-                                child: CircularProgressIndicator(color: AppColors.bgLight),
-                              )
-                            : Text(
-                                'Save & Continue',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: AppColors.bgLight,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 48),
+
+              // Submit
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _saveProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: gold,
+                    foregroundColor: AppColors.bgLight,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  child: _isLoading
+                      ? SizedBox(
+                          width: 20, height: 20,
+                          child: CircularProgressIndicator(color: AppColors.bgLight, strokeWidth: 2),
+                        )
+                      : Text('Continue',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500,
+                              color: AppColors.bgLight)),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-// Custom Text Field Widget
-class _CustomTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hintText;
-  final IconData icon;
-  final bool readOnly;
-  final VoidCallback? onTap;
-  final TextInputType? keyboardType;
+class _FieldLabel extends StatelessWidget {
+  final String text;
+  final Color gold;
+  const _FieldLabel(this.text, this.gold);
 
-  const _CustomTextField({
+  @override
+  Widget build(BuildContext context) {
+    return Text(text,
+        style: TextStyle(fontSize: 12, color: gold,
+            fontWeight: FontWeight.w500, letterSpacing: 0.5));
+  }
+}
+
+class _InputField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hint;
+  final IconData icon;
+  final Color gold;
+  final bool isDark;
+
+  const _InputField({
     required this.controller,
-    required this.hintText,
+    required this.hint,
     required this.icon,
-    this.readOnly = false,
-    this.onTap,
-    this.keyboardType,
+    required this.gold,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
     return TextField(
       controller: controller,
-      readOnly: readOnly,
-      onTap: onTap,
-      keyboardType: keyboardType,
-      style: TextStyle(color: AppColors.textPrimaryLight, fontSize: 16),
+      style: TextStyle(
+        color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+        fontSize: 14,
+      ),
       decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(color: AppColors.textSecondaryLight),
-        prefixIcon: Icon(icon, color: AppColors.gold, size: 20),
+        hintText: hint,
+        hintStyle: TextStyle(color: secondary),
+        prefixIcon: Icon(icon, color: gold, size: 18),
         filled: true,
-        fillColor: AppColors.bgLight.withOpacity(0.5),
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        fillColor: isDark ? AppColors.bgSubtleDark : AppColors.bgSubtleLight,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: border, width: 0.5),
+        ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.gold.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: border, width: 0.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.gold, width: 2),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: gold, width: 1),
         ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
     );
   }

@@ -165,7 +165,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
         ),
         actions: [
           TextButton(
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondaryLight)),
+            child: Text('Cancel', style: TextStyle(color: AppColors.textSecondaryLight)),
             onPressed: () {
               Navigator.of(context).pop();
               _navigateToHome(); // Cancel karke Home bhej do (existing role mein)
@@ -251,7 +251,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
                     if (_errorText != null)
                       Text(
                         _errorText!,
-                        style: const TextStyle(color: Colors.red),
+                        style: TextStyle(color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                     
