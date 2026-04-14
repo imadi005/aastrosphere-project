@@ -456,8 +456,8 @@ export function getDashaBehavior(dashaNum, countInGrid) {
   const texts = {
     1: {
       0: 'Anger increases, authority and leadership qualities emerge, ego amplifies, strong need for respect, confidence surge — commanding aura.',
-      1_no_3_9: 'Softer phase — confidence decreases, leadership diminishes, less ego, mellowed attitude.',
-      1_with_3_9: 'Anger increases, authority emerges, ego amplifies, strong presence.',
+      no_3_9: 'Softer phase — confidence decreases, leadership diminishes, less ego, mellowed attitude.',
+      with_3_9: 'Anger increases, authority emerges, ego amplifies, strong presence.',
       destiny: 'Dictatorial tendencies — heightened confidence bordering overconfidence, extreme assertiveness, overwhelming ego.',
     },
     2: {
