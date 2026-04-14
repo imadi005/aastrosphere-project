@@ -5,6 +5,7 @@ import '../../core/providers/role_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
+import '../auth/providers/user_provider.dart';
 
 // User screens
 import '../user/today/today_screen.dart';
@@ -161,7 +162,16 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       actions: [
-        RoleToggle(isAstrologer: isAstrologer, onToggle: onRoleToggle),
+        // Only show toggle if user has astrologer access
+        Consumer(builder: (context, ref, _) {
+          final userAsync = ref.watch(userProfileProvider);
+          final showToggle = userAsync.maybeWhen(
+            data: (u) => u?.isAstrologer ?? false,
+            orElse: () => false,
+          );
+          if (!showToggle) return const SizedBox.shrink();
+          return RoleToggle(isAstrologer: isAstrologer, onToggle: onRoleToggle);
+        }),
         const SizedBox(width: 8),
         ThemeToggleButton(isDark: isDark, onToggle: onThemeToggle),
         const SizedBox(width: 16),
