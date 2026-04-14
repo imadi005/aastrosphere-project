@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_app/features/auth/repository/auth_repository.dart';
-import 'package:mobile_app/features/home/screens/home_screen.dart';
-import 'package:mobile_app/features/splash/screens/splash_screen.dart';
-import 'package:mobile_app/main.dart'; // For loading color
+import 'package:aastrosphere/features/auth/repository/auth_repository.dart';
+import 'package:aastrosphere/features/home/screens/home_screen.dart';
+import 'package:aastrosphere/features/splash/screens/splash_screen.dart';
+import 'package:aastrosphere/core/theme/app_theme.dart';
 
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
@@ -30,9 +30,9 @@ class AuthWrapper extends ConsumerWidget {
       ),
       // Check kar rahe hain...
       loading: () => const Scaffold(
-        backgroundColor: kPrimaryColor,
+        backgroundColor: AppColors.bgLight,
         body: Center(
-          child: CircularProgressIndicator(color: kAccentColor),
+          child: CircularProgressIndicator(color: AppColors.gold),
         ),
       ),
     );

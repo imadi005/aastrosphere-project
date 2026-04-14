@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:mobile_app/main.dart'; // For theme colors
-import 'package:mobile_app/features/auth/screens/login_screen.dart'; // <-- YEH NAYA IMPORT HAI
+import 'package:aastrosphere/core/theme/app_theme.dart';
+import 'package:aastrosphere/features/auth/screens/login_screen.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // --- YEH NAYA NAVIGATION FUNCTION HAI ---
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gold = isDark ? AppColors.goldLight : AppColors.gold;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
     void navigateToLogin(String role) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => LoginScreen(role: role),
-        ),
+        MaterialPageRoute(builder: (context) => LoginScreen(role: role)),
       );
     }
-    // ------------------------------------
 
     return Scaffold(
       body: LayoutBuilder(
@@ -32,48 +32,46 @@ class RoleSelectionScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Spacer(),
-                      
-                      // --- Logo & Title ---
                       FadeInDown(
                         duration: const Duration(milliseconds: 900),
                         child: Text(
-                          'AASTROSPHERE',
-                          style: Theme.of(context).textTheme.headlineMedium,
+                          'Aastrosphere',
+                          style: Theme.of(context).textTheme.displaySmall,
                         ),
                       ),
                       const SizedBox(height: 12),
                       FadeInDown(
                         duration: const Duration(milliseconds: 1000),
                         child: Text(
-                          'SELECT YOUR ROLE',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: kSecondaryTextColor,
-                            letterSpacing: 2,
+                          'Who are you?',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: secondary,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
                       const SizedBox(height: 48),
-
-                      // --- User Card ---
                       FadeInUp(
                         duration: const Duration(milliseconds: 1100),
                         child: _RoleCard(
                           icon: Icons.person_outline,
-                          title: 'USER',
-                          subtitle: 'Get personalized daily insights & predictions',
-                          onTap: () => navigateToLogin('User'), // <-- YEH UPDATE HUA HAI
+                          title: 'User',
+                          subtitle: 'Daily insights & predictions for yourself',
+                          onTap: () => navigateToLogin('User'),
+                          gold: gold,
+                          isDark: isDark,
                         ),
                       ),
-                      const SizedBox(height: 24),
-
-                      // --- Astrologer Card ---
+                      const SizedBox(height: 16),
                       FadeInUp(
                         duration: const Duration(milliseconds: 1200),
                         child: _RoleCard(
                           icon: Icons.auto_awesome_outlined,
-                          title: 'ASTROLOGER',
-                          subtitle: 'Join our panel & guide users',
-                          onTap: () => navigateToLogin('Astrologer'), // <-- YEH UPDATE HUA HAI
+                          title: 'Astrologer',
+                          subtitle: 'Read charts and guide your clients',
+                          onTap: () => navigateToLogin('Astrologer'),
+                          gold: gold,
+                          isDark: isDark,
                         ),
                       ),
                       const Spacer(),
@@ -89,62 +87,65 @@ class RoleSelectionScreen extends StatelessWidget {
   }
 }
 
-// ----- Reusable Card Widget -----
 class _RoleCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final VoidCallback? onTap; // <-- Pehle 'onTap' null tha
+  final VoidCallback? onTap;
+  final Color gold;
+  final bool isDark;
 
   const _RoleCard({
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.gold,
+    required this.isDark,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final cardBg = isDark ? AppColors.bgCardDark : AppColors.bgCardLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
     return InkWell(
-      onTap: onTap, // <-- onTap yahaan connect hua
-      borderRadius: BorderRadius.circular(16),
-      splashColor: kAccentColor.withOpacity(0.1),
-      highlightColor: kAccentColor.withOpacity(0.1),
-      child: Ink(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
         decoration: BoxDecoration(
-          color: kSurfaceColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: kAccentColor.withOpacity(0.3)),
-          boxShadow: [
-            BoxShadow(
-              color: kAccentColor.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: cardBg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: border, width: 0.5),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              Icon(icon, color: kAccentColor, size: 40),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  letterSpacing: 1.5,
-                ),
+        padding: const EdgeInsets.all(24.0),
+        child: Row(
+          children: [
+            Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(
+                color: gold.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(height: 8),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: kSecondaryTextColor,
-                ),
+              child: Icon(icon, color: gold, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: secondary),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Icon(Icons.arrow_forward_ios, size: 14, color: secondary),
+          ],
         ),
       ),
     );

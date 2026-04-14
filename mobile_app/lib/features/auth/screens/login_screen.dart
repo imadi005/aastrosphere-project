@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:mobile_app/common/widgets/spinning_wheel.dart';
-import 'package:mobile_app/main.dart'; // For theme colors
+import 'package:aastrosphere/common/widgets/spinning_wheel.dart';
+import 'package:aastrosphere/core/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mobile_app/features/auth/screens/otp_screen.dart';
+import 'package:aastrosphere/features/auth/screens/otp_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final String role; // 'User' ya 'Astrologer'
@@ -91,12 +91,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kPrimaryColor,
+      backgroundColor: AppColors.bgLight,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: kTextColor),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimaryLight),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -115,9 +115,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(24.0),
                   decoration: BoxDecoration(
-                    color: kSurfaceColor.withOpacity(0.9),
+                    color: AppColors.bgCardLight.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: kAccentColor.withOpacity(0.3)),
+                    border: Border.all(color: AppColors.gold.withOpacity(0.3)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -132,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         'Enter your phone number to continue',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: kSecondaryTextColor,
+                          color: AppColors.textSecondaryLight,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: kAccentColor,
+                            backgroundColor: AppColors.gold,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -173,12 +173,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? const SizedBox(
                                   height: 28,
                                   width: 28,
-                                  child: CircularProgressIndicator(color: kPrimaryColor),
+                                  child: CircularProgressIndicator(color: AppColors.bgLight),
                                 )
                               : Text(
                                   'Get OTP',
                                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    color: kPrimaryColor,
+                                    color: AppColors.bgLight,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -216,11 +216,11 @@ class _CustomTextField extends StatelessWidget {
       controller: controller,
       keyboardType: TextInputType.phone,
       maxLength: 10, // NAYA: User ko 10 digit pe rok dega
-      style: const TextStyle(color: kTextColor, fontSize: 16, letterSpacing: 1.5),
+      style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 16, letterSpacing: 1.5),
       decoration: InputDecoration(
         counterText: "", // MaxLength counter ko hide karega
         hintText: hintText,
-        hintStyle: const TextStyle(color: kSecondaryTextColor, letterSpacing: 0),
+        hintStyle: const TextStyle(color: AppColors.textSecondaryLight, letterSpacing: 0),
         
         // --- YEH PREFIX LOGIC NAYA ADD HUA HAI ---
         prefixIcon: Padding(
@@ -228,13 +228,13 @@ class _CustomTextField extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: kAccentColor, size: 20),
+              Icon(icon, color: AppColors.gold, size: 20),
               if (prefixText != null)
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Text(
                     prefixText!,
-                    style: const TextStyle(color: kTextColor, fontSize: 16),
+                    style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 16),
                   ),
                 ),
             ],
@@ -243,15 +243,15 @@ class _CustomTextField extends StatelessWidget {
         // ------------------------------------------
         
         filled: true,
-        fillColor: kPrimaryColor.withOpacity(0.5),
+        fillColor: AppColors.bgLight.withOpacity(0.5),
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: kAccentColor.withOpacity(0.5)),
+          borderSide: BorderSide(color: AppColors.gold.withOpacity(0.5)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kAccentColor, width: 2),
+          borderSide: const BorderSide(color: AppColors.gold, width: 2),
         ),
       ),
     );

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_app/features/auth/repository/auth_repository.dart';
-import 'package:mobile_app/main.dart';
+import 'package:aastrosphere/features/auth/repository/auth_repository.dart';
+import 'package:aastrosphere/core/theme/app_theme.dart';
 
 // --- NAYI FILES BANANI HAIN ---
 // Inko hum abhi bas empty UI banayenge
-import 'package:mobile_app/features/home/screens/user_dashboard.dart';
-import 'package:mobile_app/features/home/screens/astrologer_dashboard.dart';
+import 'package:aastrosphere/features/home/screens/user_dashboard.dart';
+import 'package:aastrosphere/features/home/screens/astrologer_dashboard.dart';
 // -----------------------------
 
 // Ek state provider jo track karega ki kaunsa role selected hai
@@ -60,10 +60,10 @@ class HomeScreen extends ConsumerWidget {
                       ref.read(selectedRoleProvider.notifier).state = newSelection.first;
                     },
                     style: SegmentedButton.styleFrom(
-                      backgroundColor: kSurfaceColor,
-                      foregroundColor: kSecondaryTextColor,
-                      selectedBackgroundColor: kAccentColor,
-                      selectedForegroundColor: kPrimaryColor,
+                      backgroundColor: AppColors.bgCardLight,
+                      foregroundColor: AppColors.textSecondaryLight,
+                      selectedBackgroundColor: AppColors.gold,
+                      selectedForegroundColor: AppColors.bgLight,
                     ),
                   ),
                 ),
@@ -82,7 +82,7 @@ class HomeScreen extends ConsumerWidget {
         error: (err, stack) => Center(child: Text('Error: $err')),
         // Load ho raha hai
         loading: () => const Center(
-          child: CircularProgressIndicator(color: kAccentColor),
+          child: CircularProgressIndicator(color: AppColors.gold),
         ),
       ),
     );

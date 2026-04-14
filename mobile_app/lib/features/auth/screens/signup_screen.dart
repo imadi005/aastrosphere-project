@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app/common/widgets/spinning_wheel.dart';
-import 'package:mobile_app/main.dart';
-import 'package:mobile_app/features/home/screens/home_screen.dart';
+import 'package:aastrosphere/common/widgets/spinning_wheel.dart';
+import 'package:aastrosphere/core/theme/app_theme.dart';
+import 'package:aastrosphere/features/home/screens/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 // --- NAYE IMPORTS ---
 import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:google_places_flutter/model/prediction.dart'; 
-import 'package:mobile_app/common/constants/api_keys.dart'; // API Key import
+import 'package:aastrosphere/common/constants/api_keys.dart'; // API Key import
 // --------------------
 
 class SignUpScreen extends StatefulWidget {
@@ -54,12 +54,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: kAccentColor,
-              onPrimary: kPrimaryColor,
-              surface: kSurfaceColor,
-              onSurface: kTextColor,
+              primary: AppColors.gold,
+              onPrimary: AppColors.bgLight,
+              surface: AppColors.bgCardLight,
+              onSurface: AppColors.textPrimaryLight,
             ),
-            dialogBackgroundColor: kSurfaceColor,
+            dialogBackgroundColor: AppColors.bgCardLight,
           ),
           child: child!,
         );
@@ -83,12 +83,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: kAccentColor,
-              onPrimary: kPrimaryColor,
-              surface: kSurfaceColor,
-              onSurface: kTextColor,
+              primary: AppColors.gold,
+              onPrimary: AppColors.bgLight,
+              surface: AppColors.bgCardLight,
+              onSurface: AppColors.textPrimaryLight,
             ),
-            dialogBackgroundColor: kSurfaceColor,
+            dialogBackgroundColor: AppColors.bgCardLight,
           ),
           child: child!,
         );
@@ -174,7 +174,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kPrimaryColor,
+      backgroundColor: AppColors.bgLight,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -189,9 +189,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Container(
                 padding: const EdgeInsets.all(24.0),
                 decoration: BoxDecoration(
-                  color: kSurfaceColor.withOpacity(0.9),
+                  color: AppColors.bgCardLight.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: kAccentColor.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.gold.withOpacity(0.3)),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -205,7 +205,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       'We need your Name and Date of Birth for predictions.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: kSecondaryTextColor,
+                        color: AppColors.textSecondaryLight,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -246,21 +246,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       countries: const ["in", "us", "ca", "au", "gb", "sg"], 
                       inputDecoration: InputDecoration(
                         hintText: 'Place of Birth (Optional)',
-                        hintStyle: TextStyle(color: kSecondaryTextColor),
-                        prefixIcon: Icon(Icons.location_on, color: kAccentColor, size: 20),
+                        hintStyle: TextStyle(color: AppColors.textSecondaryLight),
+                        prefixIcon: Icon(Icons.location_on, color: AppColors.gold, size: 20),
                         filled: true,
-                        fillColor: kPrimaryColor.withOpacity(0.5),
+                        fillColor: AppColors.bgLight.withOpacity(0.5),
                         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: kAccentColor.withOpacity(0.5)),
+                          borderSide: BorderSide(color: AppColors.gold.withOpacity(0.5)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: kAccentColor, width: 2),
+                          borderSide: BorderSide(color: AppColors.gold, width: 2),
                         ),
                       ),
-                      textStyle: TextStyle(color: kTextColor, fontSize: 16),
+                      textStyle: TextStyle(color: AppColors.textPrimaryLight, fontSize: 16),
                       
                       itemClick: (Prediction place) {
                         _pobController.text = place.description ?? 'Unknown Location';
@@ -275,7 +275,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       itemBuilder: (context, i, Prediction place) {
                         return Container(
                           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          child: Text(place.description ?? '', style: TextStyle(color: kTextColor)),
+                          child: Text(place.description ?? '', style: TextStyle(color: AppColors.textPrimaryLight)),
                         );
                       },
                       isLatLngRequired: true, 
@@ -297,7 +297,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: kAccentColor,
+                          backgroundColor: AppColors.gold,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -308,12 +308,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ? SizedBox(
                                 height: 28,
                                 width: 28,
-                                child: CircularProgressIndicator(color: kPrimaryColor),
+                                child: CircularProgressIndicator(color: AppColors.bgLight),
                               )
                             : Text(
                                 'Save & Continue',
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: kPrimaryColor,
+                                  color: AppColors.bgLight,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -355,21 +355,21 @@ class _CustomTextField extends StatelessWidget {
       readOnly: readOnly,
       onTap: onTap,
       keyboardType: keyboardType,
-      style: TextStyle(color: kTextColor, fontSize: 16),
+      style: TextStyle(color: AppColors.textPrimaryLight, fontSize: 16),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: kSecondaryTextColor),
-        prefixIcon: Icon(icon, color: kAccentColor, size: 20),
+        hintStyle: TextStyle(color: AppColors.textSecondaryLight),
+        prefixIcon: Icon(icon, color: AppColors.gold, size: 20),
         filled: true,
-        fillColor: kPrimaryColor.withOpacity(0.5),
+        fillColor: AppColors.bgLight.withOpacity(0.5),
         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: kAccentColor.withOpacity(0.5)),
+          borderSide: BorderSide(color: AppColors.gold.withOpacity(0.5)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: kAccentColor, width: 2),
+          borderSide: BorderSide(color: AppColors.gold, width: 2),
         ),
       ),
     );

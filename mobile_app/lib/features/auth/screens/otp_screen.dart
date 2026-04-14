@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_app/common/widgets/spinning_wheel.dart';
-import 'package:mobile_app/main.dart';
+import 'package:aastrosphere/common/widgets/spinning_wheel.dart';
+import 'package:aastrosphere/core/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mobile_app/features/auth/screens/signup_screen.dart';
-import 'package:mobile_app/features/home/screens/home_screen.dart';
-import 'package:mobile_app/features/auth/screens/astrologer_signup_screen.dart';
+import 'package:aastrosphere/features/auth/screens/signup_screen.dart';
+import 'package:aastrosphere/features/home/screens/home_screen.dart';
+import 'package:aastrosphere/features/auth/screens/astrologer_signup_screen.dart';
 import 'package:pinput/pinput.dart';
 // --- NAYE IMPORTS ---
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_app/features/auth/repository/auth_repository.dart';
+import 'package:aastrosphere/features/auth/repository/auth_repository.dart';
 // --------------------
 
 // --- WIDGET UPDATE HUA HAI ---
@@ -154,26 +154,26 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: kSurfaceColor,
+        backgroundColor: AppColors.bgCardLight,
         title: Text(
           'Role Confirmation',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         content: Text(
           'You are already registered as a $existingRole. Do you want to proceed and register as an $newRole as well?',
-          style: TextStyle(color: kSecondaryTextColor),
+          style: TextStyle(color: AppColors.textSecondaryLight),
         ),
         actions: [
           TextButton(
-            child: const Text('Cancel', style: TextStyle(color: kSecondaryTextColor)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondaryLight)),
             onPressed: () {
               Navigator.of(context).pop();
               _navigateToHome(); // Cancel karke Home bhej do (existing role mein)
             },
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: kAccentColor),
-            child: Text('Yes, Register', style: TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold),
+            child: Text('Yes, Register', style: TextStyle(color: AppColors.bgLight, fontWeight: FontWeight.bold)),
             onPressed: () {
               Navigator.of(context).pop();
               onYes(); // Naye sign up screen pe bhejo
@@ -191,16 +191,16 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
     final defaultPinTheme = PinTheme(
       width: 56,
       height: 60,
-      textStyle: GoogleFonts.cinzel(fontSize: 22, color: kTextColor),
+      textStyle: GoogleFonts.cinzel(fontSize: 22, color: AppColors.textPrimaryLight),
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(0.5),
+        color: AppColors.bgLight.withOpacity(0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kAccentColor.withOpacity(0.5)),
+        border: Border.all(color: AppColors.gold.withOpacity(0.5)),
       ),
     );
 
     return Scaffold(
-      backgroundColor: kPrimaryColor,
+      backgroundColor: AppColors.bgLight,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -214,9 +214,9 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
               child: Container(
                 padding: const EdgeInsets.all(24.0),
                 decoration: BoxDecoration(
-                  color: kSurfaceColor.withOpacity(0.9),
+                  color: AppColors.bgCardLight.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: kAccentColor.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.gold.withOpacity(0.3)),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -230,7 +230,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
                       'Enter the 6-digit code sent to\n${widget.phoneNumber}',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: kSecondaryTextColor,
+                        color: AppColors.textSecondaryLight,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -241,7 +241,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
                       defaultPinTheme: defaultPinTheme,
                       focusedPinTheme: defaultPinTheme.copyWith(
                         decoration: defaultPinTheme.decoration!.copyWith(
-                          border: Border.all(color: kAccentColor, width: 2),
+                          border: Border.all(color: AppColors.gold, width: 2),
                         ),
                       ),
                       onCompleted: (pin) => _verifyOTP(pin),
@@ -261,7 +261,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: kAccentColor,
+                          backgroundColor: AppColors.gold,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -274,12 +274,12 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
                             ? const SizedBox(
                                 height: 28,
                                 width: 28,
-                                child: CircularProgressIndicator(color: kPrimaryColor),
+                                child: CircularProgressIndicator(color: AppColors.bgLight),
                               )
                             : Text(
                                 'Verify & Continue',
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: kPrimaryColor,
+                                  color: AppColors.bgLight,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
