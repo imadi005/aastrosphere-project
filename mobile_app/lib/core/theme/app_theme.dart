@@ -12,6 +12,7 @@ class AppColors {
   static const textTertiaryLight = Color(0xFFA8A29E);
   static const borderLight = Color(0xFFE7E2DA);
   static const borderSubtleLight = Color(0xFFF0EDE7);
+  static const bgPrimaryLight = Color(0xFFFAF8F4);
 
   // Dark mode
   static const bgDark = Color(0xFF100F0D);
@@ -22,6 +23,7 @@ class AppColors {
   static const textTertiaryDark = Color(0xFF6B6560);
   static const borderDark = Color(0xFF2E2B27);
   static const borderSubtleDark = Color(0xFF252220);
+  static const bgPrimaryDark = Color(0xFF100F0D);
 
   // Shared
   static const gold = Color(0xFFB8860B);

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/providers/today_provider.dart';
+import '../../../core/numerology/numerology_engine.dart';
 
 class InsightsScreen extends ConsumerStatefulWidget {
   const InsightsScreen({super.key});
@@ -37,7 +38,6 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen>
 
     return Column(
       children: [
-        // Tab bar
         Container(
           color: isDark ? AppColors.bgPrimaryDark : AppColors.bgPrimaryLight,
           child: TabBar(
@@ -74,7 +74,6 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen>
   }
 }
 
-// ─── Daily Insight Tab ────────────────────────────────────────
 class _DailyInsight extends ConsumerWidget {
   final bool isDark;
   final Color gold;
@@ -294,34 +293,162 @@ class _PeriodInsight extends ConsumerWidget {
   final Color gold;
   const _PeriodInsight({required this.period, required this.isDark, required this.gold});
 
+  // SAFE extractor for any type to string
+  String _safeToString(dynamic value) {
+    if (value == null) return '';
+    if (value is String) return value;
+    if (value is int) return value.toString();
+    if (value is double) return value.toString();
+    if (value is bool) return value.toString();
+    if (value is Map) {
+      // Try to find any string value in the map
+      for (var v in value.values) {
+        if (v is String && v.isNotEmpty) return v;
+        if (v is int) return v.toString();
+      }
+      return '';
+    }
+    if (value is List) {
+      if (value.isNotEmpty) return _safeToString(value.first);
+      return '';
+    }
+    return value.toString();
+  }
+
+  // SAFE extractor for prediction field
+  String _extractPrediction(dynamic pred) {
+    if (pred == null) return '';
+    if (pred is String) return pred;
+    if (pred is Map) {
+      // Check for common keys
+      final possibleKeys = ['single', 'text', 'description', 'prediction', 'message', 'content'];
+      for (var key in possibleKeys) {
+        if (pred.containsKey(key)) {
+          final value = pred[key];
+          if (value is String && value.isNotEmpty) return value;
+          if (value != null) return value.toString();
+        }
+      }
+      // If no common keys, take the first non-null value
+      for (var value in pred.values) {
+        if (value != null) {
+          if (value is String && value.isNotEmpty) return value;
+          return value.toString();
+        }
+      }
+      return '';
+    }
+    if (pred is List) {
+      if (pred.isNotEmpty) return _extractPrediction(pred.first);
+      return '';
+    }
+    return pred.toString();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashaAsync = ref.watch(dashaInsightProvider);
     final financeAsync = ref.watch(financePredictionProvider);
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
 
     return dashaAsync.when(
       loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),
-      error: (_, __) => _retry(() => ref.refresh(dashaInsightProvider), isDark, gold),
+      error: (error, stack) {
+        print('ERROR in dashaInsightProvider: $error');
+        print('Stack: $stack');
+        return _retry(() => ref.refresh(dashaInsightProvider), isDark, gold);
+      },
       data: (insight) {
-        final maha = insight['maha'] as Map<String, dynamic>;
-        final antar = insight['antar'] as Map<String, dynamic>;
-        final mahaTraits = maha['traits'] as Map<String, dynamic>? ?? {};
-        final antarTraits = antar['traits'] as Map<String, dynamic>? ?? {};
+        // Debug: Print the actual data structure
+        print('INSIGHT DATA TYPE: ${insight.runtimeType}');
+        print('INSIGHT KEYS: ${insight.keys}');
+        
+        // SAFE extraction - handle everything with try-catch
+        Map<String, dynamic> maha = {};
+        Map<String, dynamic> antar = {};
+        
+        try {
+          final mahaRaw = insight['maha'];
+          if (mahaRaw is Map<String, dynamic>) {
+            maha = mahaRaw;
+          } else if (mahaRaw is Map) {
+            maha = Map<String, dynamic>.from(mahaRaw);
+          }
+          print('MAHA extracted successfully: ${maha.keys}');
+        } catch (e) {
+          print('Error extracting maha: $e');
+        }
+        
+        try {
+          final antarRaw = insight['antar'];
+          if (antarRaw is Map<String, dynamic>) {
+            antar = antarRaw;
+          } else if (antarRaw is Map) {
+            antar = Map<String, dynamic>.from(antarRaw);
+          }
+          print('ANTAR extracted successfully: ${antar.keys}');
+        } catch (e) {
+          print('Error extracting antar: $e');
+        }
+        
+        // Extract values with safe defaults
+        final mahaNumber = _safeToInt(maha['number']);
+        final antarNumber = _safeToInt(antar['number']);
+        
+        final mahaPlanet = _safeToString(maha['planet']);
+        final antarPlanet = _safeToString(antar['planet']);
+        
+        // Extract traits
+        Map<String, dynamic> mahaTraits = {};
+        Map<String, dynamic> antarTraits = {};
+        
+        final mahaTraitsRaw = maha['traits'];
+        if (mahaTraitsRaw is Map) {
+          mahaTraits = Map<String, dynamic>.from(mahaTraitsRaw);
+        }
+        
+        final antarTraitsRaw = antar['traits'];
+        if (antarTraitsRaw is Map) {
+          antarTraits = Map<String, dynamic>.from(antarTraitsRaw);
+        }
+        
+        // Extract keywords safely
+        List<String> mahaKeywords = [];
+        List<String> antarKeywords = [];
+        
+        final mahaKeywordsRaw = mahaTraits['keywords'];
+        if (mahaKeywordsRaw is List) {
+          mahaKeywords = mahaKeywordsRaw.whereType<String>().toList();
+        }
+        
+        final antarKeywordsRaw = antarTraits['keywords'];
+        if (antarKeywordsRaw is List) {
+          antarKeywords = antarKeywordsRaw.whereType<String>().toList();
+        }
+        
+        // Extract predictions safely
+        final mahaPredictionRaw = maha['prediction'];
+        final antarPredictionRaw = antar['prediction'];
+        
+        final mahaPrediction = _extractPrediction(mahaPredictionRaw);
+        final antarPrediction = _extractPrediction(antarPredictionRaw);
+        
+        print('Maha prediction type: ${mahaPredictionRaw.runtimeType}');
+        print('Antar prediction type: ${antarPredictionRaw.runtimeType}');
 
         String periodTitle;
         String periodDesc;
         switch (period) {
           case 'weekly':
             periodTitle = 'This Week';
-            periodDesc = 'Antar Dasha ${antar['number']} (${antar['planet']}) governs this week.';
+            periodDesc = 'Antar Dasha $antarNumber ($antarPlanet) governs this week.';
+            break;
           case 'monthly':
             periodTitle = 'This Month';
-            periodDesc = 'Monthly Dasha aligns with Antar Dasha ${antar['number']} — ${antar['planet']} energy.';
+            periodDesc = 'Monthly Dasha aligns with Antar Dasha $antarNumber — $antarPlanet energy.';
+            break;
           default:
             periodTitle = 'This Year';
-            periodDesc = 'Maha Dasha ${maha['number']} (${maha['planet']}) + Antar Dasha ${antar['number']} (${antar['planet']}).';
+            periodDesc = 'Maha Dasha $mahaNumber ($mahaPlanet) + Antar Dasha $antarNumber ($antarPlanet).';
         }
 
         return SingleChildScrollView(
@@ -333,36 +460,40 @@ class _PeriodInsight extends ConsumerWidget {
               const SizedBox(height: 8),
               AstroCard(
                 padding: const EdgeInsets.all(16),
-                child: Text(periodDesc,
-                    style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.6)),
+                child: Text(
+                  periodDesc,
+                  style: GoogleFonts.dmSans(fontSize: 13, 
+                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight, 
+                    height: 1.6
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
 
-              // Maha dasha insight
               SectionLabel('Maha Dasha Energy'),
               const SizedBox(height: 8),
               _InsightBlock(
-                number: maha['number'] as int,
-                planet: maha['planet'] as String,
-                prediction: _getPredText(maha['prediction']),
-                keywords: (mahaTraits['keywords'] as List<dynamic>?)?.cast<String>() ?? [],
-                color: gold, isDark: isDark,
+                number: mahaNumber,
+                planet: mahaPlanet,
+                prediction: mahaPrediction,
+                keywords: mahaKeywords,
+                color: gold,
+                isDark: isDark,
               ),
               const SizedBox(height: 16),
 
-              // Antar dasha insight
               SectionLabel('Antar Dasha Energy'),
               const SizedBox(height: 8),
               _InsightBlock(
-                number: antar['number'] as int,
-                planet: antar['planet'] as String,
-                prediction: _getPredText(antar['prediction']),
-                keywords: (antarTraits['keywords'] as List<dynamic>?)?.cast<String>() ?? [],
+                number: antarNumber,
+                planet: antarPlanet,
+                prediction: antarPrediction,
+                keywords: antarKeywords,
                 color: isDark ? AppColors.successDark : AppColors.success,
                 isDark: isDark,
               ),
+              const SizedBox(height: 16),
 
-              // Finance (yearly only)
               if (period == 'yearly')
                 financeAsync.when(
                   loading: () => const SizedBox.shrink(),
@@ -383,24 +514,32 @@ class _PeriodInsight extends ConsumerWidget {
       },
     );
   }
-
-  String _getPredText(dynamic pred) {
-    if (pred == null) return '';
-    if (pred is String) return pred;
-    if (pred is Map) return pred['single'] as String? ?? pred.values.first?.toString() ?? '';
-    return '';
+  
+  int _safeToInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 }
 
 class _InsightBlock extends StatelessWidget {
   final int number;
-  final String planet, prediction;
+  final String planet;
+  final String prediction;
   final List<String> keywords;
   final Color color;
   final bool isDark;
-  const _InsightBlock({required this.number, required this.planet,
-      required this.prediction, required this.keywords,
-      required this.color, required this.isDark});
+  
+  const _InsightBlock({
+    required this.number,
+    required this.planet,
+    required this.prediction,
+    required this.keywords,
+    required this.color,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -413,33 +552,59 @@ class _InsightBlock extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Container(width: 38, height: 38,
-                decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10)),
-                child: Center(child: Text('$number',
-                    style: GoogleFonts.cormorantGaramond(fontSize: 22, color: color)))),
+            Container(
+              width: 38, 
+              height: 38,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10)
+              ),
+              child: Center(
+                child: Text(
+                  '$number',
+                  style: GoogleFonts.cormorantGaramond(fontSize: 22, color: color)
+                )
+              )
+            ),
             const SizedBox(width: 12),
-            Text(planet, style: GoogleFonts.dmSans(
-                fontSize: 15, fontWeight: FontWeight.w500, color: primary)),
+            Text(
+              planet, 
+              style: GoogleFonts.dmSans(
+                fontSize: 15, 
+                fontWeight: FontWeight.w500, 
+                color: primary
+              )
+            ),
           ]),
           if (keywords.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Wrap(spacing: 6, runSpacing: 6,
+            Wrap(
+              spacing: 6, 
+              runSpacing: 6,
               children: keywords.map((k) => Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                    color: color.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: color.withOpacity(0.2), width: 0.5)),
-                child: Text(k, style: GoogleFonts.dmSans(fontSize: 11, color: color)),
+                  color: color.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: color.withOpacity(0.2), width: 0.5)
+                ),
+                child: Text(
+                  k, 
+                  style: GoogleFonts.dmSans(fontSize: 11, color: color)
+                ),
               )).toList(),
             ),
           ],
           if (prediction.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(prediction,
-                style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6)),
+            Text(
+              prediction,
+              style: GoogleFonts.dmSans(
+                fontSize: 12, 
+                color: secondary, 
+                height: 1.6
+              ),
+            ),
           ],
         ],
       ),
@@ -458,7 +623,6 @@ class _FinanceBlock extends StatelessWidget {
     final positives = (data['positive_indicators'] as List<dynamic>?)?.cast<String>() ?? [];
     final negatives = (data['negative_indicators'] as List<dynamic>?)?.cast<String>() ?? [];
     final overall = data['overall'] as String? ?? 'mixed';
-    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final successColor = isDark ? AppColors.successDark : AppColors.success;
     final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
@@ -468,8 +632,10 @@ class _FinanceBlock extends StatelessWidget {
     switch (overall) {
       case 'favorable':
         overallColor = successColor; overallText = 'Favorable Period';
+        break;
       case 'challenging':
         overallColor = dangerColor; overallText = 'Challenging Period';
+        break;
       default:
         overallColor = gold; overallText = 'Mixed Period';
     }
@@ -482,24 +648,43 @@ class _FinanceBlock extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-                color: overallColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: overallColor.withOpacity(0.3), width: 0.5)),
-            child: Text(overallText,
-                style: GoogleFonts.dmSans(fontSize: 12,
-                    fontWeight: FontWeight.w500, color: overallColor)),
+              color: overallColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: overallColor.withOpacity(0.3), width: 0.5)
+            ),
+            child: Text(
+              overallText,
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w500, 
+                color: overallColor
+              ),
+            ),
           ),
           if (positives.isNotEmpty) ...[
             const SizedBox(height: 12),
             ...positives.map((p) => Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Padding(padding: const EdgeInsets.only(top: 5),
-                    child: Container(width: 5, height: 5,
-                        decoration: BoxDecoration(shape: BoxShape.circle, color: successColor))),
+                Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: Container(
+                    width: 5, 
+                    height: 5,
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: successColor)
+                  )
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: Text(p, style: GoogleFonts.dmSans(
-                    fontSize: 12, color: secondary, height: 1.5))),
+                Expanded(
+                  child: Text(
+                    p, 
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12, 
+                      color: secondary, 
+                      height: 1.5
+                    )
+                  )
+                ),
               ]),
             )),
           ],
@@ -508,12 +693,25 @@ class _FinanceBlock extends StatelessWidget {
             ...negatives.map((n) => Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Padding(padding: const EdgeInsets.only(top: 5),
-                    child: Container(width: 5, height: 5,
-                        decoration: BoxDecoration(shape: BoxShape.circle, color: dangerColor))),
+                Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: Container(
+                    width: 5, 
+                    height: 5,
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: dangerColor)
+                  )
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: Text(n, style: GoogleFonts.dmSans(
-                    fontSize: 12, color: secondary, height: 1.5))),
+                Expanded(
+                  child: Text(
+                    n, 
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12, 
+                      color: secondary, 
+                      height: 1.5
+                    )
+                  )
+                ),
               ]),
             )),
           ],
@@ -525,10 +723,23 @@ class _FinanceBlock extends StatelessWidget {
 
 Widget _retry(VoidCallback onTap, bool isDark, Color gold) {
   final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-  return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-    Text('Could not load', style: GoogleFonts.dmSans(fontSize: 13, color: secondary)),
-    const SizedBox(height: 12),
-    GestureDetector(onTap: onTap,
-        child: Text('Try again', style: GoogleFonts.dmSans(fontSize: 13, color: gold))),
-  ]));
+  return Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center, 
+      children: [
+        Text(
+          'Could not load', 
+          style: GoogleFonts.dmSans(fontSize: 13, color: secondary)
+        ),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTap: onTap,
+          child: Text(
+            'Try again', 
+            style: GoogleFonts.dmSans(fontSize: 13, color: gold)
+          )
+        ),
+      ]
+    ),
+  );
 }
