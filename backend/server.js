@@ -15,6 +15,15 @@ import {
   compatibility, karmicDebt, nameNumerology,
   PLANET_NAMES, LUCKY_INFO
 } from './numerology.js';
+import {
+  buildChartContext,
+  generateDailyPrediction,
+  generateHourlyPredictions,
+  generateWeeklyPrediction,
+  generateMonthlyPrediction,
+  generateYearlyPrediction,
+  generateLifePrediction,
+} from './prediction_engine.js';
 
 const app = express();
 app.use(cors());
@@ -63,45 +72,22 @@ app.post('/api/today', (req, res) => {
     if (!dob) return res.status(400).json({ error: 'dob required' });
 
     const today = new Date().toISOString();
-    const daily = dailyDasha(dob, today);
-    const rating = getDayRating(dob, today);
-    const hours = allHourlyDashas(dob, today);
-    const maha = currentMahadasha(dob);
-    const antar = currentAntardasha(dob);
-    const monthly = currentMonthlyDasha(dob);
-    const basic = basicNumber(new Date(dob).getDate());
-    const destiny = destinyNumber(dob);
-    const grid = buildGrid(dob);
-
-    const dayInsights = {
-      1:'Sun energy is direct today. Take initiative. Ego can get in the way — check it.',
-      2:'Moon makes emotions loud. Creativity is high. Avoid conflict, lean into feeling.',
-      3:'Jupiter expands everything today. Good for learning, teaching, and honest talk.',
-      4:'Rahu brings confusion and speed. Double-check everything. Not a day for big decisions.',
-      5:'Mercury is sharp. Communication, numbers, deals — all flow well today.',
-      6:'Venus asks for harmony. Relationships take centre stage. Money decisions — wait.',
-      7:'Ketu pulls inward. Good for reflection and research. Social energy is low.',
-      8:'Saturn demands patience today. Things move slow on purpose. Trust the delay.',
-      9:'Mars adds fire. Bold action works. Anger is also close — choose your battles.',
-    };
-
-    // Alert logic
-    const freqMap = buildFrequencyMap(dob);
-    const hasAlert = (maha.number === 4 || antar.number === 4) &&
-      (freqMap[8] || freqMap[4]);
+    const ctx = buildChartContext(dob, today);
+    const daily = generateDailyPrediction(ctx);
+    const hourly = generateHourlyPredictions(ctx);
 
     res.json({
       date: today,
-      daily, dailyPlanet: PLANET_NAMES[daily],
-      rating,
-      insight: dayInsights[daily],
-      hours,
-      maha, antar, monthly,
-      basic, basicPlanet: PLANET_NAMES[basic],
-      destiny, destinyPlanet: PLANET_NAMES[destiny],
-      grid,
-      hasAlert,
-      alertMessage: hasAlert ? 'Rahu period active. Physical carelessness is high — slow down.' : null,
+      daily_number: ctx.daily,
+      rating: daily.rating,
+      quote: daily.quote,
+      insight: daily.insight,
+      what_to_do: daily.what_to_do,
+      what_to_avoid: daily.what_to_avoid,
+      yoga_messages: daily.yoga_messages,
+      active_yogas: daily.active_yogas,
+      best_hours: hourly.best,
+      caution_hours: hourly.caution,
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -409,6 +395,59 @@ app.post('/api/predict/prashna', (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+
+// ─── /api/insights/daily ──────────────────────────────────────
+app.post('/api/insights/daily', (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+    const ctx = buildChartContext(dob);
+    const daily = generateDailyPrediction(ctx);
+    const hourly = generateHourlyPredictions(ctx);
+    res.json({ ...daily, best_hours: hourly.best, caution_hours: hourly.caution });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── /api/insights/weekly ─────────────────────────────────────
+app.post('/api/insights/weekly', (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+    const ctx = buildChartContext(dob);
+    res.json(generateWeeklyPrediction(ctx));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── /api/insights/monthly ────────────────────────────────────
+app.post('/api/insights/monthly', (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+    const ctx = buildChartContext(dob);
+    res.json(generateMonthlyPrediction(ctx));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── /api/insights/yearly ─────────────────────────────────────
+app.post('/api/insights/yearly', (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+    const ctx = buildChartContext(dob);
+    res.json(generateYearlyPrediction(ctx));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── /api/insights/life ───────────────────────────────────────
+app.post('/api/insights/life', (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+    const ctx = buildChartContext(dob);
+    res.json(generateLifePrediction(ctx));
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 const PORT = process.env.PORT || 3000;
