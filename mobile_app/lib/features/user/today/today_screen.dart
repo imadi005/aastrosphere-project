@@ -6,7 +6,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/providers/today_provider.dart';
 import '../../auth/providers/user_provider.dart';
-import '../../../core/numerology/numerology_engine.dart';
 
 class TodayScreen extends ConsumerWidget {
   const TodayScreen({super.key});
@@ -32,7 +31,7 @@ class TodayScreen extends ConsumerWidget {
               children: [
                 CircularProgressIndicator(strokeWidth: 1.5, color: gold),
                 const SizedBox(height: 16),
-                Text('Reading the cosmos...',
+                Text('Analyzing your cosmic alignment...',
                     style: GoogleFonts.dmSans(fontSize: 13, color: textSecondary)),
               ],
             ),
@@ -45,7 +44,8 @@ class TodayScreen extends ConsumerWidget {
   }
 }
 
-class _TodayView extends StatelessWidget {
+// Changed from StatelessWidget to ConsumerWidget to use 'ref'
+class _TodayView extends ConsumerWidget {
   final Map<String, dynamic> data;
   final String name;
   final bool isDark;
@@ -53,28 +53,21 @@ class _TodayView extends StatelessWidget {
   const _TodayView({required this.data, required this.name, required this.isDark});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     final textSecondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-
-    final daily = data['daily'] as int;
-    final dailyPlanet = data['dailyPlanet'] as String;
-    final rating = data['rating'] as String;
-    final insight = data['insight'] as String;
-    final hours = data['hours'] as List<dynamic>;
-    final maha = data['maha'] as Map<String, dynamic>;
-    final antar = data['antar'] as Map<String, dynamic>;
-    final monthly = data['monthly'] as Map<String, dynamic>;
-    final basic = data['basic'] as int;
-    final destiny = data['destiny'] as int;
-    final basicPlanet = data['basicPlanet'] as String;
-    final destinyPlanet = data['destinyPlanet'] as String;
-    final hasAlert = data['hasAlert'] as bool? ?? false;
     final now = DateTime.now();
 
+    final yogas = (data['active_yogas'] as List? ?? []);
+    final toDo = (data['what_to_do'] as List? ?? []);
+    final avoid = (data['what_to_avoid'] as List? ?? []);
+    
+    final maha = (data['mahaDetails'] ?? data['maha']) as Map<String, dynamic>?;
+    final antar = (data['antarDetails'] ?? data['antar']) as Map<String, dynamic>?;
+    final monthly = (data['monthlyDetails'] ?? data['monthly']) as Map<String, dynamic>?;
+
     return RefreshIndicator(
-      onRefresh: () async {},
+      onRefresh: () async => ref.refresh(todayDataProvider),
       color: gold,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -82,52 +75,65 @@ class _TodayView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Greeting
             Text(_greeting(name),
-                style: GoogleFonts.cormorantGaramond(
-                    fontSize: 22, fontWeight: FontWeight.w400, color: gold)),
+                style: GoogleFonts.cormorantGaramond(fontSize: 22, fontWeight: FontWeight.w400, color: gold)),
             Text(DateFormat('EEEE, d MMMM').format(now),
                 style: GoogleFonts.dmSans(fontSize: 12, color: textSecondary)),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Day card
+            if (yogas.isNotEmpty) ...[
+              SizedBox(
+                height: 32,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: yogas.length,
+                  itemBuilder: (context, i) {
+                    final yoga = yogas[i];
+                    final isPositive = yoga['positive'] ?? true;
+                    return Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: isPositive ? gold.withOpacity(0.1) : Colors.red.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: isPositive ? gold.withOpacity(0.3) : Colors.red.withOpacity(0.2)),
+                      ),
+                      child: Center(
+                        child: Text(yoga['name'] ?? 'Unknown Yoga', 
+                          style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w600, color: isPositive ? gold : Colors.redAccent)),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
             _DayCard(
-              daily: daily,
-              planet: dailyPlanet,
-              rating: rating,
-              insight: insight,
+              daily: data['daily'] ?? 0,
+              rating: data['rating'] ?? 'caution',
+              insight: data['insight'] ?? 'No insight available.',
+              quote: data['quote'] ?? '',
               isDark: isDark,
               gold: gold,
             ),
             const SizedBox(height: 20),
 
-            // Hourly strip
-            _HourlyStrip(hours: hours, currentHour: now.hour, isDark: isDark, gold: gold),
-            const SizedBox(height: 20),
-
-            // Running periods
-            _RunningPeriods(maha: maha, antar: antar, monthly: monthly, isDark: isDark, gold: gold),
-
-            // Alert
-            if (hasAlert) ...[
-              const SizedBox(height: 16),
-              _AlertCard(message: data['alertMessage'] ?? '', isDark: isDark),
+            if (toDo.isNotEmpty || avoid.isNotEmpty) ...[
+               _ActionableGuidance(toDo: toDo, avoid: avoid, isDark: isDark, gold: gold),
+               const SizedBox(height: 20),
             ],
 
+            _HourlyStrip(hours: data['hours'] ?? [], currentHour: now.hour, isDark: isDark, gold: gold),
             const SizedBox(height: 20),
 
-            // Basic + Destiny
-            Row(children: [
-              Expanded(child: _NumTile(
-                label: 'Basic number', number: basic, planet: basicPlanet,
-                gold: gold, isDark: isDark,
+            if (maha != null && antar != null && monthly != null)
+              _RunningPeriods(maha: maha, antar: antar, monthly: monthly, isDark: isDark, gold: gold)
+            else
+              const Center(child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text("Dasha details sync in progress...", style: TextStyle(fontSize: 12, color: Colors.grey)),
               )),
-              const SizedBox(width: 12),
-              Expanded(child: _NumTile(
-                label: 'Destiny number', number: destiny, planet: destinyPlanet,
-                gold: gold, isDark: isDark,
-              )),
-            ]),
           ],
         ),
       ),
@@ -136,142 +142,170 @@ class _TodayView extends StatelessWidget {
 
   String _greeting(String name) {
     final h = DateTime.now().hour;
-    final first = name.split(' ').first;
-    if (h < 12) return 'Good morning, $first';
-    if (h < 17) return 'Good afternoon, $first';
-    return 'Good evening, $first';
+    final first = name.isNotEmpty ? name.split(' ').first : "User";
+    if (h < 12) return 'Shubh Prabhat, $first';
+    if (h < 17) return 'Namaste, $first';
+    return 'Shubh Sandhya, $first';
   }
 }
 
-// ─── Day Card ─────────────────────────────────────────────────
 class _DayCard extends StatelessWidget {
   final int daily;
-  final String planet, rating, insight;
+  final String rating, insight, quote;
   final bool isDark;
   final Color gold;
 
-  const _DayCard({
-    required this.daily, required this.planet, required this.rating,
-    required this.insight, required this.isDark, required this.gold,
-  });
+  const _DayCard({required this.daily, required this.rating, required this.insight, required this.quote, required this.isDark, required this.gold});
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-
-    DayRating ratingEnum;
-    switch (rating) {
-      case 'favorable': ratingEnum = DayRating.favorable;
-      case 'avoid': ratingEnum = DayRating.avoid;
-      default: ratingEnum = DayRating.caution;
-    }
-
+    final ratingColor = rating == 'favorable' ? Colors.green : (rating == 'avoid' ? Colors.redAccent : gold);
     return AstroCard(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(daily.toString(),
-                        style: GoogleFonts.cormorantGaramond(
-                            fontSize: 64, fontWeight: FontWeight.w300,
-                            color: gold, height: 1)),
-                    const SizedBox(height: 2),
-                    Text(planet,
-                        style: GoogleFonts.dmSans(fontSize: 13,
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
-                  ],
-                ),
+              Text(daily.toString(), style: GoogleFonts.cormorantGaramond(fontSize: 64, color: gold, height: 1)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(color: ratingColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                child: Text(rating.toUpperCase(), style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: ratingColor)),
               ),
-              DayBadge(ratingEnum),
             ],
           ),
-          const SizedBox(height: 14),
-          Divider(color: border, thickness: 0.5),
-          const SizedBox(height: 12),
-          Text(insight,
-              style: GoogleFonts.dmSans(fontSize: 13, color: textPrimary, height: 1.6)),
-          const SizedBox(height: 14),
-          Row(children: [
-            Text('Full insight',
-                style: GoogleFonts.dmSans(fontSize: 12, color: gold)),
-            const SizedBox(width: 4),
-            Icon(Icons.arrow_forward, size: 12, color: gold),
-          ]),
+          if (quote.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text('"$quote"', style: GoogleFonts.dmSans(fontSize: 14, fontStyle: FontStyle.italic, color: gold.withOpacity(0.8))),
+          ],
+          const Divider(height: 24),
+          Text(insight, style: GoogleFonts.dmSans(fontSize: 13, height: 1.6, color: isDark ? Colors.white70 : Colors.black87)),
         ],
       ),
     );
   }
 }
 
-// ─── Hourly Strip ─────────────────────────────────────────────
+class _ErrorView extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _ErrorView({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gold = isDark ? AppColors.goldLight : AppColors.gold;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('Could not load today\'s data', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 16),
+          GestureDetector(onTap: onRetry, child: Text('Try again', style: TextStyle(color: gold))),
+        ],
+      ),
+    );
+  }
+}
+
+class _NoProfileView extends StatelessWidget {
+  const _NoProfileView();
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text("Complete your profile first"));
+  }
+}
+
+class _ActionableGuidance extends StatelessWidget {
+  final List<dynamic> toDo, avoid;
+  final bool isDark;
+  final Color gold;
+
+  const _ActionableGuidance({required this.toDo, required this.avoid, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    return AstroCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Personalized Guidance', style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.bold, color: gold)),
+          const SizedBox(height: 12),
+          ...toDo.take(3).map((item) => _GuidelineRow(text: item.toString(), isPositive: true)),
+          const SizedBox(height: 8),
+          ...avoid.take(2).map((item) => _GuidelineRow(text: item.toString(), isPositive: false)),
+        ],
+      ),
+    );
+  }
+}
+
+class _GuidelineRow extends StatelessWidget {
+  final String text;
+  final bool isPositive;
+  const _GuidelineRow({required this.text, required this.isPositive});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Icon(isPositive ? Icons.check_circle_outline : Icons.remove_circle_outline, 
+               size: 14, color: isPositive ? Colors.green : Colors.redAccent),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: GoogleFonts.dmSans(fontSize: 12))),
+        ],
+      ),
+    );
+  }
+}
+
 class _HourlyStrip extends StatelessWidget {
   final List<dynamic> hours;
   final int currentHour;
   final bool isDark;
   final Color gold;
 
-  const _HourlyStrip({
-    required this.hours, required this.currentHour,
-    required this.isDark, required this.gold,
-  });
+  const _HourlyStrip({required this.hours, required this.currentHour, required this.isDark, required this.gold});
 
   @override
   Widget build(BuildContext context) {
-    final textTertiary = isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight;
-    final subtleBg = isDark ? AppColors.bgSubtleDark : AppColors.bgSubtleLight;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final textPrimary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionLabel('Hour by hour'),
-        const SizedBox(height: 4),
+        const SectionLabel('Cosmic Timeline'),
+        const SizedBox(height: 8),
         SizedBox(
-          height: 72,
+          height: 80,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: hours.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 6),
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, i) {
-              final h = hours[i] as Map<String, dynamic>;
+              final h = hours[i];
               final isNow = h['hour'] == currentHour;
-              final num = h['number'] as int;
-              final planet = h['planet'] as String;
-              final hourInt = h['hour'] as int;
-              final label = hourInt == 0 ? '12am'
-                  : hourInt < 12 ? '${hourInt}am'
-                  : hourInt == 12 ? '12pm'
-                  : '${hourInt - 12}pm';
+              final type = h['classification'] ?? 'neutral';
+              
+              Color statusColor = type == 'best' ? Colors.green : (type == 'avoid' ? Colors.red : (type == 'caution' ? Colors.orange : gold));
 
               return Container(
-                width: 54,
+                width: 60,
                 decoration: BoxDecoration(
-                  color: isNow
-                      ? (isDark ? const Color(0xFF1F1A06) : const Color(0xFFFEF8E7))
-                      : subtleBg,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: isNow ? gold : border, width: isNow ? 0.8 : 0.5),
+                  color: isNow ? statusColor.withOpacity(0.1) : (isDark ? Colors.white10 : Colors.black12.withOpacity(0.05)),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: isNow ? statusColor : Colors.transparent, width: 1.5),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(num.toString(),
-                        style: GoogleFonts.cormorantGaramond(
-                            fontSize: 20,
-                            color: isNow ? gold : textPrimary)),
-                    Text(planet.length > 3 ? planet.substring(0, 3) : planet,
-                        style: GoogleFonts.dmSans(fontSize: 8, color: textTertiary)),
-                    Text(label,
-                        style: GoogleFonts.dmSans(fontSize: 8, color: textTertiary)),
+                    Text('${h['hour']}:00', style: GoogleFonts.dmSans(fontSize: 10, fontWeight: isNow ? FontWeight.bold : FontWeight.normal)),
+                    const SizedBox(height: 4),
+                    Text(h['number']?.toString() ?? '?', style: GoogleFonts.cormorantGaramond(fontSize: 20, fontWeight: FontWeight.bold, color: statusColor)),
+                    const SizedBox(height: 2),
+                    Icon(Icons.circle, size: 6, color: statusColor),
                   ],
                 ),
               );
@@ -283,7 +317,6 @@ class _HourlyStrip extends StatelessWidget {
   }
 }
 
-// ─── Running Periods ──────────────────────────────────────────
 class _RunningPeriods extends StatelessWidget {
   final Map<String, dynamic> maha, antar, monthly;
   final bool isDark;
@@ -303,24 +336,24 @@ class _RunningPeriods extends StatelessWidget {
       child: Column(
         children: [
           _PRow(label: 'Mahadasha', data: maha,
-              period: '${_yr(maha['start'])}–${_yr(maha['end'])}',
+              period: '${_yr(maha['start'] ?? '')}–${_yr(maha['end'] ?? '')}',
               color: gold, isDark: isDark),
           Divider(color: border, thickness: 0.5, height: 20),
           _PRow(label: 'Antardasha', data: antar,
-              period: '${_mo(antar['start'])}–${_mo(antar['end'])}',
+              period: '${_mo(antar['start'] ?? '')}–${_mo(antar['end'] ?? '')}',
               color: isDark ? AppColors.successDark : AppColors.success, isDark: isDark),
           Divider(color: border, thickness: 0.5, height: 20),
           _PRow(label: 'Monthly', data: monthly,
-              period: '${_dt(monthly['start'])}–${_dt(monthly['end'])}',
+              period: '${_dt(monthly['start'] ?? '')}–${_dt(monthly['end'] ?? '')}',
               color: const Color(0xFF6366F1), isDark: isDark),
         ],
       ),
     );
   }
 
-  String _yr(String iso) => DateFormat('yyyy').format(DateTime.parse(iso));
-  String _mo(String iso) => DateFormat('MMM yy').format(DateTime.parse(iso));
-  String _dt(String iso) => DateFormat('d MMM').format(DateTime.parse(iso));
+  String _yr(String iso) => iso.isNotEmpty ? DateFormat('yyyy').format(DateTime.parse(iso)) : "N/A";
+  String _mo(String iso) => iso.isNotEmpty ? DateFormat('MMM yy').format(DateTime.parse(iso)) : "N/A";
+  String _dt(String iso) => iso.isNotEmpty ? DateFormat('d MMM').format(DateTime.parse(iso)) : "N/A";
 }
 
 class _PRow extends StatelessWidget {
@@ -337,8 +370,8 @@ class _PRow extends StatelessWidget {
     final textPrimary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
     final textSecondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final textTertiary = isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight;
-    final num = data['number'] as int;
-    final planet = data['planet'] as String;
+    final num = data['number'] ?? 0;
+    final planet = data['planet'] ?? 'Unknown';
 
     return Row(
       children: [
@@ -369,147 +402,6 @@ class _PRow extends StatelessWidget {
         Text(period,
             style: GoogleFonts.dmSans(fontSize: 11, color: textTertiary)),
       ],
-    );
-  }
-}
-
-// ─── Alert Card ───────────────────────────────────────────────
-class _AlertCard extends StatelessWidget {
-  final String message;
-  final bool isDark;
-
-  const _AlertCard({required this.message, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
-    final dangerBg = isDark ? AppColors.dangerBgDark : AppColors.dangerBg;
-    final textSecondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: dangerBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: dangerColor.withOpacity(0.3), width: 0.5),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 6, height: 6,
-            margin: const EdgeInsets.only(top: 5),
-            decoration: BoxDecoration(shape: BoxShape.circle, color: dangerColor),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Stay careful today',
-                    style: GoogleFonts.dmSans(
-                        fontSize: 12, fontWeight: FontWeight.w500, color: dangerColor)),
-                const SizedBox(height: 3),
-                Text(message,
-                    style: GoogleFonts.dmSans(
-                        fontSize: 12, color: textSecondary, height: 1.5)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Num Tile ─────────────────────────────────────────────────
-class _NumTile extends StatelessWidget {
-  final String label, planet;
-  final int number;
-  final Color gold;
-  final bool isDark;
-
-  const _NumTile({required this.label, required this.number,
-      required this.planet, required this.gold, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final subtleBg = isDark ? AppColors.bgSubtleDark : AppColors.bgSubtleLight;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final textSecondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: subtleBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border, width: 0.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: GoogleFonts.dmSans(fontSize: 10, color: textSecondary)),
-          const SizedBox(height: 8),
-          Text(number.toString(),
-              style: GoogleFonts.cormorantGaramond(
-                  fontSize: 36, fontWeight: FontWeight.w300, color: gold)),
-          Text(planet, style: GoogleFonts.dmSans(fontSize: 11, color: textSecondary)),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Error View ───────────────────────────────────────────────
-class _ErrorView extends StatelessWidget {
-  final VoidCallback onRetry;
-  const _ErrorView({required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final gold = isDark ? AppColors.goldLight : AppColors.gold;
-    final textSecondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Could not load today\'s data',
-              style: GoogleFonts.dmSans(fontSize: 13, color: textSecondary)),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: onRetry,
-            child: Text('Try again',
-                style: GoogleFonts.dmSans(fontSize: 13, color: gold)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── No Profile ───────────────────────────────────────────────
-class _NoProfileView extends StatelessWidget {
-  const _NoProfileView();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final gold = isDark ? AppColors.goldLight : AppColors.gold;
-    final textSecondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Complete your profile',
-              style: GoogleFonts.cormorantGaramond(fontSize: 22, color: gold)),
-          const SizedBox(height: 8),
-          Text('Add your date of birth to begin',
-              style: GoogleFonts.dmSans(fontSize: 13, color: textSecondary)),
-        ],
-      ),
     );
   }
 }

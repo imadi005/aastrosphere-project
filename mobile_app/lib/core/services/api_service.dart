@@ -2,24 +2,51 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
+  // Direct Production URL - No local testing anymore
   static const String _base = 'https://aastrosphere-project.vercel.app';
 
   static Future<Map<String, dynamic>> _post(String endpoint, Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse('$_base$endpoint'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+    try {
+      final response = await http.post(
+        Uri.parse('$_base$endpoint'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 15)); // Vercel cold starts ke liye 15s timeout
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+      
+      // Detailed error logging
+      throw Exception('API error ${response.statusCode}: ${response.body}');
+    } catch (e) {
+      // Direct connection error to Vercel
+      throw Exception('Vercel Connection Failed: $e');
     }
-    throw Exception('API error ${response.statusCode}: ${response.body}');
   }
 
-  // ─── Core ─────────────────────────────────────────────────
+  // ─── SMART INSIGHTS METHODS (NEW ENGINE) ───────────────────────────
+  
   static Future<Map<String, dynamic>> getToday(String dob) =>
       _post('/api/today', {'dob': dob});
 
+  static Future<Map<String, dynamic>> getLifeInsights(String dob) =>
+      _post('/api/insights/life', {'dob': dob});
+
+  static Future<Map<String, dynamic>> getWeeklyInsights(String dob) =>
+      _post('/api/insights/weekly', {'dob': dob});
+
+  static Future<Map<String, dynamic>> getMonthlyInsights(String dob) =>
+      _post('/api/insights/monthly', {'dob': dob});
+
+  static Future<Map<String, dynamic>> getYearlyInsights(String dob) =>
+      _post('/api/insights/yearly', {'dob': dob});
+
+  static Future<Map<String, dynamic>> getDailyInsights(String dob) =>
+      _post('/api/insights/daily', {'dob': dob});
+
+  // ─── CORE METHODS ──────────────────────────────────────────────────
+  
   static Future<Map<String, dynamic>> getChart(String dob) =>
       _post('/api/chart', {'dob': dob});
 
@@ -35,10 +62,8 @@ class ApiService {
   static Future<Map<String, dynamic>> getKarmic(String dob) =>
       _post('/api/karmic', {'dob': dob});
 
-  static Future<Map<String, dynamic>> getCustomChart(String dob, String targetDate) =>
-      _post('/api/custom-chart', {'dob': dob, 'targetDate': targetDate});
-
-  // ─── Predictions ──────────────────────────────────────────
+  // ─── PREDICTIONS (RETAINED) ─────────────────────────────────────────
+  
   static Future<Map<String, dynamic>> getFullPrediction(String dob) =>
       _post('/api/predict/full', {'dob': dob});
 

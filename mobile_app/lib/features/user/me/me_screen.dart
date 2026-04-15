@@ -15,56 +15,31 @@ class MeScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     final userAsync = ref.watch(userProfileProvider);
-    final fullAsync = ref.watch(fullPredictionProvider);
-    final healthAsync = ref.watch(healthPredictionProvider);
-    final relationshipAsync = ref.watch(relationshipPredictionProvider);
+    
+    // Switch to the NEW Smart Life Insights Provider
+    final lifeAsync = ref.watch(lifeInsightsProvider);
 
     return userAsync.when(
       loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),
       error: (_, __) => const Center(child: Text('Error')),
       data: (user) {
         if (user == null) return const Center(child: Text('No profile'));
+        
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile header
               _ProfileHeader(user: user, isDark: isDark, gold: gold),
               const SizedBox(height: 24),
 
-              // Full prediction
-              fullAsync.when(
+              lifeAsync.when(
                 loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),
-                error: (_, __) => const SizedBox.shrink(),
-                data: (full) => _FullPredictionSection(data: full, isDark: isDark, gold: gold),
+                error: (e, __) => _ErrorMini(msg: 'Update backend engine to see life insights'),
+                data: (lifeData) => _SmartLifeSection(data: lifeData, isDark: isDark, gold: gold),
               ),
 
-              const SizedBox(height: 20),
-
-              // Health
-              SectionLabel('Health Watch'),
-              const SizedBox(height: 8),
-              healthAsync.when(
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-                data: (health) => _HealthSection(data: health, isDark: isDark, gold: gold),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Relationship
-              SectionLabel('Relationship Outlook'),
-              const SizedBox(height: 8),
-              relationshipAsync.when(
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-                data: (rel) => _RelationshipSection(data: rel, isDark: isDark, gold: gold),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Sign out
+              const SizedBox(height: 24),
               _SignOutButton(isDark: isDark),
             ],
           ),
@@ -74,6 +49,145 @@ class MeScreen extends ConsumerWidget {
   }
 }
 
+// ─── NEW: SMART LIFE SECTION ──────────────────────────────────
+class _SmartLifeSection extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final bool isDark;
+  final Color gold;
+
+  const _SmartLifeSection({required this.data, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionLabel('Core Life Path'),
+        const SizedBox(height: 8),
+        AstroCard(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(data['life_path'] ?? '', 
+                style: GoogleFonts.dmSans(fontSize: 14, height: 1.6, color: isDark ? Colors.white70 : Colors.black87)),
+              const Divider(height: 24),
+              _PatternRow(label: 'Money Pattern', value: data['money_pattern'], icon: Icons.account_balance_wallet_outlined, gold: gold),
+              _PatternRow(label: 'Work Style', value: data['work_style'], icon: Icons.work_outline, gold: gold),
+              _PatternRow(label: 'Love Pattern', value: data['love_pattern'], icon: Icons.favorite_border, gold: gold),
+            ],
+          ),
+        ),
+        
+        const SizedBox(height: 24),
+        SectionLabel('Strengths & Challenges'),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(child: _NatureTile(label: 'Greatest Strength', value: data['greatest_strength'], isPositive: true)),
+            const SizedBox(width: 12),
+            Expanded(child: _NatureTile(label: 'Core Challenge', value: data['core_challenge'], isPositive: false)),
+          ],
+        ),
+        
+        if (data['chart_modifiers'] != null && (data['chart_modifiers'] as List).isNotEmpty) ...[
+          const SizedBox(height: 24),
+          SectionLabel('Karmic Modifiers'),
+          const SizedBox(height: 8),
+          ...(data['chart_modifiers'] as List).map((mod) => _ModifierCard(text: mod.toString(), isDark: isDark, gold: gold)),
+        ]
+      ],
+    );
+  }
+}
+
+class _PatternRow extends StatelessWidget {
+  final String label, value;
+  final IconData icon;
+  final Color gold;
+  const _PatternRow({required this.label, required this.value, required this.icon, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: gold),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: gold.withOpacity(0.7))),
+                Text(value, style: GoogleFonts.dmSans(fontSize: 12, height: 1.4)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NatureTile extends StatelessWidget {
+  final String label, value;
+  final bool isPositive;
+  const _NatureTile({required this.label, required this.value, required this.isPositive});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isPositive ? Colors.green : Colors.redAccent;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: GoogleFonts.dmSans(fontSize: 10, color: color)),
+          const SizedBox(height: 4),
+          Text(value, style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModifierCard extends StatelessWidget {
+  final String text;
+  final bool isDark;
+  final Color gold;
+  const _ModifierCard({required this.text, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: gold.withOpacity(0.1)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.auto_awesome_outlined, size: 14, color: gold),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text, style: GoogleFonts.dmSans(fontSize: 12, fontStyle: FontStyle.italic))),
+        ],
+      ),
+    );
+  }
+}
+
+// Keep your existing _ProfileHeader and _SignOutButton below...
 // ─── Profile header ───────────────────────────────────────────
 class _ProfileHeader extends StatelessWidget {
   final dynamic user;
@@ -451,6 +565,27 @@ class _SignOutButton extends StatelessWidget {
           child: Text('Sign out',
               style: GoogleFonts.dmSans(fontSize: 13, color: secondary)),
         ),
+      ),
+    );
+  }
+}
+
+class _ErrorMini extends StatelessWidget {
+  final String msg;
+  const _ErrorMini({required this.msg});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        msg,
+        style: GoogleFonts.dmSans(fontSize: 11, color: Colors.redAccent),
+        textAlign: TextAlign.center,
       ),
     );
   }
