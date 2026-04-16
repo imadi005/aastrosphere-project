@@ -15,6 +15,34 @@ import {
   buildFrequencyMap, PLANET_NAMES,
 } from './numerology.js';
 
+// ─── Text cleaning utility ───────────────────────────────────────────────────
+function cleanText(text) {
+  if (!text) return '';
+  return text
+    // Remove "X meets Y —" planet combo headers
+    .replace(/\b\w+ meets \w+ —\s*/gi, '')
+    // Remove "without number X" phrases
+    .replace(/without number \d+\.?/gi, '')
+    // Remove all planet names
+    .replace(/\b(Sun|Moon|Jupiter|Rahu|Mercury|Venus|Ketu|Saturn|Mars)\b/g, '')
+    // Remove "Double/Triple X lifts/worsens" style sentences
+    .replace(/\b(Double|Triple|Single|Odd|Even)\s+\d+[^.!]*[.!]/gi, '')
+    // Remove "number X" references
+    .replace(/\bnumber\s+\d+\b/gi, '')
+    // Remove "combination" word and "misfortune" when standalone
+    .replace(/\bcombination\b/gi, '')
+    .replace(/^misfortune\s+/i, '')
+    // Clean up "despite ." leftover → just remove it cleanly
+    .replace(/despite\s+\./gi, '.')
+    // Clean up orphaned punctuation and spaces
+    .replace(/\s+\./g, '.')
+    .replace(/\.\s*\./g, '.')
+    .replace(/\s*—\s*$/, '')
+    .replace(/^[—\s]+/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 // ─── Build complete chart context ────────────────────────────────────────────
 export function buildChartContext(dob, targetDate = new Date().toISOString()) {
   const d = new Date(dob);
@@ -35,7 +63,7 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
   const natalNums  = Object.keys(natalFreq).map(Number);
   const annualNums = Object.keys(annualFreq).map(Number);
 
-  const yogas     = detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny);
+  const yogas     = detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny, maha.number, antar.number, monthly.number, dailyDasha(dob, targetDate));
   const modifiers = getChartModifiers(annualNums, annualFreq, basic, destiny);
 
   return {
@@ -52,7 +80,7 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
 // ─── Detect all active yogas ─────────────────────────────────────────────────
 // natalNums  = DOB digits only   → used for absence conditions
 // annualNums = DOB + Maha + Antar → used for presence conditions
-function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny) {
+function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny, maha = 0, antar = 0, monthly = 0, daily = 0) {
   const yogas = [];
 
   // ── RAJ YOGA (1+2) ────────────────────────────────────────────────────────
@@ -135,6 +163,44 @@ function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destin
   // Absence of 1 checked against NATAL only
   if (natalNums.includes(7) && natalNums.includes(8) && !natalNums.includes(1)) {
     yogas.push({ id: 'misfortune_78', name: 'Heavy Energy Period', positive: false });
+  }
+
+  // ── MAHA + ANTAR PAIR COMBINATIONS ───────────────────────────────────────
+  // These fire based on what the two running dashas create together
+  // Uses sorted key so 9_5 and 5_9 both match '5_9'
+  const mahAntarKey = [maha, antar].sort((a,b)=>a-b).join('_');
+  if (COMBINATION_MEANINGS[mahAntarKey]) {
+    yogas.push({
+      id: 'maha_antar_combo',
+      combo_key: mahAntarKey,
+      name: 'Running Energy',
+      positive: true, // neutral — just informational
+      description: cleanText(COMBINATION_MEANINGS[mahAntarKey]),
+    });
+  }
+
+  // ── ANTAR + MONTHLY PAIR ───────────────────────────────────────────────────
+  const antarMonthlyKey = [antar, monthly].sort((a,b)=>a-b).join('_');
+  if (antarMonthlyKey !== mahAntarKey && COMBINATION_MEANINGS[antarMonthlyKey]) {
+    yogas.push({
+      id: 'antar_monthly_combo',
+      combo_key: antarMonthlyKey,
+      name: 'Monthly Energy',
+      positive: true,
+      description: cleanText(COMBINATION_MEANINGS[antarMonthlyKey]),
+    });
+  }
+
+  // ── MAHA + DAILY PAIR ──────────────────────────────────────────────────────
+  const mahaDailyKey = [maha, daily].sort((a,b)=>a-b).join('_');
+  if (COMBINATION_MEANINGS[mahaDailyKey]) {
+    yogas.push({
+      id: 'maha_daily_combo',
+      combo_key: mahaDailyKey,
+      name: "Today's Drive",
+      positive: true,
+      description: cleanText(COMBINATION_MEANINGS[mahaDailyKey]),
+    });
   }
 
   return yogas;
