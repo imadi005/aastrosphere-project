@@ -18,91 +18,122 @@ import {
 // ─── Build complete chart context ────────────────────────────────────────────
 export function buildChartContext(dob, targetDate = new Date().toISOString()) {
   const d = new Date(dob);
-  const basic = basicNumber(d.getDate());
+  const basic   = basicNumber(d.getDate());
   const destiny = destinyNumber(dob);
-  const maha = currentMahadasha(dob);
-  const antar = currentAntardasha(dob);
+  const maha    = currentMahadasha(dob);
+  const antar   = currentAntardasha(dob);
   const monthly = currentMonthlyDasha(dob);
-  const daily = dailyDasha(dob, targetDate);
-  const hours = allHourlyDashas(dob, targetDate);
-  const freqMap = buildFrequencyMap(dob, maha.number, antar.number);
-  const allNums = Object.keys(freqMap).map(Number);
+  const daily   = dailyDasha(dob, targetDate);
+  const hours   = allHourlyDashas(dob, targetDate);
 
-  // Detect active yogas
-  const yogas = detectYogas(allNums, freqMap, basic, destiny);
+  // TWO separate frequency maps:
+  // natalFreq  = only DOB digits (no dasha numbers) — for absence-condition yogas
+  // annualFreq = DOB + Maha + Antar        — for presence-condition yogas
+  const natalFreq  = buildFrequencyMap(dob);
+  const annualFreq = buildFrequencyMap(dob, maha.number, antar.number);
 
-  // Get modifiers
-  const modifiers = getChartModifiers(allNums, freqMap, basic, destiny);
+  const natalNums  = Object.keys(natalFreq).map(Number);
+  const annualNums = Object.keys(annualFreq).map(Number);
+
+  const yogas     = detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny);
+  const modifiers = getChartModifiers(annualNums, annualFreq, basic, destiny);
 
   return {
-    basic, destiny, maha: maha.number, antar: antar.number,
-    monthly: monthly.number, daily, hours, freqMap, allNums, yogas, modifiers,
+    basic, destiny,
+    maha: maha.number, antar: antar.number, monthly: monthly.number,
+    daily, hours,
+    freqMap: annualFreq, natalFreq,
+    allNums: annualNums, natalNums,
+    yogas, modifiers,
     mahaDetails: maha, antarDetails: antar, monthlyDetails: monthly,
   };
 }
 
 // ─── Detect all active yogas ─────────────────────────────────────────────────
-function detectYogas(nums, freq, basic, destiny) {
+// natalNums  = DOB digits only   → used for absence conditions
+// annualNums = DOB + Maha + Antar → used for presence conditions
+function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny) {
   const yogas = [];
 
-  // Raj Yoga (1+2)
-  if (nums.includes(1) && nums.includes(2)) {
-    const isStrong = destiny === 1 || destiny === 2 || basic === 2;
-    yogas.push({ id: 'raj_yoga', name: isStrong ? 'Strong Raj Yoga' : 'Raj Yoga', positive: true });
+  // ── RAJ YOGA (1+2) ────────────────────────────────────────────────────────
+  // Condition: 1 and 2 both in annual chart
+  //            AND left-path of 1 must be clear in NATAL chart:
+  //            3 (left of 1 in grid) must be absent
+  //            AND 6 (below 3, above 2) must be absent
+  if (annualNums.includes(1) && annualNums.includes(2)) {
+    const leftPathClear = !natalNums.includes(3) && !natalNums.includes(6);
+    if (leftPathClear) {
+      const isStrong = destiny === 1 || destiny === 2 || basic === 2;
+      yogas.push({
+        id: 'raj_yoga',
+        name: isStrong ? 'Strong Raj Yoga' : 'Raj Yoga',
+        positive: true,
+      });
+    }
+    // If path is blocked — no Raj Yoga, don't push anything
   }
 
-  // Sun-Ketu Raj Yoga (1+7 without 8)
-  if (nums.includes(1) && nums.includes(7) && !nums.includes(8)) {
+  // ── SUN-KETU RAJ YOGA (1+7 without 8) ────────────────────────────────────
+  // Absence of 8 checked against NATAL only (Maha 8 should not cancel this)
+  if (natalNums.includes(1) && natalNums.includes(7) && !natalNums.includes(8)) {
     yogas.push({ id: 'sun_ketu_raj', name: 'Continuous Luck', positive: true });
   }
 
-  // Easy Money (5+7)
-  if (nums.includes(5) && nums.includes(7)) {
+  // ── EASY MONEY (5+7) ──────────────────────────────────────────────────────
+  // Can be triggered by annual chart (Dasha bringing 5 or 7 is valid)
+  if (annualNums.includes(5) && annualNums.includes(7)) {
     yogas.push({ id: 'easy_money', name: 'Easy Money', positive: true });
   }
 
-  // Bandhan Yoga (9+4 without 5)
-  if (nums.includes(9) && nums.includes(4) && !nums.includes(5)) {
+  // ── BANDHAN YOGA (9+4 without 5) ──────────────────────────────────────────
+  // 5 is the grid blocker between 9 and 4 — check natal for absence of 5
+  if (natalNums.includes(9) && natalNums.includes(4) && !natalNums.includes(5)) {
     yogas.push({ id: 'bandhan', name: 'Constraint Energy', positive: false });
   }
 
-  // Financial Bandhan (5+4 without 9)
-  if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) {
+  // ── FINANCIAL BANDHAN (5+4 without 9) ─────────────────────────────────────
+  // Check natal — Dasha bringing 9 should not cancel a natal financial bandhan
+  if (natalNums.includes(5) && natalNums.includes(4) && !natalNums.includes(9)) {
     yogas.push({ id: 'financial_bandhan', name: 'Financial Caution', positive: false });
   }
 
-  // Vipreet Raj (2+8+4)
-  if (nums.includes(2) && nums.includes(8) && nums.includes(4)) {
+  // ── VIPREET RAJ (2+8+4) ───────────────────────────────────────────────────
+  // Annual chart — Dasha can trigger this
+  if (annualNums.includes(2) && annualNums.includes(8) && annualNums.includes(4)) {
     yogas.push({ id: 'vipreet_raj', name: 'Adversity to Triumph', positive: true });
   }
 
-  // 3-1-9 uplifting
-  if (nums.includes(3) && nums.includes(1) && nums.includes(9)) {
+  // ── 3-1-9 UPLIFTING ───────────────────────────────────────────────────────
+  // Annual chart — Dasha can add the missing number
+  if (annualNums.includes(3) && annualNums.includes(1) && annualNums.includes(9)) {
     yogas.push({ id: 'uplifting_319', name: 'Full Power Triad', positive: true });
   }
 
-  // Spiritual (3+7+9)
-  if (nums.includes(3) && nums.includes(7) && nums.includes(9)) {
+  // ── SPIRITUAL (3+7+9) ─────────────────────────────────────────────────────
+  if (annualNums.includes(3) && annualNums.includes(7) && annualNums.includes(9)) {
     yogas.push({ id: 'spiritual', name: 'Spiritual Alignment', positive: true });
   }
 
-  // Stable Luxury (6+7+5)
-  if (nums.includes(6) && nums.includes(7) && nums.includes(5)) {
+  // ── STABLE LUXURY (6+7+5) ─────────────────────────────────────────────────
+  if (annualNums.includes(6) && annualNums.includes(7) && annualNums.includes(5)) {
     yogas.push({ id: 'stable_luxury', name: 'Stable Luxury', positive: true });
   }
 
-  // High Intuition (1+7+8)
-  if (nums.includes(1) && nums.includes(7) && nums.includes(8)) {
+  // ── HIGH INTUITION (1+7+8) ────────────────────────────────────────────────
+  // All three must be in annual chart
+  if (annualNums.includes(1) && annualNums.includes(7) && annualNums.includes(8)) {
     yogas.push({ id: 'high_intuition', name: 'High Intuition', positive: true });
   }
 
-  // 1-8 without 7 defamation risk
-  if (nums.includes(1) && nums.includes(8) && !nums.includes(7)) {
+  // ── DEFAMATION RISK (1+8 without 7) ──────────────────────────────────────
+  // Absence of 7 checked against NATAL only
+  if (natalNums.includes(1) && natalNums.includes(8) && !natalNums.includes(7)) {
     yogas.push({ id: 'defamation_risk', name: 'Reputation Caution', positive: false });
   }
 
-  // 7-8 without 1 misfortune
-  if (nums.includes(7) && nums.includes(8) && !nums.includes(1)) {
+  // ── MISFORTUNE (7+8 without 1) ────────────────────────────────────────────
+  // Absence of 1 checked against NATAL only
+  if (natalNums.includes(7) && natalNums.includes(8) && !natalNums.includes(1)) {
     yogas.push({ id: 'misfortune_78', name: 'Heavy Energy Period', positive: false });
   }
 
