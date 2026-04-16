@@ -215,23 +215,36 @@ export function antardashaTimeline(dob, pastYears = 5, futureYears = 10) {
   return results;
 }
 
-export function currentMonthlyDasha(dob) {
+export function currentMonthlyDasha(dob, targetDate = null) {
+  // Monthly Dasha starts from Antar Dasha number (not basic)
+  // Cycle: antarNum → antarNum+1 → ... each lasting MONTHLY_DURATIONS[n] days
+  // Resets every birthday when new Antar Dasha begins
+
   const d = new Date(dob);
-  const basic = basicNumber(d.getDate());
   const month = d.getMonth() + 1;
   const day = d.getDate();
-  const today = new Date();
-  const cycle = buildDashaCycle(basic);
+  const today = targetDate ? new Date(targetDate) : new Date();
+  const basic = basicNumber(d.getDate());
 
+  // Find last birthday = Antar Dasha start date
   const bdayThisYear = new Date(today.getFullYear(), month - 1, day);
-  let startPoint = today < bdayThisYear
+  const antarStart = today < bdayThisYear
     ? new Date(today.getFullYear() - 1, month - 1, day)
     : bdayThisYear;
 
-  let current = new Date(startPoint);
-  let i = 0;
+  // Calculate Antar number for that birthday year
+  const antarYear = antarStart.getFullYear();
+  const weekday = new Date(antarYear, month - 1, day).getDay();
+  const weekdayVal = WEEKDAY_VALUES[weekday];
+  const yearLast2 = antarYear % 100;
+  const raw = basic + month + yearLast2 + weekdayVal;
+  const antarNum = reduceToSingle(raw);
 
-  while (i < 100) {
+  // Monthly cycle starts from antarNum
+  const cycle = buildDashaCycle(antarNum);
+
+  let current = new Date(antarStart);
+  for (let i = 0; i < 200; i++) {
     const dasha = cycle[i % 9];
     const durationDays = MONTHLY_DURATIONS[dasha];
     const end = new Date(current);
@@ -247,42 +260,53 @@ export function currentMonthlyDasha(dob) {
       };
     }
     current = end;
-    i++;
   }
 }
 
 export function dailyDasha(dob, date) {
-  const basic = basicNumber(new Date(dob).getDate());
+  // Daily = Monthly + day_lord_of_that_day (12hr weekday values)
+  const monthly = currentMonthlyDasha(dob, date);
+  const monthlyNum = monthly ? monthly.number : basicNumber(new Date(dob).getDate());
   const d = new Date(date);
-  return reduceToSingle(basic + d.getDate() + (d.getMonth() + 1));
+  const weekday = d.getDay(); // 0=Sun,1=Mon...6=Sat
+  const dayLord = WEEKDAY_VALUES[weekday];
+  return reduceToSingle(monthlyNum + dayLord);
 }
 
 export function hourlyDasha(dob, date, hour) {
+  // Hourly = Daily + hour (12-hour format)
   const daily = dailyDasha(dob, date);
-  return reduceToSingle(daily + hour + 1);
+  const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  return reduceToSingle(daily + hour12);
 }
 
 export function allHourlyDashas(dob, date) {
+  const daily = dailyDasha(dob, date);
   const hours = [];
   for (let h = 0; h < 24; h++) {
-    const num = hourlyDasha(dob, date, h);
+    const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    const num = reduceToSingle(daily + hour12);
     hours.push({ hour: h, number: num, planet: PLANET_NAMES[num] });
   }
   return hours;
 }
 
 // ─── Grid ─────────────────────────────────────────────────────
-export function buildFrequencyMap(dob, mahaOverride, antarOverride, monthlyOverride) {
+export function buildFrequencyMap(dob, mahaOverride, antarOverride, monthlyOverride, natalOnly = false) {
   const digits = chartDigits(dob);
+  const map = {};
+  digits.forEach(n => { map[n] = (map[n] || 0) + 1; });
+
+  // natalOnly = true → DOB digits only, no dasha additions
+  if (natalOnly) return map;
+
   const maha = mahaOverride ?? currentMahadasha(dob).number;
   const antar = antarOverride ?? currentAntardasha(dob).number;
   const monthly = monthlyOverride ?? currentMonthlyDasha(dob).number;
 
-  const map = {};
-  digits.forEach(n => { map[n] = (map[n] || 0) + 1; });
   map[maha] = (map[maha] || 0) + 1;
   if (antar !== maha) map[antar] = (map[antar] || 0) + 1;
-  map[monthly] = (map[monthly] || 0) + 1;
+  if (monthly !== maha && monthly !== antar) map[monthly] = (map[monthly] || 0) + 1;
   return map;
 }
 

@@ -28,9 +28,9 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
 
   // TWO separate frequency maps:
   // natalFreq  = only DOB digits (no dasha numbers) — for absence-condition yogas
-  // annualFreq = DOB + Maha + Antar        — for presence-condition yogas
-  const natalFreq  = buildFrequencyMap(dob);
-  const annualFreq = buildFrequencyMap(dob, maha.number, antar.number);
+  // annualFreq = DOB + Maha + Antar + Monthly — for presence-condition yogas
+  const natalFreq  = buildFrequencyMap(dob, undefined, undefined, undefined, true);
+  const annualFreq = buildFrequencyMap(dob, maha.number, antar.number, monthly.number);
 
   const natalNums  = Object.keys(natalFreq).map(Number);
   const annualNums = Object.keys(annualFreq).map(Number);
@@ -226,25 +226,33 @@ function buildDailyInsight({ daily, maha, antar, monthly, basic, destiny,
     dailyEnergy, comboText, yogaInsights, comboMeaning, rating }) {
   const parts = [];
 
-  // Core energy of the day from the combination
+  // Combo text — extract only clean human-readable sentences, no jargon
   if (comboText) {
-    // Take first 2 sentences of combo text
-    const sentences = comboText.split('. ').slice(0, 2).join('. ');
-    parts.push(sentences);
+    const isTechnical = (s) => /\b(Sun|Moon|Jupiter|Rahu|Mercury|Venus|Ketu|Saturn|Mars|Dasha|Yoga|combination|natal|chart|double|triple|single|multiple|\beven\b|\bodd\b|\d+)\b/i.test(s);
+    const sentences = comboText.split(/(?<=[.!])/)
+      .map(s => s.trim())
+      .filter(s => s.length > 30 && !isTechnical(s));
+    if (sentences.length > 0) parts.push(sentences[0]);
   }
 
-  // Daily energy layer
-  parts.push(`Today's frequency adds ${dailyEnergy.essence} to this backdrop — ${dailyEnergy.in_action}.`);
+  // Daily energy — use money/work signal based on daily number quality
+  const dailySignal = {
+    1: "Take initiative today — the conditions favor bold decisions.",
+    2: "Connection and creativity are the day's strongest currents.",
+    3: "Wisdom and sound judgment are accessible today — trust your read.",
+    4: "Stay flexible today — what disrupts you is also redirecting you.",
+    5: "Sharp thinking and financial instinct are running high today.",
+    6: "Beauty, connection, and ease — today rewards presence over effort.",
+    7: "Luck is quiet but active today. Trust your instincts over analysis.",
+    8: "Discipline and output — what you put in today compounds later.",
+    9: "Energy and courage are your tools today. Act before you overthink.",
+  };
+  parts.push(dailySignal[daily] || `Today's energy favors ${dailyEnergy.essence}.`);
 
-  // Yoga influence if present
-  if (yogaInsights.length > 0) {
-    parts.push(yogaInsights[0]);
-  }
-
-  // Monthly context
-  if (monthly !== daily && monthly !== antar) {
-    const monthlyEnergy = NUMBER_ENERGY[monthly];
-    parts.push(`The monthly undercurrent of ${monthlyEnergy.essence} means ${monthlyEnergy.drive.toLowerCase()} — let that inform your choices today.`);
+  // Best yoga insight — pick the most impactful positive one
+  const positiveInsights = yogaInsights.filter(t => t && t.length > 20);
+  if (positiveInsights.length > 0) {
+    parts.push(positiveInsights[0]);
   }
 
   return parts.join(' ');
@@ -283,11 +291,14 @@ function assessDayRating(daily, maha, antar, yogas, freqMap) {
 
 // ─── Generate hourly predictions ─────────────────────────────────────────────
 export function generateHourlyPredictions(ctx) {
-  const { daily, maha, antar, hours, yogas, allNums } = ctx;
+  const { daily, maha, antar, hours, yogas, natalNums } = ctx;
 
-  const classified = hours.map(h => {
+  // Only classify waking hours (6AM to 11PM)
+  const wakingHours = hours.filter(h => h.hour >= 6 && h.hour <= 23);
+
+  const classified = wakingHours.map(h => {
     const hourNum = h.number;
-    const quality = classifyHour(hourNum, daily, maha, antar, yogas, allNums);
+    const quality = classifyHour(hourNum, daily, maha, antar, yogas, natalNums || []);
     const hourQuality = HOUR_QUALITIES[hourNum];
 
     return {
@@ -301,52 +312,73 @@ export function generateHourlyPredictions(ctx) {
     };
   });
 
-  // Separate into best, good, caution, avoid
+  // Best = 'best' type only
+  // Caution = 'caution' or 'avoid' type only
   const best = classified.filter(h => h.classification === 'best');
   const caution = classified.filter(h => h.classification === 'caution' || h.classification === 'avoid');
 
-  return { best, caution, all: classified };
+  // If no best hours found, promote top 'good' hours
+  const bestOrGood = best.length > 0 ? best : classified.filter(h => h.classification === 'good').slice(0, 3);
+
+  return { best: bestOrGood, caution, all: classified };
 }
 
-function classifyHour(hourNum, daily, maha, antar, yogas, allNums) {
-  // Check if this hour creates a positive combination
-  const tempNums = [...new Set([...allNums, hourNum])];
-
-  // Best: creates Easy Money, Raj Yoga, 1-9-3, or 1-7
-  if (tempNums.includes(5) && tempNums.includes(7) && !allNums.includes(5)) {
-    return { type: 'best', reason: 'Easy Money activated this hour', good_for: ['financial decisions', 'business', 'negotiations'], avoid: [] };
-  }
-  if (tempNums.includes(1) && tempNums.includes(2) && !allNums.includes(1)) {
-    return { type: 'best', reason: 'Authority and influence peak this hour', good_for: ['important meetings', 'decisions', 'leadership moments'], avoid: [] };
-  }
-  if (hourNum === 7 && allNums.includes(1) && !allNums.includes(8)) {
-    return { type: 'best', reason: 'Luck is at its peak this hour', good_for: ['important asks', 'key decisions', 'travel'], avoid: [] };
-  }
-  if (hourNum === 1 && allNums.includes(9)) {
-    return { type: 'best', reason: 'Full power available this hour', good_for: ['ambitious moves', 'leadership', 'starting things'], avoid: [] };
-  }
-
-  // Caution: creates Bandhan or Financial Bandhan
-  if (hourNum === 4 && allNums.includes(9) && !allNums.includes(5)) {
-    return { type: 'avoid', reason: 'Constraint energy peaks — avoid major decisions', good_for: ['rest', 'reflection'], avoid: ['contracts', 'major purchases', 'confrontations'] };
-  }
-  if (hourNum === 4 && allNums.includes(5) && !allNums.includes(9)) {
-    return { type: 'caution', reason: 'Financial impulsiveness risk this hour', good_for: ['analysis', 'planning'], avoid: ['purchases', 'financial commitments'] };
-  }
-  if (hourNum === 8 && allNums.includes(7) && !allNums.includes(1)) {
-    return { type: 'caution', reason: 'Heavier energy this hour — stay grounded', good_for: ['deep work', 'spiritual practice'], avoid: ['important launches', 'social events'] };
-  }
-
-  // Neutral based on daily energy
+function classifyHour(hourNum, daily, maha, antar, yogas, natalNums) {
+  // hourNum = the calculated dasha number for this hour
+  // natalNums = natal chart numbers only (no dasha additions)
   const hourQuality = HOUR_QUALITIES[hourNum];
-  const dailyQuality = HOUR_QUALITIES[daily];
+  const yogaIds = yogas.map(y => y.id);
 
-  // Check alignment with daily energy
+  // ── BEST hours ─────────────────────────────────────────────────
+  // Hour number creates Easy Money with daily
+  if ((hourNum === 5 && daily === 7) || (hourNum === 7 && daily === 5)) {
+    return { type: 'best', reason: 'Sharp financial instincts this hour', good_for: ['money decisions', 'business', 'negotiations', 'investments'], avoid: [] };
+  }
+  // Hour number = 1, daily = 9 or vice versa (full power)
+  if ((hourNum === 1 && daily === 9) || (hourNum === 9 && daily === 1)) {
+    return { type: 'best', reason: 'Peak energy and authority this hour', good_for: ['bold decisions', 'leadership', 'starting something important'], avoid: [] };
+  }
+  // Hour number = 7, Easy Money yoga active in chart
+  if (hourNum === 7 && yogaIds.includes('easy_money')) {
+    return { type: 'best', reason: 'Luck peaks this hour', good_for: ['important asks', 'meetings', 'travel', 'key decisions'], avoid: [] };
+  }
+  // Hour number = 1, Raj Yoga active
+  if (hourNum === 1 && yogaIds.includes('raj_yoga')) {
+    return { type: 'best', reason: 'Authority and recognition peak this hour', good_for: ['career moves', 'negotiations', 'public visibility'], avoid: [] };
+  }
+  // Hour number = 5 or 1, High Intuition yoga active
+  if ((hourNum === 5 || hourNum === 1) && yogaIds.includes('high_intuition')) {
+    return { type: 'best', reason: 'Mental clarity at its sharpest this hour', good_for: ['analysis', 'decisions', 'creative work', 'communication'], avoid: [] };
+  }
+  // Hour aligns with daily number (same = amplified)
+  if (hourNum === daily) {
+    return { type: 'best', reason: "The day's core energy amplifies this hour", good_for: hourQuality.good_for, avoid: hourQuality.avoid };
+  }
+
+  // ── CAUTION hours ───────────────────────────────────────────────
+  // Hour = 4 + daily has 9 but no 5 → Bandhan energy
+  if (hourNum === 4 && daily === 9) {
+    return { type: 'caution', reason: 'Frustration and constraint peak — avoid confrontations', good_for: ['rest', 'routine tasks'], avoid: ['confrontations', 'contracts', 'big decisions'] };
+  }
+  // Hour = 4 + Financial Bandhan yoga active
+  if (hourNum === 4 && yogaIds.includes('financial_bandhan')) {
+    return { type: 'caution', reason: 'Spending impulse is strongest this hour', good_for: ['planning', 'analysis'], avoid: ['purchases', 'financial commitments', 'online shopping'] };
+  }
+  // Hour = 8 + daily = 7 (misfortune combination)
+  if (hourNum === 8 && daily === 7) {
+    return { type: 'caution', reason: 'Heavy energy this hour — work quietly, avoid big moves', good_for: ['focused work', 'reflection'], avoid: ['launches', 'pitches', 'social events'] };
+  }
+  // Hour = 9 + multiple 9 in chart
+  if (hourNum === 9 && natalNums.filter(n => n === 9).length >= 2) {
+    return { type: 'caution', reason: 'Aggression and frustration can spike this hour', good_for: ['physical activity', 'solo work'], avoid: ['arguments', 'negotiations', 'emotional conversations'] };
+  }
+
+  // ── Default based on alignment ──────────────────────────────────
   const aligned = isAligned(hourNum, daily, maha, antar);
-  if (aligned.positive) return { type: 'good', reason: aligned.reason, ...hourQuality };
+  if (aligned.positive) return { type: 'good', reason: aligned.reason, good_for: hourQuality.good_for, avoid: hourQuality.avoid };
   if (aligned.negative) return { type: 'caution', reason: aligned.reason, good_for: hourQuality.good_for, avoid: hourQuality.avoid };
 
-  return { type: 'neutral', reason: 'Standard energy this hour', ...hourQuality };
+  return { type: 'neutral', reason: 'Steady energy this hour', good_for: hourQuality.good_for, avoid: hourQuality.avoid };
 }
 
 function isAligned(hourNum, daily, maha, antar) {
