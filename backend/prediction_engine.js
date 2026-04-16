@@ -10,10 +10,64 @@ import {
 } from './prediction_library.js';
 
 import {
+  DEEP_NUMBER_PROFILES, DEEP_COMBINATIONS, DEEP_COMBINATIONS_EXTENDED,
+  DEEP_DASHA_EXPERIENCE, DEEP_PERIOD_TEXTS, HONEST_WARNINGS, PERSONAL_PATTERNS,
+} from './deep_library.js';
+
+import {
   basicNumber, destinyNumber, currentMahadasha, currentAntardasha,
   currentMonthlyDasha, dailyDasha, hourlyDasha, allHourlyDashas,
   buildFrequencyMap, PLANET_NAMES,
 } from './numerology.js';
+
+// ─── Deep library lookup ─────────────────────────────────────────────────────
+export function getDeepCombination(a, b) {
+  const key = [a, b].sort((x,y) => x-y).join('_');
+  return DEEP_COMBINATIONS[key] || DEEP_COMBINATIONS_EXTENDED[key] || null;
+}
+
+export function getPersonalPattern(basic, destiny) {
+  const key = `${basic}_${destiny}`;
+  const rev = `${destiny}_${basic}`;
+  return PERSONAL_PATTERNS[key] || PERSONAL_PATTERNS[rev] || null;
+}
+
+export function getDashaExperience(mahaNum) {
+  return DEEP_DASHA_EXPERIENCE[`maha_${mahaNum}`] || null;
+}
+
+export function getDeepNumberProfile(num) {
+  return DEEP_NUMBER_PROFILES[num] || null;
+}
+
+export function getHonestWarnings(yogas, freqMap, maha, antar) {
+  const warnings = [];
+  const yogaIds = yogas.map(y => y.id);
+
+  if (yogaIds.includes('financial_bandhan')) warnings.push(HONEST_WARNINGS.financial_bandhan_active);
+  if (yogaIds.includes('bandhan')) warnings.push(HONEST_WARNINGS.bandhan_yoga_active);
+  if (yogaIds.includes('defamation_risk')) warnings.push(HONEST_WARNINGS.defamation_risk_active);
+
+  const freq7 = freqMap[7] || 0;
+  const freq9 = freqMap[9] || 0;
+  const freq4 = freqMap[4] || 0;
+  if (freq7 >= 2) warnings.push(HONEST_WARNINGS.multiple_7_active);
+  if (freq9 >= 2) warnings.push(HONEST_WARNINGS.multiple_9_active);
+  if (freq4 >= 2) warnings.push(HONEST_WARNINGS.double_4_active);
+
+  // Early Maha 8 (years 1-4)
+  if (maha === 8) warnings.push(HONEST_WARNINGS.maha_8_early);
+
+  return warnings;
+}
+
+export function getDeepPeriodText(maha, antar, period) {
+  const key = `${maha}_${antar}`;
+  const revKey = `${antar}_${maha}`;
+  const periodData = DEEP_PERIOD_TEXTS[period];
+  if (!periodData) return null;
+  return periodData[key] || periodData[revKey] || null;
+}
 
 // ─── Text cleaning utility ───────────────────────────────────────────────────
 function cleanText(text) {

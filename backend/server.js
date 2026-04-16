@@ -23,6 +23,12 @@ import {
   generateMonthlyPrediction,
   generateYearlyPrediction,
   generateLifePrediction,
+  getDeepCombination,
+  getPersonalPattern,
+  getDashaExperience,
+  getDeepNumberProfile,
+  getHonestWarnings,
+  getDeepPeriodText,
 } from './prediction_engine.js';
 
 const app = express();
@@ -397,6 +403,118 @@ app.post('/api/predict/prashna', (req, res) => {
   }
 });
 
+
+// ─── /api/insights/deep ─────────────────────────────────────────
+// Returns the deep profile — personal patterns, dasha experience, honest warnings
+app.post('/api/insights/deep', (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+
+    const d = new Date(dob);
+    const basic = basicNumber(d.getDate());
+    const destiny = destinyNumber(dob);
+    const maha = currentMahadasha(dob);
+    const antar = currentAntardasha(dob);
+    const monthly = currentMonthlyDasha(dob);
+    const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
+    const annualFreq = buildFrequencyMap(dob, maha.number, antar.number, monthly.number);
+    const natalNums = Object.keys(natalFreq).map(Number);
+    const annualNums = Object.keys(annualFreq).map(Number);
+
+    // Build yogas for warnings
+    const ctx = buildChartContext(dob);
+    const yogas = ctx.yogas;
+
+    // Core profile
+    const basicProfile = getDeepNumberProfile(basic);
+    const destinyProfile = getDeepNumberProfile(destiny);
+    const combo = getDeepCombination(basic, destiny);
+    const pattern = getPersonalPattern(basic, destiny);
+    const dashaExp = getDashaExperience(maha.number);
+    const warnings = getHonestWarnings(yogas, annualFreq, maha.number, antar.number);
+
+    // Natal combination insights (all natal pairs)
+    const natalCombos = [];
+    for (let i = 0; i < natalNums.length; i++) {
+      for (let j = i+1; j < natalNums.length; j++) {
+        const c = getDeepCombination(natalNums[i], natalNums[j]);
+        if (c) natalCombos.push({ numbers: [natalNums[i], natalNums[j]], ...c });
+      }
+    }
+
+    res.json({
+      basic, destiny,
+      maha: maha.number, antar: antar.number,
+
+      // Who you are
+      core_nature: basicProfile ? {
+        pattern: basicProfile.pattern,
+        internal_conflict: basicProfile.internal_conflict,
+        shadow: basicProfile.shadow,
+        what_trips_you: basicProfile.what_trips_you,
+      } : null,
+
+      // Life direction
+      life_direction: destinyProfile ? {
+        pattern: destinyProfile.pattern,
+        money_pattern: destinyProfile.money_pattern,
+        love_pattern: destinyProfile.love_pattern,
+        work_pattern: destinyProfile.work_pattern,
+        health_real: destinyProfile.health_real,
+      } : null,
+
+      // Basic + Destiny combination
+      core_combination: combo ? {
+        name: combo.name,
+        what_it_creates: combo.what_it_creates,
+        the_conflict: combo.the_conflict,
+        real_life: combo.real_life,
+        warning: combo.warning,
+        advice: combo.advice,
+      } : null,
+
+      // Personal repeating patterns
+      personal_patterns: pattern ? {
+        money: pattern.money,
+        love: pattern.love,
+        work: pattern.work,
+        recurring_lesson: pattern.recurring_lesson,
+      } : null,
+
+      // Current multi-year period experience
+      current_chapter: dashaExp ? {
+        title: dashaExp.title,
+        what_it_feels_like: dashaExp.what_it_feels_like,
+        what_is_actually_happening: dashaExp.what_is_actually_happening,
+        the_trap: dashaExp.the_trap,
+        the_gift: dashaExp.the_gift,
+        advice: dashaExp.advice,
+      } : null,
+
+      // Active yogas
+      active_yogas: yogas,
+
+      // Honest warnings (no sugar coating)
+      warnings: warnings.map(w => ({
+        short: w.short,
+        detail: w.detail,
+        probability: w.probability,
+      })),
+
+      // Notable natal combinations
+      natal_combinations: natalCombos.slice(0, 4).map(c => ({
+        numbers: c.numbers,
+        name: c.name,
+        what_it_creates: c.what_it_creates,
+        warning: c.warning,
+        advice: c.advice,
+      })),
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ─── /api/insights/daily ──────────────────────────────────────
 app.post('/api/insights/daily', (req, res) => {
