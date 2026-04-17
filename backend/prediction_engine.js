@@ -853,73 +853,100 @@ export function generateLifePrediction(ctx) {
 }
 
 // ─── Helper builders ──────────────────────────────────────────────────────────
+// Checks if a sentence contains any technical jargon that shouldn't reach users
+function isTechnicalSentence(s) {
+  return /\b(Sun|Moon|Jupiter|Rahu|Mercury|Venus|Ketu|Saturn|Mars|Dasha|yoga|combination|natal|chart|double|triple|single|multiple|misfortune|even|odd)\b/i.test(s);
+}
+
 function buildOpportunities(maha, antar, yogas, period) {
   const opps = [];
 
-  // From dasha combo
+  // From dasha combo — extract clean, positive sentences only
   const combo = DASHA_COMBO_PREDICTIONS[`${maha}_${antar}`] || '';
   if (combo) {
-    // Extract positive-sounding sentences
-    const sentences = combo.split('. ');
+    const sentences = combo.split(/(?<=[.!])/).map(s => s.trim());
     const positive = sentences.filter(s =>
+      s.length > 30 &&
+      !isTechnicalSentence(s) &&
       !s.toLowerCase().includes('caution') &&
       !s.toLowerCase().includes('avoid') &&
       !s.toLowerCase().includes('risk') &&
       !s.toLowerCase().includes('watch') &&
-      s.length > 20
+      !s.toLowerCase().includes('trap') &&
+      !s.toLowerCase().includes('warning') &&
+      // Filter out bare keyword lists (e.g. "Sharp, fast, competitive.")
+      (s.match(/,/g) || []).length < 3 &&
+      // Must be a proper sentence (has a verb indicator)
+      /\b(is|are|was|were|will|can|the|your|you|this|what|when|how|comes|brings|creates|peaks|arrives|works|makes|gives|builds|runs|flows|lands)\b/i.test(s)
     );
     if (positive.length > 0) opps.push(positive[0]);
   }
 
-  // From yogas
-  for (const yoga of yogas.filter(y => y.positive).slice(0, 2)) {
+  // From positive yogas — use human-readable descriptions only
+  for (const yoga of yogas.filter(y => y.positive && !y.combo_key).slice(0, 2)) {
     const yogaData = COMBO_DAILY_INSIGHTS[yoga.id];
-    if (yogaData?.favorable || yogaData?.active) {
-      opps.push(yogaData.favorable || yogaData.active);
+    const text = yogaData?.favorable || yogaData?.active;
+    if (text && !isTechnicalSentence(text)) {
+      // Remove "today" language for non-daily contexts
+      const cleaned = text.replace(/\btoday\b/gi, 'right now').replace(/\bthis week\b/gi, 'currently');
+      opps.push(cleaned);
     }
   }
 
-  // From maha energy
+  // From maha energy — human language only
   const mahaE = NUMBER_ENERGY[maha];
-  opps.push(`Your ${mahaE.essence} is the dominant force — use it.`);
+  // Use drive (purpose) for clean phrasing
+  const driveDescriptions = {
+    1: 'The energy to lead, initiate, and take decisive action is available right now.',
+    2: 'The energy to connect deeply and create meaningfully is available right now.',
+    3: 'The energy for wisdom, guidance, and ethical clarity is available right now.',
+    4: 'The energy for research, unconventional thinking, and adaptability is available right now.',
+    5: 'Sharp financial instinct and business clarity are running at peak right now.',
+    6: 'Creative energy, social magnetism, and relational warmth are available right now.',
+    7: 'Luck, intuition, and spiritual clarity are available right now — trust them.',
+    8: 'The determination to push through obstacles and build something lasting is available right now.',
+    9: 'High physical and competitive energy is available right now — channel it.',
+  };
+  if (driveDescriptions[maha]) opps.push(driveDescriptions[maha]);
 
-  return opps.slice(0, 3);
+  return opps.filter(Boolean).slice(0, 3);
 }
 
 function buildWatchOut(maha, antar, yogas, freqMap, period) {
   const warnings = [];
 
-  // From negative yogas
-  for (const yoga of yogas.filter(y => !y.positive)) {
+  // From negative yogas — human language only
+  for (const yoga of yogas.filter(y => !y.positive && !y.combo_key)) {
     const yogaData = COMBO_DAILY_INSIGHTS[yoga.id];
-    if (yogaData?.active || yogaData?.advice) {
-      warnings.push(yogaData.advice || yogaData.active);
+    const text = yogaData?.advice || yogaData?.active;
+    if (text && !isTechnicalSentence(text)) {
+      warnings.push(text);
     }
   }
 
-  // Even/odd 8 warning
+  // Karmic weight (odd 8)
   const count8 = freqMap[8] || 0;
   if (count8 > 0 && count8 % 2 !== 0) {
-    warnings.push("Saturn's karmic weight is active — shortcuts and ethical compromises will cost more than they save.");
+    warnings.push("The karmic weight is active — shortcuts cost more than they save right now.");
   }
 
-  // Multiple 9 warning
+  // Multiple 9
   if ((freqMap[9] || 0) >= 2) {
-    warnings.push("Frustration can spike unexpectedly. Physical activity and clear communication prevent it from becoming explosive.");
+    warnings.push("Frustration can spike unexpectedly. Physical activity and honest communication are the antidote.");
   }
 
-  // Multiple 2 warning
+  // Multiple 2
   if ((freqMap[2] || 0) >= 2) {
-    warnings.push("Emotional sensitivity is heightened. Criticism lands harder than usual. Build in recovery time.");
+    warnings.push("Emotional sensitivity is heightened. Criticism lands harder than usual — build in recovery time.");
   }
 
-  // Financial Bandhan
+  // Fallback from maha shadow
   if (warnings.length === 0) {
     const mahaE = NUMBER_ENERGY[maha];
-    if (mahaE.shadow) warnings.push(`Watch for ${mahaE.shadow} — the shadow of this period's dominant energy.`);
+    if (mahaE?.shadow) warnings.push(`Watch for ${mahaE.shadow} — the shadow side of this period's energy.`);
   }
 
-  return warnings.slice(0, 3);
+  return warnings.filter(Boolean).slice(0, 3);
 }
 
 function getYogaContext(yogas, period) {
