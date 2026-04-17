@@ -533,8 +533,9 @@ app.post('/api/insights/weekly', (req, res) => {
   try {
     const { dob } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
-    const ctx = buildChartContext(dob);
-    res.json(generateWeeklyPrediction(ctx));
+    const targetDate = new Date().toISOString();
+    const ctx = buildChartContext(dob, targetDate);
+    res.json(generateWeeklyPrediction(ctx, targetDate));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -543,8 +544,9 @@ app.post('/api/insights/monthly', (req, res) => {
   try {
     const { dob } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
-    const ctx = buildChartContext(dob);
-    res.json(generateMonthlyPrediction(ctx));
+    const targetDate = new Date().toISOString();
+    const ctx = buildChartContext(dob, targetDate);
+    res.json(generateMonthlyPrediction(ctx, targetDate));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -553,8 +555,9 @@ app.post('/api/insights/yearly', (req, res) => {
   try {
     const { dob } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
-    const ctx = buildChartContext(dob);
-    res.json(generateYearlyPrediction(ctx));
+    const targetDate = new Date().toISOString();
+    const ctx = buildChartContext(dob, targetDate);
+    res.json(generateYearlyPrediction(ctx, targetDate));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

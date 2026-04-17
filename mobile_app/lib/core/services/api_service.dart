@@ -42,6 +42,9 @@ class ApiService {
   static Future<Map<String, dynamic>> getYearlyInsights(String dob) =>
       _post('/api/insights/yearly', {'dob': dob});
 
+  static Future<Map<String, dynamic>> getDeepInsights(String dob) =>
+      _post('/api/insights/deep', {'dob': dob});
+
   static Future<Map<String, dynamic>> getDailyInsights(String dob) =>
       _post('/api/insights/daily', {'dob': dob});
 

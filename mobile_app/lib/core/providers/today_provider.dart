@@ -70,6 +70,13 @@ final antarTimelineProvider = FutureProvider<List<dynamic>>((ref) async {
   return result['timeline'] as List<dynamic>;
 });
 
+/// Deep profile: core nature, patterns, chapter, warnings, natal combinations
+final deepInsightsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final user = await ref.watch(userProfileProvider.future);
+  if (user == null) throw Exception('No user profile');
+  return ApiService.getDeepInsights(_dobToIso(user.dob));
+});
+
 // ─── LEGACY SUPPORT (OPTIONAL) ─────────────────────────────────────────
 
 // If your UI still uses specific feature providers, we keep them pointing to the new engine's logic

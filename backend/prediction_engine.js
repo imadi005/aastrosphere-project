@@ -17,7 +17,7 @@ import {
 import {
   basicNumber, destinyNumber, currentMahadasha, currentAntardasha,
   currentMonthlyDasha, dailyDasha, hourlyDasha, allHourlyDashas,
-  buildFrequencyMap, PLANET_NAMES,
+  buildFrequencyMap, PLANET_NAMES, WEEKDAY_VALUES, reduceToSingle,
 } from './numerology.js';
 
 // ─── Deep library lookup ─────────────────────────────────────────────────────
@@ -128,6 +128,7 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
     allNums: annualNums, natalNums,
     yogas, modifiers,
     mahaDetails: maha, antarDetails: antar, monthlyDetails: monthly,
+    _dob: dob, // for period processing
   };
 }
 
@@ -531,95 +532,294 @@ function isAligned(hourNum, daily, maha, antar) {
 }
 
 // ─── Generate weekly prediction ───────────────────────────────────────────────
-export function generateWeeklyPrediction(ctx) {
-  const { basic, destiny, maha, antar, monthly, yogas, modifiers, freqMap } = ctx;
+// ─── Daily number calculator for a specific date ─────────────────────────────
+function getDailyForDate(dob, dateStr) {
+  const d = new Date(dateStr);
+  const monthly = currentMonthlyDasha(dob, dateStr);
+  const monthlyNum = monthly ? monthly.number : basicNumber(new Date(dob).getDate());
+  const weekday = d.getDay();
+  const dayLord = WEEKDAY_VALUES[weekday];
+  return reduceToSingle(monthlyNum + dayLord);
+}
 
-  const baseText = PERIOD_PREDICTIONS.weekly[antar] || PERIOD_PREDICTIONS.weekly[maha];
+// ─── Process 7 days and return pattern analysis ───────────────────────────────
+function processWeekDays(dob, startDate) {
+  const days = [];
+  const d = new Date(startDate);
+  for (let i = 0; i < 7; i++) {
+    const dateStr = new Date(d.getTime() + i * 86400000).toISOString();
+    const dayNum = getDailyForDate(dob, dateStr);
+    const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(dateStr).getDay()];
+    days.push({ day: dayName, date: dateStr, number: dayNum });
+  }
+  // Find best and heaviest days
+  const numberScores = { 1:7, 2:5, 3:7, 4:3, 5:8, 6:6, 7:8, 8:4, 9:6 };
+  const sorted = [...days].sort((a,b) => numberScores[b.number] - numberScores[a.number]);
+  const bestDays = sorted.slice(0,2).map(d => ({ day: d.day, number: d.number }));
+  const heavyDays = sorted.slice(-2).map(d => ({ day: d.day, number: d.number }));
+  const numbers = days.map(d => d.number);
+  const dominant = numbers.reduce((acc, n) => { acc[n] = (acc[n]||0)+1; return acc; }, {});
+  const dominantNum = parseInt(Object.entries(dominant).sort((a,b)=>b[1]-a[1])[0][0]);
+  return { days, bestDays, heavyDays, dominantNum, numbers };
+}
 
-  // Add yoga context
-  const yogaContext = getYogaContext(yogas, 'weekly');
+// ─── Process 4 weeks and return month pattern ─────────────────────────────────
+function processMonthWeeks(dob, startDate) {
+  const weeks = [];
+  const d = new Date(startDate);
+  // Start from beginning of current month
+  const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+  for (let w = 0; w < 4; w++) {
+    const weekStart = new Date(monthStart.getTime() + w * 7 * 86400000);
+    const weekData = processWeekDays(dob, weekStart.toISOString());
+    weeks.push({ week: w+1, ...weekData });
+  }
+  const allNumbers = weeks.flatMap(w => w.numbers);
+  const dominant = allNumbers.reduce((acc,n) => { acc[n]=(acc[n]||0)+1; return acc; }, {});
+  const dominantNum = parseInt(Object.entries(dominant).sort((a,b)=>b[1]-a[1])[0][0]);
+  // Current week position
+  const dayOfMonth = d.getDate();
+  const currentWeek = Math.ceil(dayOfMonth / 7);
+  return { weeks, dominantNum, currentWeek };
+}
 
-  // Add modifier context
-  const modifierContext = modifiers
-    .slice(0, 2)
-    .map(m => CHART_MODIFIERS[m])
-    .filter(Boolean)
-    .join(' ');
+// ─── Process 12 months and return year pattern ───────────────────────────────
+function processYearMonths(dob, year) {
+  const months = [];
+  const numberScores = { 1:8, 2:5, 3:7, 4:2, 5:9, 6:6, 7:8, 8:4, 9:7 };
+  for (let m = 0; m < 12; m++) {
+    const monthStart = new Date(year, m, 1).toISOString();
+    const monthly = currentMonthlyDasha(dob, monthStart);
+    const monthNum = monthly ? monthly.number : 0;
+    const score = numberScores[monthNum] || 5;
+    months.push({ month: m+1, number: monthNum, score });
+  }
+  const sorted = [...months].sort((a,b) => b.score - a.score);
+  const bestMonths = sorted.slice(0,3).map(m => m.month);
+  const riskyMonths = sorted.slice(-2).map(m => m.month);
+  return { months, bestMonths, riskyMonths };
+}
 
-  // Finance signal
-  const financeSignal = getFinanceSignal(freqMap, maha, antar, 'weekly');
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  // Health watch
-  const healthWatch = getHealthWatch(basic, destiny, maha, antar);
+// ─── Generate weekly prediction ───────────────────────────────────────────────
+export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOString()) {
+  const { basic, destiny, maha, antar, monthly, yogas, freqMap, dob: ctxDob } = ctx;
 
-  // Relationship signal
-  const relSignal = getRelationshipSignal(maha, antar, yogas, 'weekly');
+  // Process actual 7 days
+  const weekData = ctx._dob ? processWeekDays(ctx._dob, targetDate) : null;
+  const bestDays = weekData?.bestDays || [];
+  const heavyDays = weekData?.heavyDays || [];
+  const dominantNum = weekData?.dominantNum || antar;
+
+  // Deep period text if available
+  const deepText = getDeepPeriodText(maha, antar, 'weekly');
+
+  // Yoga context
+  const yogaCtx = getYogaContext(yogas, 'weekly');
+
+  // Build genuinely week-specific content
+  const overview = deepText?.overview || PERIOD_PREDICTIONS.weekly[dominantNum] || PERIOD_PREDICTIONS.weekly[antar];
+  const opportunities = deepText?.opportunities || buildOpportunities(maha, antar, yogas, 'weekly');
+  const watchOut = deepText?.watch_out || buildWatchOut(maha, antar, yogas, freqMap, 'weekly');
 
   return {
-    overview: baseText,
-    opportunities: buildOpportunities(maha, antar, yogas, 'weekly'),
-    watch_out: buildWatchOut(maha, antar, yogas, freqMap, 'weekly'),
-    finance: financeSignal,
-    relationships: relSignal,
-    health: healthWatch,
-    yoga_context: yogaContext,
+    // Structure unique to WEEKLY
+    overview,
+    best_days: bestDays.map(d => ({
+      day: d.day,
+      energy: NUMBER_ENERGY[d.number]?.essence || '',
+      advice: HOUR_QUALITIES[d.number]?.good_for?.slice(0,2).join(', ') || '',
+    })),
+    heavy_days: heavyDays.map(d => ({
+      day: d.day,
+      caution: NUMBER_ENERGY[d.number]?.shadow || '',
+    })),
+    opportunities,
+    watch_out: watchOut,
+    // Weekly-specific domains (short, punchy)
+    money_this_week: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'weekly'),
+    love_this_week: deepText?.relationships || getRelationshipSignal(maha, antar, yogas, 'weekly'),
+    health_this_week: deepText?.health || getHealthWatch(basic, destiny, maha, antar),
+    yoga_context: yogaCtx,
   };
 }
 
 // ─── Generate monthly prediction ─────────────────────────────────────────────
-export function generateMonthlyPrediction(ctx) {
-  const { basic, destiny, maha, antar, monthly, yogas, modifiers, freqMap } = ctx;
+export function generateMonthlyPrediction(ctx, targetDate = new Date().toISOString()) {
+  const { basic, destiny, maha, antar, monthly, yogas, freqMap } = ctx;
 
-  const baseText = PERIOD_PREDICTIONS.monthly[monthly] || PERIOD_PREDICTIONS.monthly[antar];
+  // Process actual month weeks
+  const monthData = ctx._dob ? processMonthWeeks(ctx._dob, targetDate) : null;
+  const currentWeek = monthData?.currentWeek || 2;
 
-  const yogaContext = getYogaContext(yogas, 'monthly');
-  const financeSignal = getFinanceSignal(freqMap, maha, antar, 'monthly');
-  const healthWatch = getHealthWatch(basic, destiny, maha, antar);
-  const relSignal = getRelationshipSignal(maha, antar, yogas, 'monthly');
-  const careerSignal = getCareerSignal(maha, antar, yogas, basic, destiny, 'monthly');
+  // Deep period text
+  const deepText = getDeepPeriodText(maha, antar, 'monthly');
+
+  const yogaCtx = getYogaContext(yogas, 'monthly');
+  const d = new Date(targetDate);
+  const monthName = MONTH_NAMES[d.getMonth()];
 
   return {
-    overview: baseText,
+    // Structure unique to MONTHLY — arc view with phases
+    month_name: monthName,
+    overview: deepText?.overview || PERIOD_PREDICTIONS.monthly[monthly] || PERIOD_PREDICTIONS.monthly[antar],
+
+    // Phase breakdown — unique to monthly
+    phases: [
+      {
+        label: 'Week 1–2',
+        theme: deepText?.first_half || buildPhaseText(maha, antar, 'early'),
+        current: currentWeek <= 2,
+      },
+      {
+        label: 'Week 3–4',
+        theme: deepText?.second_half || buildPhaseText(maha, antar, 'late'),
+        current: currentWeek > 2,
+      },
+    ],
+
+    // Deeper domain breakdowns for monthly
+    finance: {
+      signal: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'monthly'),
+      action: getFinanceAction(maha, antar, yogas),
+    },
+    relationships: {
+      signal: deepText?.relationships || getRelationshipSignal(maha, antar, yogas, 'monthly'),
+      what_to_watch: getRelationshipWatch(maha, antar),
+    },
+    health: {
+      watch: deepText?.health || getHealthWatch(basic, destiny, maha, antar),
+      advice: getHealthAdvice(basic, destiny, maha),
+    },
+    career: {
+      signal: deepText?.career || getCareerSignal(maha, antar, yogas, basic, destiny, 'monthly'),
+      best_week: `Week ${currentWeek <= 2 ? 3 : 1} is stronger for career moves this month`,
+    },
+    yoga_context: yogaCtx,
     opportunities: buildOpportunities(maha, antar, yogas, 'monthly'),
     watch_out: buildWatchOut(maha, antar, yogas, freqMap, 'monthly'),
-    finance: financeSignal,
-    relationships: relSignal,
-    health: healthWatch,
-    career: careerSignal,
-    yoga_context: yogaContext,
   };
 }
 
 // ─── Generate yearly prediction ───────────────────────────────────────────────
-export function generateYearlyPrediction(ctx) {
+export function generateYearlyPrediction(ctx, targetDate = new Date().toISOString()) {
   const { basic, destiny, maha, antar, yogas, modifiers, freqMap } = ctx;
 
-  const baseText = PERIOD_PREDICTIONS.yearly[maha];
+  // Process actual 12 months
+  const d = new Date(targetDate);
+  const year = d.getFullYear();
+  const yearData = ctx._dob ? processYearMonths(ctx._dob, year) : null;
+  const bestMonths = yearData?.bestMonths?.map(m => MONTH_NAMES[m-1]) || [];
+  const riskyMonths = yearData?.riskyMonths?.map(m => MONTH_NAMES[m-1]) || [];
+
+  // Deep period text
+  const deepText = getDeepPeriodText(maha, antar, 'yearly');
   const comboText = DASHA_COMBO_PREDICTIONS[`${maha}_${antar}`] || '';
 
-  const yogaContext = getYogaContext(yogas, 'yearly');
-  const financeSignal = getFinanceSignal(freqMap, maha, antar, 'yearly');
-  const healthWatch = getHealthWatch(basic, destiny, maha, antar);
-  const relSignal = getRelationshipSignal(maha, antar, yogas, 'yearly');
-  const careerSignal = getCareerSignal(maha, antar, yogas, basic, destiny, 'yearly');
-
+  const yogaCtx = getYogaContext(yogas, 'yearly');
   const allModifiers = modifiers.map(m => CHART_MODIFIERS[m]).filter(Boolean);
 
+  // Personal pattern for yearly
+  const personalPattern = getPersonalPattern(basic, destiny);
+  const dashaExp = getDashaExperience(maha);
+
   return {
-    overview: baseText,
-    this_year_specifically: comboText,
+    // Structure unique to YEARLY — big picture with month windows
+    year,
+    title: deepText?.title || `${year}: The ${NUMBER_ENERGY[maha]?.essence} Year`,
+    overview: deepText?.overview || PERIOD_PREDICTIONS.yearly[maha],
+
+    // Year in one line — unique to yearly
+    year_in_one_line: deepText?.the_year_in_one_line || null,
+
+    // Month windows — unique to yearly
+    best_months: deepText?.best_months || (bestMonths.length > 0 ? `${bestMonths.join(', ')} carry the year's highest energy` : null),
+    risky_months: deepText?.risky_months || (riskyMonths.length > 0 ? `${riskyMonths.join(', ')} require more caution` : null),
+
+    // This year specifically — the dasha combo layer
+    this_year_specifically: cleanText(comboText.split('.').slice(0,2).join('.')),
+
+    // Deeper domain view for yearly
+    finance: {
+      year_signal: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'yearly'),
+      your_pattern: personalPattern?.money || null,
+    },
+    relationships: {
+      year_signal: deepText?.relationships || getRelationshipSignal(maha, antar, yogas, 'yearly'),
+      your_pattern: personalPattern?.love || null,
+    },
+    health: {
+      watch: deepText?.health || getHealthWatch(basic, destiny, maha, antar),
+      your_pattern: NUMBER_ENERGY[basic]?.health_risk || null,
+    },
+    career: {
+      year_signal: deepText?.career || getCareerSignal(maha, antar, yogas, basic, destiny, 'yearly'),
+      your_pattern: personalPattern?.work || null,
+    },
+
+    // The current chapter context — unique to yearly
+    current_chapter: dashaExp ? {
+      title: dashaExp.title,
+      what_is_actually_happening: dashaExp.what_is_actually_happening,
+      the_gift: dashaExp.the_gift,
+      the_trap: dashaExp.the_trap,
+    } : null,
+
+    // Chart-level modifiers
+    life_context: allModifiers.slice(0,3),
+    yoga_context: yogaCtx,
     opportunities: buildOpportunities(maha, antar, yogas, 'yearly'),
     watch_out: buildWatchOut(maha, antar, yogas, freqMap, 'yearly'),
-    finance: financeSignal,
-    relationships: relSignal,
-    health: healthWatch,
-    career: careerSignal,
-    life_context: allModifiers.slice(0, 3),
-    yoga_context: yogaContext,
   };
 }
 
-// ─── Generate life prediction ─────────────────────────────────────────────────
+// ─── Phase text helper ────────────────────────────────────────────────────────
+function buildPhaseText(maha, antar, phase) {
+  const mahaE = NUMBER_ENERGY[maha];
+  const antarE = NUMBER_ENERGY[antar];
+  if (phase === 'early') {
+    return `The ${mahaE?.essence} energy is establishing the month's tone. Early decisions carry weight.`;
+  }
+  return `${antarE?.essence.charAt(0).toUpperCase() + antarE?.essence.slice(1)} becomes the dominant current. What was started early begins to show results.`;
+}
+
+// ─── Finance action helper ────────────────────────────────────────────────────
+function getFinanceAction(maha, antar, yogas) {
+  const yogaIds = yogas.map(y => y.id);
+  if (yogaIds.includes('financial_bandhan')) return "Save before spending — automate it so the choice doesn't happen at the point of temptation.";
+  if (yogaIds.includes('easy_money')) return "Act on the financial opportunity — but save a meaningful portion before spending any.";
+  if (maha === 8) return "Protect what exists. Not the month for large financial moves.";
+  if (maha === 5 || antar === 5) return "Business and income are the priorities. Move on what's in front of you.";
+  return "Steady management. No dramatic moves needed this month.";
+}
+
+// ─── Relationship watch helper ────────────────────────────────────────────────
+function getRelationshipWatch(maha, antar) {
+  if (antar === 4) return 'Deception risk — verify before trusting new connections.';
+  if (antar === 9 || maha === 9) return 'Intensity peaks — passion and conflict run at the same frequency.';
+  if (antar === 2 || antar === 6) return 'Depth is available — invest in the relationship that matters.';
+  if (antar === 7) return 'Detachment is present — not coldness, just a different kind of connection.';
+  return "Steady relational energy — nurture what's already there.";
+}
+
+// ─── Health advice helper ─────────────────────────────────────────────────────
+function getHealthAdvice(basic, destiny, maha) {
+  const healthMap = {
+    1: "Manage stress before it becomes physical — headaches and eye strain are the early signals.",
+    2: "Sleep quality is the priority — the emotional load lands in the body when sleep is insufficient.",
+    3: "Liver and skin — watch what you're eating and whether the ethics are aligned.",
+    4: "Blood sugar and blood pressure — physical recklessness increases when the mind is scattered.",
+    5: "Anxiety management is non-optional. Physical movement is the antidote.",
+    6: "Hormonal balance and hydration — both need more attention than usual.",
+    7: "Sleep and stillness — the nervous system is running hot.",
+    8: "Dental and gut health — where this number holds its unprocessed tension.",
+    9: "Physical outlet is mandatory. The energy needs somewhere constructive to go.",
+  };
+  return healthMap[maha] || healthMap[basic] || "Maintain baseline care consistently.";
+}
+
+
 export function generateLifePrediction(ctx) {
   const { basic, destiny, yogas, modifiers, freqMap } = ctx;
 
