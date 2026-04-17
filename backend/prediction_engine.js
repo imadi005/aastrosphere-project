@@ -15,6 +15,7 @@ import {
 } from './deep_library.js';
 
 import { classifyHourDeep } from './hour_library.js';
+import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
 
 import { DEEP_PERIOD_TEXTS_GENERATED } from './deep_library_generated.js';
 
@@ -595,28 +596,51 @@ function processYearMonths(dob, year) {
 }
 
 export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOString()) {
-  const { basic, destiny, maha, antar, monthly, yogas, freqMap, dob: ctxDob } = ctx;
-
-  // Process actual 7 days
+  const { basic, destiny, maha, antar, monthly, yogas, freqMap } = ctx;
   const weekData = ctx._dob ? processWeekDays(ctx._dob, targetDate) : null;
   const bestDays = weekData?.bestDays || [];
   const heavyDays = weekData?.heavyDays || [];
   const dominantNum = weekData?.dominantNum || antar;
-
-  // Deep period text if available
   const deepText = getDeepPeriodText(maha, antar, 'weekly');
 
-  // Yoga context
-  const yogaCtx = getYogaContext(yogas, 'weekly');
+  // Build 7-day breakdown
+  const MONTH_NAMES_LOCAL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const todayDate = new Date(targetDate);
+  const dayOfWeek = todayDate.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const weekStart = new Date(todayDate.getTime() + mondayOffset * 86400000);
 
-  // Build genuinely week-specific content
-  const overview = deepText?.overview || PERIOD_PREDICTIONS.weekly[dominantNum] || PERIOD_PREDICTIONS.weekly[antar];
-  const opportunities = deepText?.opportunities || buildOpportunities(maha, antar, yogas, 'weekly');
-  const watchOut = deepText?.watch_out || buildWatchOut(maha, antar, yogas, freqMap, 'weekly');
+  const days_breakdown = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(weekStart.getTime() + i * 86400000);
+    const dateStr = date.toISOString();
+    const wd = date.getDay();
+    const wdLord = WEEKDAY_VALUES[wd];
+    const mon = currentMonthlyDasha(ctx._dob || '', dateStr);
+    const monNum = mon ? mon.number : monthly;
+    const dayNum = reduceToSingle(monNum + wdLord);
+    const char = DAY_CHARACTER[dayNum];
+    const dayName = DAY_NAMES[wd];
+    const isToday = date.toDateString() === todayDate.toDateString();
+    days_breakdown.push({
+      date_label: `${dayName}, ${date.getDate()} ${MONTH_NAMES_LOCAL[date.getMonth()]}`,
+      day_name: dayName,
+      daily_number: dayNum,
+      is_today: isToday,
+      label: char?.label || '',
+      headline: char?.headline || '',
+      character: char?.character || '',
+      good_for: char?.good_for || [],
+      watch_out: char?.watch_out || [],
+      money: char?.money || '',
+      relationships: char?.relationships || '',
+      energy: char?.energy || '',
+    });
+  }
 
   return {
-    // Structure unique to WEEKLY
-    overview,
+    overview: deepText?.overview || PERIOD_PREDICTIONS.weekly[dominantNum] || PERIOD_PREDICTIONS.weekly[antar],
     best_days: bestDays.map(d => ({
       day: d.day,
       energy: NUMBER_ENERGY[d.number]?.essence || '',
@@ -626,37 +650,70 @@ export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOStrin
       day: d.day,
       caution: NUMBER_ENERGY[d.number]?.shadow || '',
     })),
-    opportunities,
-    watch_out: watchOut,
-    // Weekly-specific domains (short, punchy)
+    opportunities: deepText?.opportunities || buildOpportunities(maha, antar, yogas, 'weekly'),
+    watch_out: deepText?.watch_out || buildWatchOut(maha, antar, yogas, freqMap, 'weekly'),
     money_this_week: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'weekly'),
     love_this_week: deepText?.relationships || getRelationshipSignal(maha, antar, yogas, 'weekly'),
     health_this_week: deepText?.health || getHealthWatch(basic, destiny, maha, antar),
-    yoga_context: yogaCtx,
+    days_breakdown,
   };
 }
 
-// ─── Generate monthly prediction ─────────────────────────────────────────────
+
 export function generateMonthlyPrediction(ctx, targetDate = new Date().toISOString()) {
   const { basic, destiny, maha, antar, monthly, yogas, freqMap } = ctx;
-
-  // Process actual month weeks
   const monthData = ctx._dob ? processMonthWeeks(ctx._dob, targetDate) : null;
   const currentWeek = monthData?.currentWeek || 2;
-
-  // Deep period text
   const deepText = getDeepPeriodText(maha, antar, 'monthly');
-
-  const yogaCtx = getYogaContext(yogas, 'monthly');
   const d = new Date(targetDate);
   const monthName = MONTH_NAMES[d.getMonth()];
 
+  // Build 4-week breakdown
+  const MONTH_NAMES_LOCAL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+
+  const weeks_breakdown = [];
+  for (let w = 0; w < 4; w++) {
+    const weekStart = new Date(monthStart.getTime() + w * 7 * 86400000);
+    const weekEnd = new Date(weekStart.getTime() + 6 * 86400000);
+
+    // Get dominant number for this week
+    let weekNums = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(weekStart.getTime() + i * 86400000);
+      const dateStr = date.toISOString();
+      const mon = currentMonthlyDasha(ctx._dob || '', dateStr);
+      const monNum = mon ? mon.number : monthly;
+      const wd = date.getDay();
+      const wdLord = WEEKDAY_VALUES[wd];
+      weekNums.push(reduceToSingle(monNum + wdLord));
+    }
+    const dominant = weekNums.reduce((acc, n) => { acc[n] = (acc[n]||0)+1; return acc; }, {});
+    const dominantNum = parseInt(Object.entries(dominant).sort((a,b)=>b[1]-a[1])[0][0]);
+    const char = WEEK_CHARACTER[dominantNum];
+    const isCurrentWeek = (w + 1) === currentWeek;
+
+    const startDay = weekStart.getDate();
+    const endDay = Math.min(weekEnd.getDate(), new Date(d.getFullYear(), d.getMonth()+1, 0).getDate());
+    const weekLabel = `Week ${w+1}: ${startDay}–${endDay} ${MONTH_NAMES_LOCAL[d.getMonth()]}`;
+
+    weeks_breakdown.push({
+      week_number: w + 1,
+      date_label: weekLabel,
+      dominant_number: dominantNum,
+      is_current: isCurrentWeek,
+      label: char?.label || '',
+      character: char?.character || '',
+      good_for: char?.good_for || [],
+      watch_out: char?.watch_out || [],
+      finance: char?.finance || '',
+      relationships: char?.relationships || '',
+    });
+  }
+
   return {
-    // Structure unique to MONTHLY — arc view with phases
     month_name: monthName,
     overview: deepText?.overview || PERIOD_PREDICTIONS.monthly[monthly] || PERIOD_PREDICTIONS.monthly[antar],
-
-    // Phase breakdown — unique to monthly
     phases: [
       {
         label: 'Week 1–2',
@@ -669,8 +726,6 @@ export function generateMonthlyPrediction(ctx, targetDate = new Date().toISOStri
         current: currentWeek > 2,
       },
     ],
-
-    // Deeper domain breakdowns for monthly
     finance: {
       signal: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'monthly'),
       action: getFinanceAction(maha, antar, yogas),
@@ -687,51 +742,58 @@ export function generateMonthlyPrediction(ctx, targetDate = new Date().toISOStri
       signal: deepText?.career || getCareerSignal(maha, antar, yogas, basic, destiny, 'monthly'),
       best_week: `Week ${currentWeek <= 2 ? 3 : 1} is stronger for career moves this month`,
     },
-    yoga_context: yogaCtx,
     opportunities: buildOpportunities(maha, antar, yogas, 'monthly'),
     watch_out: buildWatchOut(maha, antar, yogas, freqMap, 'monthly'),
+    weeks_breakdown,
   };
 }
 
-// ─── Generate yearly prediction ───────────────────────────────────────────────
+
 export function generateYearlyPrediction(ctx, targetDate = new Date().toISOString()) {
   const { basic, destiny, maha, antar, yogas, modifiers, freqMap } = ctx;
-
-  // Process actual 12 months
   const d = new Date(targetDate);
   const year = d.getFullYear();
   const yearData = ctx._dob ? processYearMonths(ctx._dob, year) : null;
   const bestMonths = yearData?.bestMonths?.map(m => MONTH_NAMES[m-1]) || [];
   const riskyMonths = yearData?.riskyMonths?.map(m => MONTH_NAMES[m-1]) || [];
-
-  // Deep period text
   const deepText = getDeepPeriodText(maha, antar, 'yearly');
   const comboText = DASHA_COMBO_PREDICTIONS[`${maha}_${antar}`] || '';
-
-  const yogaCtx = getYogaContext(yogas, 'yearly');
   const allModifiers = modifiers.map(m => CHART_MODIFIERS[m]).filter(Boolean);
-
-  // Personal pattern for yearly
   const personalPattern = getPersonalPattern(basic, destiny);
   const dashaExp = getDashaExperience(maha);
+  const currentMonth = d.getMonth();
+
+  // Build 12-month breakdown
+  const months_breakdown = [];
+  for (let m = 0; m < 12; m++) {
+    const monthStart = new Date(year, m, 1).toISOString();
+    const mon = currentMonthlyDasha(ctx._dob || '', monthStart);
+    const monthNum = mon ? mon.number : 5;
+    const char = MONTH_CHARACTER[monthNum];
+    const isCurrentMonth = m === currentMonth;
+    months_breakdown.push({
+      month_name: MONTH_NAMES[m],
+      month_number: m + 1,
+      monthly_number: monthNum,
+      is_current: isCurrentMonth,
+      label: char?.label || '',
+      character: char?.character || '',
+      best_for: char?.best_for || [],
+      caution: char?.caution || [],
+      finance: char?.finance || '',
+      relationships: char?.relationships || '',
+      health: char?.health || '',
+    });
+  }
 
   return {
-    // Structure unique to YEARLY — big picture with month windows
     year,
     title: deepText?.title || `${year}: The ${NUMBER_ENERGY[maha]?.essence} Year`,
     overview: deepText?.overview || PERIOD_PREDICTIONS.yearly[maha],
-
-    // Year in one line — unique to yearly
     year_in_one_line: deepText?.the_year_in_one_line || null,
-
-    // Month windows — unique to yearly
     best_months: deepText?.best_months || (bestMonths.length > 0 ? `${bestMonths.join(', ')} carry the year's highest energy` : null),
     risky_months: deepText?.risky_months || (riskyMonths.length > 0 ? `${riskyMonths.join(', ')} require more caution` : null),
-
-    // This year specifically — the dasha combo layer
     this_year_specifically: cleanText(comboText.split('.').slice(0,2).join('.')),
-
-    // Deeper domain view for yearly
     finance: {
       year_signal: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'yearly'),
       your_pattern: personalPattern?.money || null,
@@ -748,22 +810,19 @@ export function generateYearlyPrediction(ctx, targetDate = new Date().toISOStrin
       year_signal: deepText?.career || getCareerSignal(maha, antar, yogas, basic, destiny, 'yearly'),
       your_pattern: personalPattern?.work || null,
     },
-
-    // The current chapter context — unique to yearly
     current_chapter: dashaExp ? {
       title: dashaExp.title,
       what_is_actually_happening: dashaExp.what_is_actually_happening,
       the_gift: dashaExp.the_gift,
       the_trap: dashaExp.the_trap,
     } : null,
-
-    // Chart-level modifiers
     life_context: allModifiers.slice(0,3),
-    yoga_context: yogaCtx,
     opportunities: buildOpportunities(maha, antar, yogas, 'yearly'),
     watch_out: buildWatchOut(maha, antar, yogas, freqMap, 'yearly'),
+    months_breakdown,
   };
 }
+
 
 // ─── Phase text helper ────────────────────────────────────────────────────────
 function buildPhaseText(maha, antar, phase) {

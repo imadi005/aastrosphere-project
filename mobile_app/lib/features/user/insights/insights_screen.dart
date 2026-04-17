@@ -120,10 +120,14 @@ class _WeeklyTab extends ConsumerWidget {
                   _SignalItem(icon: Icons.monitor_heart_outlined, label: 'Health', text: data['health_this_week'] as String, color: Colors.teal),
               ], isDark: isDark),
 
-              // Yoga context
-              if (data['yoga_context'] != null) ...[
-                const SizedBox(height: 10),
-                _YogaBar(yogaCtx: data['yoga_context'] as Map<String, dynamic>, gold: gold, isDark: isDark),
+
+              // Days breakdown
+              if ((data['days_breakdown'] as List? ?? []).isNotEmpty) ...[
+                const SizedBox(height: 14),
+                _DaysBreakdown(
+                  days: (data['days_breakdown'] as List).cast<Map<String, dynamic>>(),
+                  isDark: isDark, gold: gold,
+                ),
               ],
             ],
           ),
@@ -210,9 +214,13 @@ class _MonthlyTab extends ConsumerWidget {
                 color: Colors.blueAccent, isDark: isDark,
               ),
 
-              if (data['yoga_context'] != null) ...[
-                const SizedBox(height: 10),
-                _YogaBar(yogaCtx: data['yoga_context'] as Map<String, dynamic>, gold: gold, isDark: isDark),
+              // Weeks breakdown
+              if ((data['weeks_breakdown'] as List? ?? []).isNotEmpty) ...[
+                const SizedBox(height: 14),
+                _WeeksBreakdown(
+                  weeks: (data['weeks_breakdown'] as List).cast<Map<String, dynamic>>(),
+                  isDark: isDark, gold: gold,
+                ),
               ],
             ],
           ),
@@ -295,9 +303,13 @@ class _YearlyTab extends ConsumerWidget {
                 color: Colors.blueAccent, isDark: isDark,
               ),
 
-              if (data['yoga_context'] != null) ...[
-                const SizedBox(height: 10),
-                _YogaBar(yogaCtx: data['yoga_context'] as Map<String, dynamic>, gold: gold, isDark: isDark),
+              // Months breakdown
+              if ((data['months_breakdown'] as List? ?? []).isNotEmpty) ...[
+                const SizedBox(height: 14),
+                _MonthsBreakdown(
+                  months: (data['months_breakdown'] as List).cast<Map<String, dynamic>>(),
+                  isDark: isDark, gold: gold,
+                ),
               ],
             ],
           ),
@@ -790,31 +802,6 @@ class _YearlyDomainCard extends StatelessWidget {
   }
 }
 
-// Yoga bar
-class _YogaBar extends StatelessWidget {
-  final Map<String, dynamic> yogaCtx;
-  final Color gold;
-  final bool isDark;
-  const _YogaBar({required this.yogaCtx, required this.gold, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: gold.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: gold.withOpacity(0.15), width: 0.5),
-      ),
-      child: Row(children: [
-        Icon(Icons.psychology_outlined, size: 13, color: gold),
-        const SizedBox(width: 8),
-        Expanded(child: Text(yogaCtx['summary'] as String? ?? '',
-            style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.5, fontStyle: FontStyle.italic))),
-      ]),
-    );
-  }
 }
 
 class _RetryView extends StatelessWidget {
@@ -831,5 +818,468 @@ class _RetryView extends StatelessWidget {
       const SizedBox(height: 12),
       GestureDetector(onTap: onRetry, child: Text('Retry', style: GoogleFonts.dmSans(fontSize: 13, color: gold))),
     ]));
+  }
+}
+
+
+// ─── Days breakdown (weekly) ──────────────────────────────────────────────────
+class _DaysBreakdown extends StatefulWidget {
+  final List<Map<String, dynamic>> days;
+  final bool isDark;
+  final Color gold;
+  const _DaysBreakdown({required this.days, required this.isDark, required this.gold});
+
+  @override
+  State<_DaysBreakdown> createState() => _DaysBreakdownState();
+}
+
+class _DaysBreakdownState extends State<_DaysBreakdown> {
+  int? _expanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primary = widget.isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final border = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
+    final successColor = widget.isDark ? AppColors.successDark : AppColors.success;
+    final dangerColor = widget.isDark ? AppColors.dangerDark : AppColors.danger;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionLabel('This Week'),
+        const SizedBox(height: 8),
+        AstroCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Column(
+            children: widget.days.asMap().entries.map((entry) {
+              final i = entry.key;
+              final day = entry.value;
+              final isToday = day['is_today'] as bool? ?? false;
+              final isOpen = _expanded == i;
+              final label = day['label'] as String? ?? '';
+              final dayName = day['day_name'] as String? ?? '';
+              final dateLabel = day['date_label'] as String? ?? '';
+              final headline = day['headline'] as String? ?? '';
+              final goodFor = (day['good_for'] as List? ?? []).cast<String>();
+              final watchOut = (day['watch_out'] as List? ?? []).cast<String>();
+              final money = day['money'] as String? ?? '';
+              final relationships = day['relationships'] as String? ?? '';
+
+              return Column(children: [
+                if (i > 0) Divider(color: border, height: 14, thickness: 0.5),
+                GestureDetector(
+                  onTap: () => setState(() => _expanded = isOpen ? null : i),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: [
+                          if (isToday)
+                            Container(
+                              margin: const EdgeInsets.only(right: 7),
+                              width: 6, height: 6,
+                              decoration: BoxDecoration(shape: BoxShape.circle, color: widget.gold),
+                            ),
+                          Expanded(child: Text(dateLabel, style: GoogleFonts.dmSans(
+                              fontSize: 12, fontWeight: FontWeight.w600,
+                              color: isToday ? widget.gold : primary))),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: widget.gold.withOpacity(0.07),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(label, style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w600,
+                                color: widget.gold)),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                              size: 14, color: secondary),
+                        ]),
+                        const SizedBox(height: 2),
+                        Text(headline, style: GoogleFonts.dmSans(
+                            fontSize: 11, color: secondary, fontStyle: FontStyle.italic)),
+                        if (isOpen) ...[
+                          const SizedBox(height: 10),
+                          if (goodFor.isNotEmpty) ...[
+                            Text('GOOD FOR', style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8, color: successColor)),
+                            const SizedBox(height: 5),
+                            ...goodFor.map((g) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Padding(padding: const EdgeInsets.only(top: 5),
+                                    child: Container(width: 4, height: 4,
+                                        decoration: BoxDecoration(shape: BoxShape.circle, color: successColor))),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(g, style: GoogleFonts.dmSans(
+                                    fontSize: 12, color: primary, height: 1.4))),
+                              ]),
+                            )),
+                          ],
+                          if (watchOut.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text('WATCH OUT', style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8, color: dangerColor)),
+                            const SizedBox(height: 5),
+                            ...watchOut.map((w) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Padding(padding: const EdgeInsets.only(top: 5),
+                                    child: Container(width: 4, height: 4,
+                                        decoration: BoxDecoration(shape: BoxShape.circle, color: dangerColor))),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(w, style: GoogleFonts.dmSans(
+                                    fontSize: 12, color: secondary, height: 1.4))),
+                              ]),
+                            )),
+                          ],
+                          if (money.isNotEmpty || relationships.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Divider(color: border, height: 1, thickness: 0.5),
+                            const SizedBox(height: 6),
+                            if (money.isNotEmpty)
+                              _MiniRow(icon: Icons.account_balance_wallet_outlined,
+                                  text: money, color: const Color(0xFFF59E0B), secondary: secondary),
+                            if (relationships.isNotEmpty)
+                              _MiniRow(icon: Icons.favorite_border,
+                                  text: relationships, color: Colors.pinkAccent, secondary: secondary),
+                          ],
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ]);
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Weeks breakdown (monthly) ────────────────────────────────────────────────
+class _WeeksBreakdown extends StatefulWidget {
+  final List<Map<String, dynamic>> weeks;
+  final bool isDark;
+  final Color gold;
+  const _WeeksBreakdown({required this.weeks, required this.isDark, required this.gold});
+
+  @override
+  State<_WeeksBreakdown> createState() => _WeeksBreakdownState();
+}
+
+class _WeeksBreakdownState extends State<_WeeksBreakdown> {
+  int? _expanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primary = widget.isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final border = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
+    final successColor = widget.isDark ? AppColors.successDark : AppColors.success;
+    final dangerColor = widget.isDark ? AppColors.dangerDark : AppColors.danger;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionLabel('Week by Week'),
+        const SizedBox(height: 8),
+        AstroCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Column(
+            children: widget.weeks.asMap().entries.map((entry) {
+              final i = entry.key;
+              final week = entry.value;
+              final isCurrent = week['is_current'] as bool? ?? false;
+              final isOpen = _expanded == i;
+              final label = week['label'] as String? ?? '';
+              final dateLabel = week['date_label'] as String? ?? '';
+              final character = week['character'] as String? ?? '';
+              final goodFor = (week['good_for'] as List? ?? []).cast<String>();
+              final watchOut = (week['watch_out'] as List? ?? []).cast<String>();
+              final finance = week['finance'] as String? ?? '';
+              final relationships = week['relationships'] as String? ?? '';
+
+              return Column(children: [
+                if (i > 0) Divider(color: border, height: 14, thickness: 0.5),
+                GestureDetector(
+                  onTap: () => setState(() => _expanded = isOpen ? null : i),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: [
+                          Expanded(child: Text(dateLabel, style: GoogleFonts.dmSans(
+                              fontSize: 12, fontWeight: FontWeight.w600,
+                              color: isCurrent ? widget.gold : primary))),
+                          if (isCurrent)
+                            Container(
+                              margin: const EdgeInsets.only(right: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: widget.gold.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text('NOW', style: GoogleFonts.dmSans(
+                                  fontSize: 8, fontWeight: FontWeight.w700, color: widget.gold)),
+                            ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: widget.gold.withOpacity(0.07),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(label, style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w600, color: widget.gold)),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                              size: 14, color: secondary),
+                        ]),
+                        if (isOpen) ...[
+                          const SizedBox(height: 8),
+                          Text(character, style: GoogleFonts.dmSans(
+                              fontSize: 12, color: secondary, height: 1.5)),
+                          const SizedBox(height: 10),
+                          if (goodFor.isNotEmpty) ...[
+                            Text('GOOD FOR', style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8, color: successColor)),
+                            const SizedBox(height: 5),
+                            ...goodFor.map((g) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Padding(padding: const EdgeInsets.only(top: 5),
+                                    child: Container(width: 4, height: 4,
+                                        decoration: BoxDecoration(shape: BoxShape.circle, color: successColor))),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(g, style: GoogleFonts.dmSans(
+                                    fontSize: 12, color: primary, height: 1.4))),
+                              ]),
+                            )),
+                          ],
+                          if (watchOut.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text('WATCH OUT', style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8, color: dangerColor)),
+                            const SizedBox(height: 5),
+                            ...watchOut.map((w) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Padding(padding: const EdgeInsets.only(top: 5),
+                                    child: Container(width: 4, height: 4,
+                                        decoration: BoxDecoration(shape: BoxShape.circle, color: dangerColor))),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(w, style: GoogleFonts.dmSans(
+                                    fontSize: 12, color: secondary, height: 1.4))),
+                              ]),
+                            )),
+                          ],
+                          if (finance.isNotEmpty || relationships.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Divider(color: border, height: 1, thickness: 0.5),
+                            const SizedBox(height: 6),
+                            if (finance.isNotEmpty)
+                              _MiniRow(icon: Icons.account_balance_wallet_outlined,
+                                  text: finance, color: const Color(0xFFF59E0B), secondary: secondary),
+                            if (relationships.isNotEmpty)
+                              _MiniRow(icon: Icons.favorite_border,
+                                  text: relationships, color: Colors.pinkAccent, secondary: secondary),
+                          ],
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ]);
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Months breakdown (yearly) ────────────────────────────────────────────────
+class _MonthsBreakdown extends StatefulWidget {
+  final List<Map<String, dynamic>> months;
+  final bool isDark;
+  final Color gold;
+  const _MonthsBreakdown({required this.months, required this.isDark, required this.gold});
+
+  @override
+  State<_MonthsBreakdown> createState() => _MonthsBreakdownState();
+}
+
+class _MonthsBreakdownState extends State<_MonthsBreakdown> {
+  int? _expanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primary = widget.isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final border = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
+    final successColor = widget.isDark ? AppColors.successDark : AppColors.success;
+    final dangerColor = widget.isDark ? AppColors.dangerDark : AppColors.danger;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionLabel('Month by Month'),
+        const SizedBox(height: 8),
+        AstroCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Column(
+            children: widget.months.asMap().entries.map((entry) {
+              final i = entry.key;
+              final month = entry.value;
+              final isCurrent = month['is_current'] as bool? ?? false;
+              final isOpen = _expanded == i;
+              final label = month['label'] as String? ?? '';
+              final monthName = month['month_name'] as String? ?? '';
+              final character = month['character'] as String? ?? '';
+              final bestFor = (month['best_for'] as List? ?? []).cast<String>();
+              final caution = (month['caution'] as List? ?? []).cast<String>();
+              final finance = month['finance'] as String? ?? '';
+              final relationships = month['relationships'] as String? ?? '';
+              final health = month['health'] as String? ?? '';
+
+              return Column(children: [
+                if (i > 0) Divider(color: border, height: 14, thickness: 0.5),
+                GestureDetector(
+                  onTap: () => setState(() => _expanded = isOpen ? null : i),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: [
+                          Text(monthName, style: GoogleFonts.cormorantGaramond(
+                              fontSize: 18,
+                              color: isCurrent ? widget.gold : (widget.isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+                              fontWeight: FontWeight.w400)),
+                          const SizedBox(width: 8),
+                          if (isCurrent)
+                            Container(
+                              margin: const EdgeInsets.only(right: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: widget.gold.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text('NOW', style: GoogleFonts.dmSans(
+                                  fontSize: 8, fontWeight: FontWeight.w700, color: widget.gold)),
+                            ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: widget.gold.withOpacity(0.07),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(label, style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w600, color: widget.gold)),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                              size: 14, color: secondary),
+                        ]),
+                        if (isOpen) ...[
+                          const SizedBox(height: 8),
+                          Text(character, style: GoogleFonts.dmSans(
+                              fontSize: 12, color: secondary, height: 1.5)),
+                          const SizedBox(height: 10),
+                          if (bestFor.isNotEmpty) ...[
+                            Text('BEST FOR', style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8, color: successColor)),
+                            const SizedBox(height: 5),
+                            ...bestFor.map((g) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Padding(padding: const EdgeInsets.only(top: 5),
+                                    child: Container(width: 4, height: 4,
+                                        decoration: BoxDecoration(shape: BoxShape.circle, color: successColor))),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(g, style: GoogleFonts.dmSans(
+                                    fontSize: 12, color: primary, height: 1.4))),
+                              ]),
+                            )),
+                          ],
+                          if (caution.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text('CAUTION', style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8, color: dangerColor)),
+                            const SizedBox(height: 5),
+                            ...caution.map((c) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Padding(padding: const EdgeInsets.only(top: 5),
+                                    child: Container(width: 4, height: 4,
+                                        decoration: BoxDecoration(shape: BoxShape.circle, color: dangerColor))),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(c, style: GoogleFonts.dmSans(
+                                    fontSize: 12, color: secondary, height: 1.4))),
+                              ]),
+                            )),
+                          ],
+                          if (finance.isNotEmpty || relationships.isNotEmpty || health.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Divider(color: border, height: 1, thickness: 0.5),
+                            const SizedBox(height: 6),
+                            if (finance.isNotEmpty)
+                              _MiniRow(icon: Icons.account_balance_wallet_outlined,
+                                  text: finance, color: const Color(0xFFF59E0B), secondary: secondary),
+                            if (relationships.isNotEmpty)
+                              _MiniRow(icon: Icons.favorite_border,
+                                  text: relationships, color: Colors.pinkAccent, secondary: secondary),
+                            if (health.isNotEmpty)
+                              _MiniRow(icon: Icons.monitor_heart_outlined,
+                                  text: health, color: Colors.teal, secondary: secondary),
+                          ],
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ]);
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Mini row (icon + text) ───────────────────────────────────────────────────
+class _MiniRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color color, secondary;
+  const _MiniRow({required this.icon, required this.text, required this.color, required this.secondary});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(icon, size: 12, color: color),
+        const SizedBox(width: 6),
+        Expanded(child: Text(text, style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.4))),
+      ]),
+    );
   }
 }
