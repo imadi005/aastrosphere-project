@@ -14,6 +14,8 @@ import {
   DEEP_DASHA_EXPERIENCE, DEEP_PERIOD_TEXTS, HONEST_WARNINGS, PERSONAL_PATTERNS,
 } from './deep_library.js';
 
+import { DEEP_PERIOD_TEXTS_GENERATED } from './deep_library_generated.js';
+
 import {
   basicNumber, destinyNumber, currentMahadasha, currentAntardasha,
   currentMonthlyDasha, dailyDasha, hourlyDasha, allHourlyDashas,
@@ -63,10 +65,14 @@ export function getHonestWarnings(yogas, freqMap, maha, antar) {
 
 export function getDeepPeriodText(maha, antar, period) {
   const key = `${maha}_${antar}`;
-  const revKey = `${antar}_${maha}`;
-  const periodData = DEEP_PERIOD_TEXTS[period];
-  if (!periodData) return null;
-  return periodData[key] || periodData[revKey] || null;
+  // Priority: manual deep texts (high quality) > generated texts (all 81 combos)
+  const manualData = DEEP_PERIOD_TEXTS[period];
+  if (manualData?.[key]) return manualData[key];
+
+  const generatedData = DEEP_PERIOD_TEXTS_GENERATED[period];
+  if (generatedData?.[key]) return generatedData[key];
+
+  return null;
 }
 
 // ─── Text cleaning utility ───────────────────────────────────────────────────
