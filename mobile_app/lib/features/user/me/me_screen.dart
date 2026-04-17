@@ -238,7 +238,7 @@ class _MeContent extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Column(
               children: [
-                ...(structuralYogas + cautionYogas).take(6).asMap().entries.map((e) {
+                ...List.from(structuralYogas + cautionYogas).take(6).toList().asMap().entries.map((e) {
                   final i = e.key;
                   final y = e.value as Map<String, dynamic>;
                   final isPos = y['positive'] == true;
