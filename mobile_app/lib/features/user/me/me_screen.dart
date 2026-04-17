@@ -23,18 +23,19 @@ class MeScreen extends ConsumerWidget {
       data: (user) {
         if (user == null) return const Center(child: Text('No profile'));
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
           child: deepAsync.when(
             loading: () => Column(children: [
               _ProfileHeader(user: user, isDark: isDark, gold: gold),
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
               CircularProgressIndicator(strokeWidth: 1.5, color: gold),
             ]),
             error: (_, __) => Column(children: [
               _ProfileHeader(user: user, isDark: isDark, gold: gold),
               const SizedBox(height: 24),
-              Text('Could not load profile', style: GoogleFonts.dmSans(
-                  fontSize: 13, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
+              Text('Could not load profile insights',
+                  style: GoogleFonts.dmSans(fontSize: 13,
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
             ]),
             data: (deep) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,15 +69,13 @@ class _MeContent extends StatelessWidget {
     final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
 
     final coreNature = data['core_nature'] as Map<String, dynamic>?;
-    final lifeDir = data['life_direction'] as Map<String, dynamic>?;
-    final coreCombination = data['core_combination'] as Map<String, dynamic>?;
     final patterns = data['personal_patterns'] as Map<String, dynamic>?;
     final chapter = data['current_chapter'] as Map<String, dynamic>?;
+    final lifeDir = data['life_direction'] as Map<String, dynamic>?;
     final yogas = (data['active_yogas'] as List? ?? []);
     final warnings = (data['warnings'] as List? ?? []);
     final natalCombos = (data['natal_combinations'] as List? ?? []);
 
-    // Separate structural yogas
     final structuralYogas = yogas.where((y) => y['combo_key'] == null && y['positive'] == true).toList();
     final cautionYogas = yogas.where((y) => y['combo_key'] == null && y['positive'] == false).toList();
 
@@ -94,18 +93,33 @@ class _MeContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(coreNature['pattern'] as String? ?? '',
-                    style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.6)),
+                    style: GoogleFonts.dmSans(fontSize: 14, color: primary, height: 1.65)),
                 if (coreNature['internal_conflict'] != null) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Divider(color: border, height: 1, thickness: 0.5),
-                  const SizedBox(height: 10),
-                  _LabeledText('The tension inside you',
-                      coreNature['internal_conflict'] as String, secondary, gold),
+                  const SizedBox(height: 12),
+                  // Label on its own line, text below — fixes the alignment issue
+                  Text('The tension inside you', style: GoogleFonts.dmSans(
+                      fontSize: 11, fontWeight: FontWeight.w600, color: gold)),
+                  const SizedBox(height: 4),
+                  Text(coreNature['internal_conflict'] as String,
+                      style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.55)),
                 ],
                 if (coreNature['shadow'] != null) ...[
-                  const SizedBox(height: 8),
-                  _LabeledText('Your shadow',
-                      coreNature['shadow'] as String, secondary, dangerColor),
+                  const SizedBox(height: 12),
+                  Text('Your shadow', style: GoogleFonts.dmSans(
+                      fontSize: 11, fontWeight: FontWeight.w600, color: dangerColor)),
+                  const SizedBox(height: 4),
+                  Text(coreNature['shadow'] as String,
+                      style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.55)),
+                ],
+                if (coreNature['what_trips_you'] != null) ...[
+                  const SizedBox(height: 12),
+                  Text('What trips you up', style: GoogleFonts.dmSans(
+                      fontSize: 11, fontWeight: FontWeight.w600, color: dangerColor.withOpacity(0.7))),
+                  const SizedBox(height: 4),
+                  Text(coreNature['what_trips_you'] as String,
+                      style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.55)),
                 ],
               ],
             ),
@@ -113,37 +127,38 @@ class _MeContent extends StatelessWidget {
           const SizedBox(height: 16),
         ],
 
-        // ── Your Life Patterns ───────────────────────────────────
+        // ── Your Patterns ────────────────────────────────────────
         if (patterns != null) ...[
           SectionLabel('Your Patterns'),
           const SizedBox(height: 8),
-          _PatternCard(icon: Icons.account_balance_wallet_outlined,
-              label: 'Money', text: patterns['money'] as String? ?? '',
-              color: const Color(0xFFF59E0B), isDark: isDark),
-          _PatternCard(icon: Icons.favorite_border,
-              label: 'Love', text: patterns['love'] as String? ?? '',
-              color: Colors.pinkAccent, isDark: isDark),
-          _PatternCard(icon: Icons.work_outline,
-              label: 'Work', text: patterns['work'] as String? ?? '',
-              color: Colors.blueAccent, isDark: isDark),
-          if (patterns['recurring_lesson'] != null) ...[
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: gold.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: gold.withOpacity(0.2), width: 0.5),
-              ),
-              child: Row(children: [
-                Icon(Icons.lightbulb_outline, size: 14, color: gold),
-                const SizedBox(width: 10),
-                Expanded(child: Text(patterns['recurring_lesson'] as String,
-                    style: GoogleFonts.dmSans(fontSize: 12, color: secondary,
-                        height: 1.5, fontStyle: FontStyle.italic))),
-              ]),
+          AstroCard(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              children: [
+                _PatternRow(icon: Icons.account_balance_wallet_outlined, label: 'Money',
+                    text: patterns['money'] as String? ?? '',
+                    color: const Color(0xFFF59E0B), isDark: isDark, border: border),
+                Divider(color: border, height: 20, thickness: 0.5),
+                _PatternRow(icon: Icons.favorite_border, label: 'Love',
+                    text: patterns['love'] as String? ?? '',
+                    color: Colors.pinkAccent, isDark: isDark, border: border),
+                Divider(color: border, height: 20, thickness: 0.5),
+                _PatternRow(icon: Icons.work_outline, label: 'Work',
+                    text: patterns['work'] as String? ?? '',
+                    color: Colors.blueAccent, isDark: isDark, border: border),
+                if (patterns['recurring_lesson'] != null) ...[
+                  Divider(color: border, height: 20, thickness: 0.5),
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Icon(Icons.lightbulb_outline, size: 14, color: gold),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(patterns['recurring_lesson'] as String,
+                        style: GoogleFonts.dmSans(fontSize: 12, color: secondary,
+                            height: 1.5, fontStyle: FontStyle.italic))),
+                  ]),
+                ],
+              ],
             ),
-          ],
+          ),
           const SizedBox(height: 16),
         ],
 
@@ -156,25 +171,40 @@ class _MeContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(chapter['title'] as String? ?? '',
-                    style: GoogleFonts.dmSans(
-                        fontSize: 11, fontWeight: FontWeight.w600, color: gold)),
-                const SizedBox(height: 8),
+                Row(children: [
+                  Icon(Icons.hourglass_bottom_outlined, size: 13, color: gold),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text(chapter['title'] as String? ?? '',
+                      style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, color: gold))),
+                ]),
+                const SizedBox(height: 10),
                 Text(chapter['what_it_feels_like'] as String? ?? '',
                     style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.6)),
                 if (chapter['the_gift'] != null) ...[
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Divider(color: border, height: 1, thickness: 0.5),
-                  const SizedBox(height: 8),
-                  _LabeledText('The gift', chapter['the_gift'] as String, secondary, successColor),
+                  const SizedBox(height: 10),
+                  Text('The gift', style: GoogleFonts.dmSans(
+                      fontSize: 11, fontWeight: FontWeight.w600, color: successColor)),
+                  const SizedBox(height: 4),
+                  Text(chapter['the_gift'] as String,
+                      style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.5)),
                 ],
                 if (chapter['the_trap'] != null) ...[
-                  const SizedBox(height: 6),
-                  _LabeledText('The trap', chapter['the_trap'] as String, secondary, dangerColor),
+                  const SizedBox(height: 10),
+                  Text('The trap', style: GoogleFonts.dmSans(
+                      fontSize: 11, fontWeight: FontWeight.w600, color: dangerColor)),
+                  const SizedBox(height: 4),
+                  Text(chapter['the_trap'] as String,
+                      style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.5)),
                 ],
                 if (chapter['advice'] != null) ...[
-                  const SizedBox(height: 6),
-                  _LabeledText('Advice', chapter['advice'] as String, secondary, gold),
+                  const SizedBox(height: 10),
+                  Text('What to do', style: GoogleFonts.dmSans(
+                      fontSize: 11, fontWeight: FontWeight.w600, color: gold)),
+                  const SizedBox(height: 4),
+                  Text(chapter['advice'] as String,
+                      style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.5)),
                 ],
               ],
             ),
@@ -187,19 +217,15 @@ class _MeContent extends StatelessWidget {
           SectionLabel('Health'),
           const SizedBox(height: 8),
           AstroCard(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(width: 32, height: 32,
-                    decoration: BoxDecoration(
-                        color: Colors.teal.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.monitor_heart_outlined, size: 16, color: Colors.teal)),
-                const SizedBox(width: 12),
-                Expanded(child: Text(lifeDir!['health_real'] as String,
-                    style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.55))),
-              ],
-            ),
+            padding: const EdgeInsets.all(14),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(width: 30, height: 30,
+                  decoration: BoxDecoration(color: Colors.teal.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  child: const Icon(Icons.monitor_heart_outlined, size: 14, color: Colors.teal)),
+              const SizedBox(width: 12),
+              Expanded(child: Text(lifeDir!['health_real'] as String,
+                  style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.55))),
+            ]),
           ),
           const SizedBox(height: 16),
         ],
@@ -209,50 +235,55 @@ class _MeContent extends StatelessWidget {
           SectionLabel('Active in Your Chart'),
           const SizedBox(height: 8),
           AstroCard(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Column(
               children: [
-                ...structuralYogas.take(4).map((y) => _YogaRow(
-                    name: y['name'] as String, isPositive: true,
-                    isDark: isDark, gold: gold)),
-                ...cautionYogas.take(2).map((y) => _YogaRow(
-                    name: y['name'] as String, isPositive: false,
-                    isDark: isDark, gold: gold)),
+                ...(structuralYogas + cautionYogas).take(6).asMap().entries.map((e) {
+                  final i = e.key;
+                  final y = e.value as Map<String, dynamic>;
+                  final isPos = y['positive'] == true;
+                  final color = isPos ? successColor : dangerColor;
+                  return Column(
+                    children: [
+                      if (i > 0) Divider(color: border, height: 14, thickness: 0.5),
+                      Row(children: [
+                        Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text(y['name'] as String? ?? '',
+                            style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w500, color: primary))),
+                        Text(isPos ? 'Active ✓' : 'Watch ⚠', style: GoogleFonts.dmSans(fontSize: 10, color: color)),
+                      ]),
+                    ],
+                  );
+                }),
               ],
             ),
           ),
           const SizedBox(height: 16),
         ],
 
-        // ── What Your Chart Says (natal combos) ──────────────────
+        // ── What Your Chart Says ─────────────────────────────────
         if (natalCombos.isNotEmpty) ...[
           SectionLabel('What Your Chart Says'),
           const SizedBox(height: 8),
-          ...natalCombos.take(4).map((c) {
+          ...natalCombos.take(3).map((c) {
             final combo = c as Map<String, dynamic>;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 8),
               child: AstroCard(
                 padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(combo['name'] as String? ?? '',
-                        style: GoogleFonts.dmSans(
-                            fontSize: 11, fontWeight: FontWeight.w600, color: gold)),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(combo['name'] as String? ?? '',
+                      style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, color: gold)),
+                  const SizedBox(height: 6),
+                  Text(combo['what_it_creates'] as String? ?? '',
+                      style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.5)),
+                  if (combo['advice'] != null) ...[
                     const SizedBox(height: 6),
-                    Text(combo['what_it_creates'] as String? ?? '',
-                        style: GoogleFonts.dmSans(
-                            fontSize: 12, color: secondary, height: 1.5)),
-                    if (combo['advice'] != null) ...[
-                      const SizedBox(height: 6),
-                      Text(combo['advice'] as String,
-                          style: GoogleFonts.dmSans(
-                              fontSize: 11, color: secondary.withOpacity(0.7),
-                              height: 1.4, fontStyle: FontStyle.italic)),
-                    ],
+                    Text(combo['advice'] as String,
+                        style: GoogleFonts.dmSans(fontSize: 11, color: secondary.withOpacity(0.75), height: 1.4, fontStyle: FontStyle.italic)),
                   ],
-                ),
+                ]),
               ),
             );
           }),
@@ -266,7 +297,7 @@ class _MeContent extends StatelessWidget {
           ...warnings.take(3).map((w) {
             final warning = w as Map<String, dynamic>;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 8),
               child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -274,114 +305,51 @@ class _MeContent extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: dangerColor.withOpacity(0.2), width: 0.5),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(warning['short'] as String? ?? '',
-                        style: GoogleFonts.dmSans(
-                            fontSize: 12, fontWeight: FontWeight.w500,
-                            color: primary, height: 1.5)),
-                    if (warning['probability'] != null) ...[
-                      const SizedBox(height: 6),
-                      Text(warning['probability'] as String,
-                          style: GoogleFonts.dmSans(
-                              fontSize: 11, color: secondary,
-                              height: 1.4, fontStyle: FontStyle.italic)),
-                    ],
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(warning['short'] as String? ?? '',
+                      style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w500, color: primary, height: 1.5)),
+                  if (warning['probability'] != null) ...[
+                    const SizedBox(height: 5),
+                    Text(warning['probability'] as String,
+                        style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.4, fontStyle: FontStyle.italic)),
                   ],
-                ),
+                ]),
               ),
             );
           }),
         ],
-
       ],
     );
   }
 }
 
-// ─── Reusable widgets ─────────────────────────────────────────────────────────
-class _LabeledText extends StatelessWidget {
+// ─── Pattern row ──────────────────────────────────────────────────────────────
+class _PatternRow extends StatelessWidget {
+  final IconData icon;
   final String label, text;
-  final Color textColor, labelColor;
-  const _LabeledText(this.label, this.text, this.textColor, this.labelColor);
+  final Color color, border;
+  final bool isDark;
+  const _PatternRow({required this.icon, required this.label, required this.text,
+      required this.color, required this.border, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('$label: ', style: GoogleFonts.dmSans(
-          fontSize: 11, fontWeight: FontWeight.w600, color: labelColor)),
-      Expanded(child: Text(text, style: GoogleFonts.dmSans(
-          fontSize: 12, color: textColor, height: 1.5))),
+      Container(width: 28, height: 28,
+          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+          child: Icon(icon, size: 13, color: color)),
+      const SizedBox(width: 12),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w600, color: color)),
+        const SizedBox(height: 3),
+        Text(text, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.45)),
+      ])),
     ]);
   }
 }
 
-class _PatternCard extends StatelessWidget {
-  final IconData icon;
-  final String label, text;
-  final Color color;
-  final bool isDark;
-  const _PatternCard({required this.icon, required this.label,
-      required this.text, required this.color, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: AstroCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(width: 30, height: 30,
-              decoration: BoxDecoration(
-                  color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-              child: Icon(icon, size: 15, color: color)),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: GoogleFonts.dmSans(
-                fontSize: 10, fontWeight: FontWeight.w600, color: color)),
-            const SizedBox(height: 2),
-            Text(text, style: GoogleFonts.dmSans(
-                fontSize: 12, color: secondary, height: 1.45)),
-          ])),
-        ]),
-      ),
-    );
-  }
-}
-
-class _YogaRow extends StatelessWidget {
-  final String name;
-  final bool isPositive, isDark;
-  final Color gold;
-  const _YogaRow({required this.name, required this.isPositive,
-      required this.isDark, required this.gold});
-
-  @override
-  Widget build(BuildContext context) {
-    final successColor = isDark ? AppColors.successDark : AppColors.success;
-    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
-    final color = isPositive ? successColor : dangerColor;
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(children: [
-        Container(width: 6, height: 6,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
-        const SizedBox(width: 10),
-        Text(name, style: GoogleFonts.dmSans(
-            fontSize: 12, color: isPositive ? color : color,
-            fontWeight: FontWeight.w500)),
-        const Spacer(),
-        Text(isPositive ? 'Active' : 'Caution',
-            style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
-      ]),
-    );
-  }
-}
-
+// ─── Profile header ───────────────────────────────────────────────────────────
 class _ProfileHeader extends StatelessWidget {
   final dynamic user;
   final bool isDark;
@@ -393,20 +361,18 @@ class _ProfileHeader extends StatelessWidget {
     final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     return Row(children: [
-      Container(width: 52, height: 52,
+      Container(width: 50, height: 50,
           decoration: BoxDecoration(
-              color: gold.withOpacity(0.1), borderRadius: BorderRadius.circular(26),
+              color: gold.withOpacity(0.1), borderRadius: BorderRadius.circular(25),
               border: Border.all(color: gold.withOpacity(0.3), width: 0.5)),
           child: Center(child: Text(
               (user.name as String).isNotEmpty ? user.name[0].toUpperCase() : 'A',
-              style: GoogleFonts.cormorantGaramond(fontSize: 26, color: gold)))),
+              style: GoogleFonts.cormorantGaramond(fontSize: 24, color: gold)))),
       const SizedBox(width: 14),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(user.name as String, style: GoogleFonts.dmSans(
-            fontSize: 17, fontWeight: FontWeight.w500, color: primary)),
+        Text(user.name as String, style: GoogleFonts.dmSans(fontSize: 17, fontWeight: FontWeight.w500, color: primary)),
         const SizedBox(height: 2),
-        Text(_dobStr(user.dob as DateTime),
-            style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
+        Text(_dobStr(user.dob as DateTime), style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
       ])),
     ]);
   }
