@@ -92,11 +92,12 @@ class ApiService {
       _post('/api/dashas', {'dob': dob, 'type': type});
 
   static Future<Map<String, dynamic>> getCompatibility(
-      String dob1, String dob2, {String? clientDate, int? clientHour}) =>
+      String dob1, String dob2, {String? clientDate, int? clientHour, String? relation}) =>
       _post('/api/compatibility', {
         'dob1': dob1, 'dob2': dob2,
         'client_date': clientDate ?? ApiService.clientDate,
         'client_hour': clientHour ?? _clientHour,
+        if (relation != null) 'relation': relation,
       });
 
   static Future<Map<String, dynamic>> checkName(String name, String dob) =>

@@ -148,6 +148,7 @@ class _FriendCardState extends State<_FriendCard> {
         widget.friend.dob.toIso8601String(),
         clientDate: ApiService.clientDate,
         clientHour: ApiService.clientHour,
+        relation: widget.friend.relation,
       );
       if (mounted) setState(() { _compat = result; _loading = false; });
     } catch (_) {
@@ -402,6 +403,7 @@ class _OverallTab extends StatelessWidget {
     final romantic = compat['romantic'] as String?;
     final friendship = compat['friendship'] as String?;
     final destinyNote = compat['destiny_note'] as String?;
+    final relationLabel = compat['relationship_label'] as String? ?? 'Close connection';
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(core, style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.65)),
@@ -420,7 +422,7 @@ class _OverallTab extends StatelessWidget {
         Divider(color: border, height: 1, thickness: 0.5),
         const SizedBox(height: 10),
         if (romantic != null)
-          _CompatRow(label: 'Romantic', text: romantic, color: Colors.pinkAccent, secondary: secondary, primary: primary),
+          _CompatRow(label: relationLabel, text: romantic, color: Colors.pinkAccent, secondary: secondary, primary: primary),
         if (romantic != null && friendship != null) const SizedBox(height: 10),
         if (friendship != null)
           _CompatRow(label: 'Friendship', text: friendship, color: const Color(0xFF6366F1), secondary: secondary, primary: primary),

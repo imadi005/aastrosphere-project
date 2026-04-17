@@ -536,16 +536,40 @@ export const PAIR_DYNAMICS = {
 
 // ─── Today's combined energy ──────────────────────────────────────────────────
 // What happens when two daily numbers meet
-export function getTodayCompatibility(daily1, daily2, basic1, basic2, yogas1 = [], yogas2 = []) {
+export function getTodayCompatibility(daily1, daily2, basic1, basic2, periods1 = [], periods2 = [], yogas1 = [], yogas2 = []) {
   const pair = [Math.min(daily1, daily2), Math.max(daily1, daily2)].join('_');
   const sameNum = daily1 === daily2;
 
-  // Score logic
-  const positiveDaily = [[1,3],[1,5],[1,7],[1,9],[3,5],[3,9],[5,7],[5,9],[6,7],[7,9],[2,6],[2,5]];
-  const tensionDaily = [[1,8],[2,8],[4,9],[4,5],[7,8],[2,4],[6,9]];
+  // Score logic — granular, uses daily + period layers for unique scores
+  const DAILY_PAIR_SCORES = {
+    '1_1':76,'1_2':69,'1_3':84,'1_4':48,'1_5':87,'1_6':75,'1_7':90,'1_8':44,'1_9':80,
+    '2_2':72,'2_3':77,'2_4':41,'2_5':74,'2_6':86,'2_7':71,'2_8':60,'2_9':63,
+    '3_3':75,'3_4':55,'3_5':85,'3_6':80,'3_7':83,'3_8':74,'3_9':77,
+    '4_4':45,'4_5':52,'4_6':58,'4_7':40,'4_8':35,'4_9':32,
+    '5_5':78,'5_6':73,'5_7':88,'5_8':67,'5_9':82,
+    '6_6':74,'6_7':84,'6_8':69,'6_9':61,
+    '7_7':56,'7_8':51,'7_9':81,
+    '8_8':65,'8_9':73,
+    '9_9':64,
+  };
+  const pairKey = [Math.min(daily1,daily2),Math.max(daily1,daily2)].join('_');
+  let score = DAILY_PAIR_SCORES[pairKey] || 55;
+  let energy = score >= 75 ? 'flowing' : score >= 55 ? 'steady' : 'tense';
 
-  let score = 50;
-  let energy = 'steady';
+  // Period layer — maha alignment adds variation so same daily doesn't = same score
+  if (periods1.length >= 2 && periods2.length >= 2) {
+    const [maha1, antar1, monthly1] = periods1;
+    const [maha2, antar2, monthly2] = periods2;
+    const mahaPairKey = [Math.min(maha1,maha2),Math.max(maha1,maha2)].join('_');
+    const mahaDailyScore = DAILY_PAIR_SCORES[mahaPairKey] || 60;
+    const antarPairKey = [Math.min(antar1,antar2),Math.max(antar1,antar2)].join('_');
+    const antarDailyScore = DAILY_PAIR_SCORES[antarPairKey] || 60;
+    const monthlyPairKey = [Math.min(monthly1,monthly2),Math.max(monthly1,monthly2)].join('_');
+    const monthlyDailyScore = DAILY_PAIR_SCORES[monthlyPairKey] || 60;
+    // Blend: 60% daily, 20% maha, 12% antar, 8% monthly
+    score = Math.round(score * 0.60 + mahaDailyScore * 0.20 + antarDailyScore * 0.12 + monthlyDailyScore * 0.08);
+  }
+
   let headline = '';
   let detail = '';
   let doTogether = [];
@@ -553,17 +577,7 @@ export function getTodayCompatibility(daily1, daily2, basic1, basic2, yogas1 = [
   let dayLabel = '';
 
   if (sameNum) {
-    score = 75;
     energy = 'amplified';
-  } else {
-    const pos = positiveDaily.some(([a,b]) =>
-      (daily1===a && daily2===b) || (daily1===b && daily2===a)
-    );
-    const ten = tensionDaily.some(([a,b]) =>
-      (daily1===a && daily2===b) || (daily1===b && daily2===a)
-    );
-    if (pos) score = 78;
-    if (ten) score = 32;
   }
 
   // Day label
