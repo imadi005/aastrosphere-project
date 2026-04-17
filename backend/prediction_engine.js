@@ -78,29 +78,25 @@ export function getDeepPeriodText(maha, antar, period) {
 // ─── Text cleaning utility ───────────────────────────────────────────────────
 function cleanText(text) {
   if (!text) return '';
-  return text
-    // Remove "X meets Y —" planet combo headers
+  // Split into sentences, filter out any that have technical terms, rejoin clean ones
+  const techPattern = /\b(Sun|Moon|Jupiter|Rahu|Mercury|Venus|Ketu|Saturn|Mars|Dasha|yoga|combination|natal|chart|misfortune|defamation|bandhan|vipreet|raj|without number|meets \w+ —)\b/gi;
+  
+  const sentences = text.split(/(?<=[.!])\s*/).map(s => s.trim()).filter(Boolean);
+  const clean = sentences
+    .filter(s => !techPattern.test(s))
+    .join(' ')
     .replace(/\b\w+ meets \w+ —\s*/gi, '')
-    // Remove "without number X" phrases
     .replace(/without number \d+\.?/gi, '')
-    // Remove all planet names
-    .replace(/\b(Sun|Moon|Jupiter|Rahu|Mercury|Venus|Ketu|Saturn|Mars)\b/g, '')
-    // Remove "Double/Triple X lifts/worsens" style sentences
-    .replace(/\b(Double|Triple|Single|Odd|Even)\s+\d+[^.!]*[.!]/gi, '')
-    // Remove "number X" references
+    .replace(/\b(Double|Triple|Single|Odd|Even)\s+\d+[^.!]*/gi, '')
     .replace(/\bnumber\s+\d+\b/gi, '')
-    // Remove "combination" word and "misfortune" when standalone
-    .replace(/\bcombination\b/gi, '')
-    .replace(/^misfortune\s+/i, '')
-    // Clean up "despite ." leftover → just remove it cleanly
-    .replace(/despite\s+\./gi, '.')
-    // Clean up orphaned punctuation and spaces
     .replace(/\s+\./g, '.')
     .replace(/\.\s*\./g, '.')
+    .replace(/^[.—\s]+/, '')
     .replace(/\s*—\s*$/, '')
-    .replace(/^[—\s]+/, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
+  
+  return clean;
 }
 
 // ─── Build complete chart context ────────────────────────────────────────────
@@ -226,41 +222,55 @@ function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destin
     yogas.push({ id: 'misfortune_78', name: 'Heavy Energy Period', positive: false });
   }
 
-  // ── MAHA + ANTAR PAIR COMBINATIONS ───────────────────────────────────────
-  // These fire based on what the two running dashas create together
-  // Uses sorted key so 9_5 and 5_9 both match '5_9'
+  // ── COMBO DESCRIPTION HELPER ──────────────────────────────────────────────
+  // Gets the best available clean description for a combo key
+  function getComboDesc(key) {
+    // Try deep library real_life first (always second-person, clean)
+    const deep = DEEP_COMBINATIONS[key] || DEEP_COMBINATIONS_EXTENDED[key];
+    if (deep?.real_life) return deep.real_life;
+    // Fall back to what_it_creates from deep
+    if (deep?.what_it_creates) return cleanText(deep.what_it_creates);
+    // Last resort: COMBINATION_MEANINGS cleaned
+    const raw = COMBINATION_MEANINGS[key];
+    return raw ? cleanText(raw) : '';
+  }
+
+  // ── MAHA + ANTAR PAIR ─────────────────────────────────────────────────────
   const mahAntarKey = [maha, antar].sort((a,b)=>a-b).join('_');
-  if (COMBINATION_MEANINGS[mahAntarKey]) {
+  const mahAntarDesc = getComboDesc(mahAntarKey);
+  if (mahAntarDesc) {
     yogas.push({
       id: 'maha_antar_combo',
       combo_key: mahAntarKey,
       name: 'Running Energy',
-      positive: true, // neutral — just informational
-      description: cleanText(COMBINATION_MEANINGS[mahAntarKey]),
+      positive: true,
+      description: mahAntarDesc,
     });
   }
 
-  // ── ANTAR + MONTHLY PAIR ───────────────────────────────────────────────────
+  // ── ANTAR + MONTHLY PAIR ─────────────────────────────────────────────────
   const antarMonthlyKey = [antar, monthly].sort((a,b)=>a-b).join('_');
-  if (antarMonthlyKey !== mahAntarKey && COMBINATION_MEANINGS[antarMonthlyKey]) {
+  const antarMonthlyDesc = getComboDesc(antarMonthlyKey);
+  if (antarMonthlyKey !== mahAntarKey && antarMonthlyDesc) {
     yogas.push({
       id: 'antar_monthly_combo',
       combo_key: antarMonthlyKey,
       name: 'Monthly Energy',
       positive: true,
-      description: cleanText(COMBINATION_MEANINGS[antarMonthlyKey]),
+      description: antarMonthlyDesc,
     });
   }
 
-  // ── MAHA + DAILY PAIR ──────────────────────────────────────────────────────
+  // ── MAHA + DAILY PAIR ────────────────────────────────────────────────────
   const mahaDailyKey = [maha, daily].sort((a,b)=>a-b).join('_');
-  if (COMBINATION_MEANINGS[mahaDailyKey]) {
+  const mahaDailyDesc = getComboDesc(mahaDailyKey);
+  if (mahaDailyDesc) {
     yogas.push({
       id: 'maha_daily_combo',
       combo_key: mahaDailyKey,
       name: "Today's Drive",
       positive: true,
-      description: cleanText(COMBINATION_MEANINGS[mahaDailyKey]),
+      description: mahaDailyDesc,
     });
   }
 

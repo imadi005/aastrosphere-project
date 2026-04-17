@@ -72,8 +72,6 @@ class _TodayView extends StatelessWidget {
     final cautionHours = (data['caution_hours'] as List? ?? []);
     final allHours = (data['all_hours'] as List? ?? []);
     final currentHour = data['current_hour'] as int? ?? now.hour;
-    final currentHourData = data['current_hour_data'] as Map<String, dynamic>?;
-    final nextBestHour = data['next_best_hour'] as Map<String, dynamic>?;
     final dailyNum = data['daily_number'] as int? ?? 0;
 
     return RefreshIndicator(
@@ -104,11 +102,10 @@ class _TodayView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // ── 4. Right now — current hour ──────────────────────
-            _RightNowCard(
-              currentHour: currentHour,
-              currentHourData: currentHourData,
-              nextBestHour: nextBestHour,
+            // ── 4. Best & Caution hours summary ─────────────────
+            _HourSummaryCard(
+              bestHours: bestHours,
+              cautionHours: cautionHours,
               isDark: isDark, gold: gold,
             ),
             const SizedBox(height: 16),
@@ -317,109 +314,105 @@ class _DayCardState extends State<_DayCard> {
   }
 }
 
-// ─── 4. Right now card ────────────────────────────────────────────────────────
-class _RightNowCard extends StatelessWidget {
-  final int currentHour;
-  final Map<String, dynamic>? currentHourData;
-  final Map<String, dynamic>? nextBestHour;
+// ─── 4. Best & Caution hours summary ─────────────────────────────────────────
+class _HourSummaryCard extends StatelessWidget {
+  final List<dynamic> bestHours, cautionHours;
   final bool isDark;
   final Color gold;
-
-  const _RightNowCard({required this.currentHour, required this.currentHourData,
-      required this.nextBestHour, required this.isDark, required this.gold});
+  const _HourSummaryCard({required this.bestHours, required this.cautionHours,
+      required this.isDark, required this.gold});
 
   @override
   Widget build(BuildContext context) {
-    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final successColor = isDark ? AppColors.successDark : AppColors.success;
     final warningColor = const Color(0xFFF59E0B);
-
-    final type = currentHourData?['classification'] as String? ?? 'neutral';
-    Color hourColor;
-    IconData hourIcon;
-    switch (type) {
-      case 'best': hourColor = successColor; hourIcon = Icons.bolt;
-      case 'caution': hourColor = warningColor; hourIcon = Icons.warning_amber_outlined;
-      case 'avoid': hourColor = isDark ? AppColors.dangerDark : AppColors.danger; hourIcon = Icons.do_not_disturb_outlined;
-      default: hourColor = gold; hourIcon = Icons.access_time;
-    }
-
-    final h12 = currentHour == 0 ? 12 : currentHour > 12 ? currentHour - 12 : currentHour;
-    final ampm = currentHour < 12 ? 'AM' : 'PM';
-    final reason = currentHourData?['reason'] as String? ?? '';
-    final goodFor = (currentHourData?['good_for'] as List? ?? []).cast<String>();
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return AstroCard(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Icon(Icons.radio_button_checked, size: 8, color: hourColor),
-            const SizedBox(width: 6),
-            Text('RIGHT NOW', style: GoogleFonts.dmSans(
-                fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: hourColor)),
-          ]),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: hourColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: hourColor.withOpacity(0.3), width: 0.5),
-                ),
-                child: Column(children: [
-                  Text('$h12', style: GoogleFonts.cormorantGaramond(
-                      fontSize: 28, color: hourColor, height: 1)),
-                  Text(ampm, style: GoogleFonts.dmSans(fontSize: 9, color: hourColor)),
-                ]),
-              ),
-              const SizedBox(width: 14),
-              Expanded(child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (reason.isNotEmpty)
-                    Text(reason, style: GoogleFonts.dmSans(
-                        fontSize: 13, fontWeight: FontWeight.w500, color: primary)),
-                  if (goodFor.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text('Good for: ${goodFor.take(2).join(', ')}',
-                        style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
-                  ],
-                ],
-              )),
-            ],
-          ),
-
-          // Next best hour
-          if (nextBestHour != null) ...[
-            const SizedBox(height: 12),
-            Divider(color: border, thickness: 0.5),
-            const SizedBox(height: 10),
+          // Best hours
+          if (bestHours.isNotEmpty) ...[
             Row(children: [
-              Icon(Icons.arrow_forward, size: 12, color: successColor),
-              const SizedBox(width: 6),
-              Text(_formatNextHour(nextBestHour!),
-                  style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
+              Container(width: 6, height: 6,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: successColor)),
+              const SizedBox(width: 8),
+              Text('BEST HOURS TODAY',
+                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
+                      letterSpacing: 1, color: successColor)),
             ]),
+            const SizedBox(height: 8),
+            ...bestHours.take(3).map((h) {
+              final hr = h['hour'] as int;
+              final reason = h['reason'] as String? ?? '';
+              final goodFor = (h['good_for'] as List? ?? []).cast<String>();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(children: [
+                  Text(_fmtHour(hr),
+                      style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600,
+                          color: successColor)),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(
+                    reason.isNotEmpty ? reason : goodFor.take(2).join(', '),
+                    style: GoogleFonts.dmSans(fontSize: 12, color: secondary),
+                  )),
+                ]),
+              );
+            }),
+          ],
+
+          if (bestHours.isNotEmpty && cautionHours.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Divider(color: border, height: 1, thickness: 0.5),
+            const SizedBox(height: 8),
+          ],
+
+          // Caution hours
+          if (cautionHours.isNotEmpty) ...[
+            Row(children: [
+              Container(width: 6, height: 6,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: warningColor)),
+              const SizedBox(width: 8),
+              Text('CAUTION HOURS',
+                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
+                      letterSpacing: 1, color: warningColor)),
+            ]),
+            const SizedBox(height: 8),
+            ...cautionHours.take(3).map((h) {
+              final hr = h['hour'] as int;
+              final reason = h['reason'] as String? ?? '';
+              final avoidFor = (h['avoid'] as List? ?? []).cast<String>();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(children: [
+                  Text(_fmtHour(hr),
+                      style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600,
+                          color: warningColor)),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(
+                    reason.isNotEmpty ? reason : avoidFor.take(2).join(', '),
+                    style: GoogleFonts.dmSans(fontSize: 12, color: secondary),
+                  )),
+                ]),
+              );
+            }),
           ],
         ],
       ),
     );
   }
 
-  String _formatNextHour(Map<String, dynamic> h) {
-    final hr = h['hour'] as int;
+  String _fmtHour(int hr) {
     final h12 = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
     final ampm = hr < 12 ? 'AM' : 'PM';
-    final reason = h['reason'] as String? ?? '';
-    return 'Next: $h12 $ampm — $reason';
+    return '$h12 $ampm';
   }
 }
+
 
 // ─── 5. One action card ───────────────────────────────────────────────────────
 class _OneActionCard extends StatelessWidget {
@@ -673,7 +666,7 @@ class _ActiveEnergyCardState extends State<_ActiveEnergyCard> {
   }
 }
 
-// ─── 8. Hour strip ────────────────────────────────────────────────────────────
+// ─── 8. Hour strip (clickable) ───────────────────────────────────────────────
 class _HourStrip extends StatelessWidget {
   final List<dynamic> allHours, bestHours, cautionHours;
   final int currentHour;
@@ -688,11 +681,9 @@ class _HourStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final successColor = isDark ? AppColors.successDark : AppColors.success;
     final warningColor = const Color(0xFFF59E0B);
-    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final subtleBg = isDark ? AppColors.bgSubtleDark : AppColors.bgSubtleLight;
 
-    // Only waking hours
     final wakingHours = allHours.where((h) {
       final hr = h['hour'] as int;
       return hr >= 6 && hr <= 23;
@@ -707,11 +698,11 @@ class _HourStrip extends StatelessWidget {
         SectionLabel('Hour by Hour'),
         const SizedBox(height: 8),
         SizedBox(
-          height: 72,
+          height: 76,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: wakingHours.length,
-            itemBuilder: (_, i) {
+            itemBuilder: (ctx, i) {
               final h = wakingHours[i] as Map<String, dynamic>;
               final hr = h['hour'] as int;
               final num = h['number'] as int;
@@ -719,61 +710,189 @@ class _HourStrip extends StatelessWidget {
               final isBest = bestHourNums.contains(hr);
               final isCaution = cautionHourNums.contains(hr);
 
-              Color dotColor;
+              Color dotColor = isDark ? Colors.white12 : Colors.black12;
               if (isBest) dotColor = successColor;
               else if (isCaution) dotColor = warningColor;
-              else dotColor = isDark ? Colors.white12 : Colors.black12;
 
               final h12 = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
               final ampm = hr < 12 ? 'AM' : 'PM';
 
-              return Container(
-                width: 52,
-                margin: const EdgeInsets.only(right: 6),
-                decoration: BoxDecoration(
-                  color: isCurrent
-                      ? (isBest ? successColor : gold).withOpacity(0.12)
-                      : subtleBg,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isCurrent ? gold.withOpacity(0.5) : Colors.transparent,
-                    width: 1,
+              return GestureDetector(
+                onTap: () => _showHourDetail(ctx, h, isDark, gold),
+                child: Container(
+                  width: 56,
+                  margin: const EdgeInsets.only(right: 6),
+                  decoration: BoxDecoration(
+                    color: isCurrent
+                        ? (isBest ? successColor : gold).withOpacity(0.12)
+                        : subtleBg,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isCurrent ? gold.withOpacity(0.5) : Colors.transparent,
+                      width: 1.2,
+                    ),
                   ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('$h12$ampm',
-                        style: GoogleFonts.dmSans(
-                            fontSize: 8,
-                            color: isCurrent ? gold : secondary)),
-                    const SizedBox(height: 3),
-                    Text('$num',
-                        style: GoogleFonts.cormorantGaramond(
-                            fontSize: 22,
-                            color: isCurrent ? gold : (isDark ? Colors.white54 : Colors.black45),
-                            height: 1)),
-                    const SizedBox(height: 3),
-                    Container(width: 6, height: 6,
-                        decoration: BoxDecoration(shape: BoxShape.circle, color: dotColor)),
-                  ],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('$h12$ampm',
+                          style: GoogleFonts.dmSans(fontSize: 8,
+                              color: isCurrent ? gold : secondary)),
+                      const SizedBox(height: 2),
+                      Text('$num',
+                          style: GoogleFonts.cormorantGaramond(
+                              fontSize: 24,
+                              color: isCurrent ? gold
+                                  : (isDark ? Colors.white54 : Colors.black45),
+                              height: 1)),
+                      const SizedBox(height: 3),
+                      Container(width: 6, height: 6,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle, color: dotColor)),
+                    ],
+                  ),
                 ),
               );
             },
           ),
         ),
-
-        // Legend
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Row(children: [
           _LegendDot(color: successColor, label: 'Best'),
           const SizedBox(width: 14),
           _LegendDot(color: warningColor, label: 'Watch'),
+          const SizedBox(width: 14),
+          Text('Tap any hour for detail',
+              style: GoogleFonts.dmSans(fontSize: 10,
+                  color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight)),
         ]),
       ],
     );
   }
+
+  void _showHourDetail(BuildContext context, Map<String, dynamic> h, bool isDark, Color gold) {
+    final hr = h['hour'] as int;
+    final num = h['number'] as int;
+    final classification = h['classification'] as String? ?? 'neutral';
+    final reason = h['reason'] as String? ?? '';
+    final goodFor = (h['good_for'] as List? ?? []).cast<String>();
+    final avoidList = (h['avoid'] as List? ?? []).cast<String>();
+
+    final h12 = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
+    final ampm = hr < 12 ? 'AM' : 'PM';
+
+    final successColor = isDark ? AppColors.successDark : AppColors.success;
+    final warningColor = const Color(0xFFF59E0B);
+    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final bg = isDark ? AppColors.bgCardDark : AppColors.bgCardLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+
+    Color statusColor;
+    String statusLabel;
+    switch (classification) {
+      case 'best': statusColor = successColor; statusLabel = 'BEST HOUR';
+      case 'caution': statusColor = warningColor; statusLabel = 'CAUTION';
+      case 'avoid': statusColor = dangerColor; statusLabel = 'AVOID';
+      default: statusColor = gold; statusLabel = 'NEUTRAL';
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: bg,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle
+            Center(child: Container(width: 36, height: 3,
+                decoration: BoxDecoration(
+                    color: border, borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 20),
+
+            // Hour + status
+            Row(children: [
+              Text('$h12 $ampm',
+                  style: GoogleFonts.cormorantGaramond(
+                      fontSize: 32, color: gold, height: 1)),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: statusColor.withOpacity(0.3), width: 0.5),
+                ),
+                child: Text(statusLabel,
+                    style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5, color: statusColor)),
+              ),
+            ]),
+            const SizedBox(height: 4),
+            Text('Hourly number: $num',
+                style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
+            const SizedBox(height: 16),
+
+            // Main reason
+            if (reason.isNotEmpty) ...[
+              Text(reason,
+                  style: GoogleFonts.dmSans(fontSize: 14, color: primary, height: 1.5)),
+              const SizedBox(height: 16),
+            ],
+
+            Divider(color: border, thickness: 0.5),
+            const SizedBox(height: 12),
+
+            // Good for
+            if (goodFor.isNotEmpty) ...[
+              Text('BEST FOR THIS HOUR',
+                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
+                      letterSpacing: 1, color: successColor)),
+              const SizedBox(height: 8),
+              ...goodFor.map((g) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Padding(padding: const EdgeInsets.only(top: 5),
+                      child: Container(width: 4, height: 4,
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: successColor))),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(g,
+                      style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.4))),
+                ]),
+              )),
+              const SizedBox(height: 12),
+            ],
+
+            // Avoid
+            if (avoidList.isNotEmpty) ...[
+              Text('AVOID THIS HOUR',
+                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
+                      letterSpacing: 1, color: dangerColor)),
+              const SizedBox(height: 8),
+              ...avoidList.map((a) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Padding(padding: const EdgeInsets.only(top: 5),
+                      child: Container(width: 4, height: 4,
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: dangerColor))),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(a,
+                      style: GoogleFonts.dmSans(fontSize: 13, color: secondary, height: 1.4))),
+                ]),
+              )),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
+
 
 class _LegendDot extends StatelessWidget {
   final Color color;

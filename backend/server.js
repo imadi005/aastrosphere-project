@@ -85,14 +85,6 @@ app.post('/api/today', (req, res) => {
     const daily = generateDailyPrediction(ctx);
     const hourly = generateHourlyPredictions(ctx);
 
-    // Current hour data
-    const allHours = hourly.all || [];
-    const currentHourData = allHours.find(h => h.hour === currentHour) || null;
-
-    // Next best hour (after current hour)
-    const nextBestHour = hourly.best?.find(h => h.hour > currentHour) || 
-                         hourly.best?.[0] || null;
-
     // Structural yogas (positive — for pills display)
     const structuralYogas = (daily.active_yogas || [])
       .filter(y => !y.combo_key && y.positive);
@@ -105,37 +97,42 @@ app.post('/api/today', (req, res) => {
     const primaryAction = daily.what_to_do?.[0] || null;
     const primaryAvoid = daily.what_to_avoid?.[0] || null;
 
+    // All hours with full detail for clickable cards
+    const allHours = (hourly.all || []).map(h => ({
+      ...h,
+      // Ensure good_for and avoid arrays are present
+      good_for: h.good_for || [],
+      avoid: h.avoid || [],
+    }));
+
+    // Best hours — just hour + 1-liner reason
+    const bestHourSummaries = (hourly.best || []).map(h => ({
+      hour: h.hour,
+      reason: h.reason || '',
+      good_for: (h.good_for || []).slice(0, 2),
+    }));
+
+    // Caution hours — just hour + 1-liner reason
+    const cautionHourSummaries = (hourly.caution || []).map(h => ({
+      hour: h.hour,
+      reason: h.reason || '',
+      avoid: (h.avoid || []).slice(0, 2),
+    }));
+
     res.json({
       date: today,
       daily_number: ctx.daily,
       rating: daily.rating,
-
-      // The quote
       quote: daily.quote,
-
-      // Main insight paragraph
       insight: daily.insight,
-
-      // Full guidance lists
       what_to_do: daily.what_to_do,
       what_to_avoid: daily.what_to_avoid,
-
-      // Highlighted single actions
       primary_action: primaryAction,
       primary_avoid: primaryAvoid,
-
-      // Yoga pills (structural only)
       structural_yogas: structuralYogas,
-
-      // Combo yogas (the three running energies)
       combo_yogas: comboYogas,
-
-      // Hourly data
-      current_hour: currentHour,
-      current_hour_data: currentHourData,
-      next_best_hour: nextBestHour,
-      best_hours: hourly.best,
-      caution_hours: hourly.caution,
+      best_hours: bestHourSummaries,
+      caution_hours: cautionHourSummaries,
       all_hours: allHours,
     });
   } catch (e) {
