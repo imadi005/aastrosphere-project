@@ -662,40 +662,53 @@ export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOStrin
 
 export function generateMonthlyPrediction(ctx, targetDate = new Date().toISOString()) {
   const { basic, destiny, maha, antar, monthly, yogas, freqMap } = ctx;
-  const monthData = ctx._dob ? processMonthWeeks(ctx._dob, targetDate) : null;
-  const currentWeek = monthData?.currentWeek || 2;
   const deepText = getDeepPeriodText(maha, antar, 'monthly');
-  const d = new Date(targetDate);
-  const monthName = MONTH_NAMES[d.getMonth()];
 
-  // Build 4-week breakdown
-  const MONTH_NAMES_LOCAL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+  // ── Get the ACTUAL monthly dasha period (not calendar month) ─────────────────
+  const actualPeriod = ctx._dob ? currentMonthlyDasha(ctx._dob, targetDate) : null;
+  const periodStart  = actualPeriod?.start ? new Date(actualPeriod.start) : new Date(targetDate);
+  const periodEnd    = actualPeriod?.end   ? new Date(actualPeriod.end)   : new Date(new Date(targetDate).getTime() + 30 * 86400000);
+  const periodDays   = Math.round((periodEnd - periodStart) / 86400000);
+
+  // Period label — use actual dates, not calendar month name
+  const MONTH_NAMES_L = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const periodLabel = `${periodStart.getDate()} ${MONTH_NAMES_L[periodStart.getMonth()]} – ${periodEnd.getDate()} ${MONTH_NAMES_L[periodEnd.getMonth()]}`;
+
+  // ── Build week-by-week breakdown within the ACTUAL period ────────────────────
+  const today = new Date(targetDate);
+
+  // How far into the period are we?
+  const daysElapsed = Math.round((today - periodStart) / 86400000);
+  const currentWeekIdx = Math.floor(daysElapsed / 7); // 0-based
+
+  // Build weeks that cover the actual period
+  const totalWeeks = Math.ceil(periodDays / 7);
+  const weeksCount = Math.max(totalWeeks, 2); // minimum 2 weeks for display
 
   const weeks_breakdown = [];
-  for (let w = 0; w < 4; w++) {
-    const weekStart = new Date(monthStart.getTime() + w * 7 * 86400000);
-    const weekEnd = new Date(weekStart.getTime() + 6 * 86400000);
+  for (let w = 0; w < weeksCount; w++) {
+    const weekStart = new Date(periodStart.getTime() + w * 7 * 86400000);
+    const weekEnd   = new Date(Math.min(
+      weekStart.getTime() + 6 * 86400000,
+      periodEnd.getTime()
+    ));
 
-    // Get dominant number for this week
-    let weekNums = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(weekStart.getTime() + i * 86400000);
-      const dateStr = date.toISOString();
-      const mon = currentMonthlyDasha(ctx._dob || '', dateStr);
-      const monNum = mon ? mon.number : monthly;
-      const wd = date.getDay();
-      const wdLord = WEEKDAY_VALUES[wd];
-      weekNums.push(reduceToSingle(monNum + wdLord));
-    }
-    const dominant = weekNums.reduce((acc, n) => { acc[n] = (acc[n]||0)+1; return acc; }, {});
-    const dominantNum = parseInt(Object.entries(dominant).sort((a,b)=>b[1]-a[1])[0][0]);
+    // Dominant number for this week = monthly dasha number at week midpoint
+    // (monthly dasha can change mid-week for short periods)
+    const weekMid = new Date(weekStart.getTime() + 3 * 86400000);
+    const weekMidSafe = weekMid > periodEnd ? periodEnd : weekMid;
+    const weekMon = ctx._dob ? currentMonthlyDasha(ctx._dob, weekMidSafe.toISOString()) : null;
+    const dominantNum = weekMon ? weekMon.number : monthly;
     const char = WEEK_CHARACTER[dominantNum];
-    const isCurrentWeek = (w + 1) === currentWeek;
+    const isCurrentWeek = w === currentWeekIdx;
 
-    const startDay = weekStart.getDate();
-    const endDay = Math.min(weekEnd.getDate(), new Date(d.getFullYear(), d.getMonth()+1, 0).getDate());
-    const weekLabel = `Week ${w+1}: ${startDay}–${endDay} ${MONTH_NAMES_LOCAL[d.getMonth()]}`;
+    // Date range label
+    const startLabel = `${weekStart.getDate()} ${MONTH_NAMES_L[weekStart.getMonth()]}`;
+    const endLabel   = `${weekEnd.getDate()} ${MONTH_NAMES_L[weekEnd.getMonth()]}`;
+    const weekDays   = Math.round((weekEnd - weekStart) / 86400000) + 1;
+    const weekLabel  = weekDays < 7
+      ? `Week ${w+1}: ${startLabel}–${endLabel} (${weekDays}d)`
+      : `Week ${w+1}: ${startLabel}–${endLabel}`;
 
     weeks_breakdown.push({
       week_number: w + 1,
@@ -711,19 +724,28 @@ export function generateMonthlyPrediction(ctx, targetDate = new Date().toISOStri
     });
   }
 
+  // ── Phase text — first half / second half of the actual period ───────────────
+  const halfwayPoint = new Date(periodStart.getTime() + (periodDays / 2) * 86400000);
+  const isFirstHalf = today <= halfwayPoint;
+
   return {
-    month_name: monthName,
+    // Period-aware name — "Apr 15 – Jun 27" not just "Apr"
+    month_name: periodLabel,
+    period_days: periodDays,
+    period_start: periodStart.toISOString().slice(0, 10),
+    period_end: periodEnd.toISOString().slice(0, 10),
+
     overview: deepText?.overview || PERIOD_PREDICTIONS.monthly[monthly] || PERIOD_PREDICTIONS.monthly[antar],
     phases: [
       {
-        label: 'Week 1–2',
+        label: `First Half (${periodStart.getDate()} ${MONTH_NAMES_L[periodStart.getMonth()]} – ${halfwayPoint.getDate()} ${MONTH_NAMES_L[halfwayPoint.getMonth()]})`,
         theme: deepText?.first_half || buildPhaseText(maha, antar, 'early'),
-        current: currentWeek <= 2,
+        current: isFirstHalf,
       },
       {
-        label: 'Week 3–4',
+        label: `Second Half (${new Date(halfwayPoint.getTime() + 86400000).getDate()} ${MONTH_NAMES_L[new Date(halfwayPoint.getTime() + 86400000).getMonth()]} – ${periodEnd.getDate()} ${MONTH_NAMES_L[periodEnd.getMonth()]})`,
         theme: deepText?.second_half || buildPhaseText(maha, antar, 'late'),
-        current: currentWeek > 2,
+        current: !isFirstHalf,
       },
     ],
     finance: {
@@ -740,7 +762,7 @@ export function generateMonthlyPrediction(ctx, targetDate = new Date().toISOStri
     },
     career: {
       signal: deepText?.career || getCareerSignal(maha, antar, yogas, basic, destiny, 'monthly'),
-      best_week: `Week ${currentWeek <= 2 ? 3 : 1} is stronger for career moves this month`,
+      best_week: `Week ${isFirstHalf ? weeksCount : 1} is stronger for career moves this period`,
     },
     opportunities: buildOpportunities(maha, antar, yogas, 'monthly'),
     watch_out: buildWatchOut(maha, antar, yogas, freqMap, 'monthly'),
