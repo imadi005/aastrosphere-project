@@ -14,6 +14,8 @@ import {
   DEEP_DASHA_EXPERIENCE, DEEP_PERIOD_TEXTS, HONEST_WARNINGS, PERSONAL_PATTERNS,
 } from './deep_library.js';
 
+import { classifyHourDeep } from './hour_library.js';
+
 import { DEEP_PERIOD_TEXTS_GENERATED } from './deep_library_generated.js';
 
 import {
@@ -496,216 +498,38 @@ function assessDayRating(daily, maha, antar, yogas, freqMap) {
 
 // ─── Generate hourly predictions ─────────────────────────────────────────────
 export function generateHourlyPredictions(ctx) {
-  const { daily, maha, antar, hours, yogas, natalNums } = ctx;
+  const { daily, maha, antar, monthly, hours, yogas, natalNums } = ctx;
 
-  // Only classify waking hours (6AM to 11PM)
+  // Classify every waking hour with all 6 layers
   const wakingHours = hours.filter(h => h.hour >= 6 && h.hour <= 23);
 
   const classified = wakingHours.map(h => {
-    const hourNum = h.number;
-    const quality = classifyHour(hourNum, daily, maha, antar, yogas, natalNums || []);
-    const hourQuality = HOUR_QUALITIES[hourNum];
-
+    const result = classifyHourDeep(
+      h.hour, h.number, daily, maha, antar, monthly, natalNums, yogas
+    );
     return {
       hour: h.hour,
-      number: hourNum,
-      classification: quality.type,
-      label: hourQuality.label,
-      good_for: quality.good_for || hourQuality.good_for,
-      avoid: quality.avoid || hourQuality.avoid,
-      reason: quality.reason,
+      number: h.number,
+      classification: result.type,
+      label: result.type === 'best' ? 'Best hour' : result.type === 'caution' ? 'Caution' : 'Steady',
+      reason: result.reason,
+      good_for: result.good_for,
+      avoid: result.avoid,
+      layers: result.layers,
+      best_action: result.best_action,
+      hour_essence: result.hour_essence,
+      time_of_day: result.time_of_day,
     };
   });
 
-  // Best = 'best' type only
-  // Caution = 'caution' or 'avoid' type only
   const best = classified.filter(h => h.classification === 'best');
-  const caution = classified.filter(h => h.classification === 'caution' || h.classification === 'avoid');
+  const caution = classified.filter(h => h.classification === 'caution');
+  const neutral = classified.filter(h => h.classification === 'neutral');
 
-  // If no best hours found, promote top 'good' hours
-  const bestOrGood = best.length > 0 ? best : classified.filter(h => h.classification === 'good').slice(0, 3);
-
-  return { best: bestOrGood, caution, all: classified };
+  return { best, caution, neutral, all: classified };
 }
 
-function classifyHour(hourNum, daily, maha, antar, yogas, natalNums) {
-  // hourNum = the calculated dasha number for this hour
-  // natalNums = natal chart numbers only (no dasha additions)
-  const hourQuality = HOUR_QUALITIES[hourNum];
-  const yogaIds = yogas.map(y => y.id);
 
-  // ── BEST hours ─────────────────────────────────────────────────
-  // Hour number creates Easy Money with daily
-  if ((hourNum === 5 && daily === 7) || (hourNum === 7 && daily === 5)) {
-    return { type: 'best', reason: 'Sharp financial instincts this hour', good_for: ['money decisions', 'business', 'negotiations', 'investments'], avoid: [] };
-  }
-  // Hour number = 1, daily = 9 or vice versa (full power)
-  if ((hourNum === 1 && daily === 9) || (hourNum === 9 && daily === 1)) {
-    return { type: 'best', reason: 'Peak energy and authority this hour', good_for: ['bold decisions', 'leadership', 'starting something important'], avoid: [] };
-  }
-  // Hour number = 7, Easy Money yoga active in chart
-  if (hourNum === 7 && yogaIds.includes('easy_money')) {
-    return { type: 'best', reason: 'Luck peaks this hour', good_for: ['important asks', 'meetings', 'travel', 'key decisions'], avoid: [] };
-  }
-  // Hour number = 1, Raj Yoga active
-  if (hourNum === 1 && yogaIds.includes('raj_yoga')) {
-    return { type: 'best', reason: 'Authority and recognition peak this hour', good_for: ['career moves', 'negotiations', 'public visibility'], avoid: [] };
-  }
-  // Hour number = 5 or 1, High Intuition yoga active
-  if ((hourNum === 5 || hourNum === 1) && yogaIds.includes('high_intuition')) {
-    return { type: 'best', reason: 'Mental clarity at its sharpest this hour', good_for: ['analysis', 'decisions', 'creative work', 'communication'], avoid: [] };
-  }
-  // Hour aligns with daily number (same = amplified)
-  if (hourNum === daily) {
-    return { type: 'best', reason: "The day's core energy amplifies this hour", good_for: hourQuality.good_for, avoid: hourQuality.avoid };
-  }
-
-  // ── CAUTION hours ───────────────────────────────────────────────
-  // Hour = 4 + daily has 9 but no 5 → Bandhan energy
-  if (hourNum === 4 && daily === 9) {
-    return { type: 'caution', reason: 'Frustration and constraint peak — avoid confrontations', good_for: ['rest', 'routine tasks'], avoid: ['confrontations', 'contracts', 'big decisions'] };
-  }
-  // Hour = 4 + Financial Bandhan yoga active
-  if (hourNum === 4 && yogaIds.includes('financial_bandhan')) {
-    return { type: 'caution', reason: 'Spending impulse is strongest this hour', good_for: ['planning', 'analysis'], avoid: ['purchases', 'financial commitments', 'online shopping'] };
-  }
-  // Hour = 8 + daily = 7 (misfortune combination)
-  if (hourNum === 8 && daily === 7) {
-    return { type: 'caution', reason: 'Heavy energy this hour — work quietly, avoid big moves', good_for: ['focused work', 'reflection'], avoid: ['launches', 'pitches', 'social events'] };
-  }
-  // Hour = 9 + multiple 9 in chart
-  if (hourNum === 9 && natalNums.filter(n => n === 9).length >= 2) {
-    return { type: 'caution', reason: 'Aggression and frustration can spike this hour', good_for: ['physical activity', 'solo work'], avoid: ['arguments', 'negotiations', 'emotional conversations'] };
-  }
-
-  // ── Default based on alignment ──────────────────────────────────
-  const aligned = isAligned(hourNum, daily, maha, antar);
-  if (aligned.positive) return { type: 'good', reason: aligned.reason, good_for: hourQuality.good_for, avoid: hourQuality.avoid };
-  if (aligned.negative) {
-    // Use combination-specific reason from isAligned, but add time context to differentiate
-    const hourPeriod = hourNum < 12 ? 'morning' : hourNum < 17 ? 'afternoon' : 'evening';
-    const reason = aligned.reason;
-    return { type: 'caution', reason, good_for: hourQuality.good_for, avoid: hourQuality.avoid };
-  }
-
-  return { type: 'neutral', reason: 'Steady energy this hour', good_for: hourQuality.good_for, avoid: hourQuality.avoid };
-}
-
-function isAligned(hourNum, daily, maha, antar) {
-  // Specific reasons for negative alignments — different per pair
-  const negativeReasons = {
-    '4_9': 'Frustration and impatience peak — avoid confrontations',
-    '4_5': 'Impulsive spending risk — avoid purchases',
-    '7_8': 'Heavy, slow energy — avoid launches and new starts',
-    '1_8': 'Ego meets resistance — avoid authority conflicts',
-    '2_8': 'Emotional weight this hour — avoid major decisions',
-    '8_8': 'Maximum karmic pressure — work quietly, avoid shortcuts',
-  };
-
-  // Specific reasons for positive alignments
-  const positiveReasons = {
-    '1_3': 'Authority and wisdom aligned — good for decisions',
-    '1_9': 'Maximum drive this hour — good for bold action',
-    '3_9': 'Bold wisdom — good for important conversations',
-    '5_7': 'Easy money energy — good for financial decisions',
-    '5_9': 'Sharp and competitive — good for business',
-    '6_7': 'Lucky and harmonious — good for social and creative',
-    '7_9': 'Courageous luck — good for bold asks',
-    '1_5': 'Authority meets intelligence — good for negotiations',
-    '3_5': 'Knowledge meets business — good for advisory work',
-  };
-
-  const pair1 = [hourNum, daily].sort().join('_');
-  const pair2 = [hourNum, maha].sort().join('_');
-  const pair3 = [hourNum, antar].sort().join('_');
-
-  for (const [key, reason] of Object.entries(positiveReasons)) {
-    if (pair1 === key || pair2 === key || pair3 === key) {
-      return { positive: true, reason };
-    }
-  }
-
-  for (const [key, reason] of Object.entries(negativeReasons)) {
-    if (pair1 === key || pair2 === key || pair3 === key) {
-      return { negative: true, reason };
-    }
-  }
-
-  return { positive: false, negative: false };
-}
-
-// ─── Generate weekly prediction ───────────────────────────────────────────────
-// ─── Daily number calculator for a specific date ─────────────────────────────
-function getDailyForDate(dob, dateStr) {
-  const d = new Date(dateStr);
-  const monthly = currentMonthlyDasha(dob, dateStr);
-  const monthlyNum = monthly ? monthly.number : basicNumber(new Date(dob).getDate());
-  const weekday = d.getDay();
-  const dayLord = WEEKDAY_VALUES[weekday];
-  return reduceToSingle(monthlyNum + dayLord);
-}
-
-// ─── Process 7 days and return pattern analysis ───────────────────────────────
-function processWeekDays(dob, startDate) {
-  const days = [];
-  const d = new Date(startDate);
-  for (let i = 0; i < 7; i++) {
-    const dateStr = new Date(d.getTime() + i * 86400000).toISOString();
-    const dayNum = getDailyForDate(dob, dateStr);
-    const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(dateStr).getDay()];
-    days.push({ day: dayName, date: dateStr, number: dayNum });
-  }
-  // Find best and heaviest days
-  const numberScores = { 1:7, 2:5, 3:7, 4:3, 5:8, 6:6, 7:8, 8:4, 9:6 };
-  const sorted = [...days].sort((a,b) => numberScores[b.number] - numberScores[a.number]);
-  const bestDays = sorted.slice(0,2).map(d => ({ day: d.day, number: d.number }));
-  const heavyDays = sorted.slice(-2).map(d => ({ day: d.day, number: d.number }));
-  const numbers = days.map(d => d.number);
-  const dominant = numbers.reduce((acc, n) => { acc[n] = (acc[n]||0)+1; return acc; }, {});
-  const dominantNum = parseInt(Object.entries(dominant).sort((a,b)=>b[1]-a[1])[0][0]);
-  return { days, bestDays, heavyDays, dominantNum, numbers };
-}
-
-// ─── Process 4 weeks and return month pattern ─────────────────────────────────
-function processMonthWeeks(dob, startDate) {
-  const weeks = [];
-  const d = new Date(startDate);
-  // Start from beginning of current month
-  const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
-  for (let w = 0; w < 4; w++) {
-    const weekStart = new Date(monthStart.getTime() + w * 7 * 86400000);
-    const weekData = processWeekDays(dob, weekStart.toISOString());
-    weeks.push({ week: w+1, ...weekData });
-  }
-  const allNumbers = weeks.flatMap(w => w.numbers);
-  const dominant = allNumbers.reduce((acc,n) => { acc[n]=(acc[n]||0)+1; return acc; }, {});
-  const dominantNum = parseInt(Object.entries(dominant).sort((a,b)=>b[1]-a[1])[0][0]);
-  // Current week position
-  const dayOfMonth = d.getDate();
-  const currentWeek = Math.ceil(dayOfMonth / 7);
-  return { weeks, dominantNum, currentWeek };
-}
-
-// ─── Process 12 months and return year pattern ───────────────────────────────
-function processYearMonths(dob, year) {
-  const months = [];
-  const numberScores = { 1:8, 2:5, 3:7, 4:2, 5:9, 6:6, 7:8, 8:4, 9:7 };
-  for (let m = 0; m < 12; m++) {
-    const monthStart = new Date(year, m, 1).toISOString();
-    const monthly = currentMonthlyDasha(dob, monthStart);
-    const monthNum = monthly ? monthly.number : 0;
-    const score = numberScores[monthNum] || 5;
-    months.push({ month: m+1, number: monthNum, score });
-  }
-  const sorted = [...months].sort((a,b) => b.score - a.score);
-  const bestMonths = sorted.slice(0,3).map(m => m.month);
-  const riskyMonths = sorted.slice(-2).map(m => m.month);
-  return { months, bestMonths, riskyMonths };
-}
-
-const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-// ─── Generate weekly prediction ───────────────────────────────────────────────
 export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOString()) {
   const { basic, destiny, maha, antar, monthly, yogas, freqMap, dob: ctxDob } = ctx;
 
