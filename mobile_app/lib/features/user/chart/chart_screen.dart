@@ -72,11 +72,20 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
       lastDate: DateTime(2100),
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.dark(
-            primary: gold,
-            onPrimary: Colors.black,
-            surface: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
-          ),
+          colorScheme: isDark
+              ? ColorScheme.dark(
+                  primary: gold,
+                  onPrimary: Colors.black,
+                  surface: AppColors.bgCardDark,
+                  onSurface: AppColors.textPrimaryDark,
+                )
+              : ColorScheme.light(
+                  primary: gold,
+                  onPrimary: Colors.black,
+                  surface: AppColors.bgCardLight,
+                  onSurface: AppColors.textPrimaryLight,
+                ),
+          textTheme: Theme.of(context).textTheme,
         ),
         child: child!,
       ),
@@ -87,19 +96,25 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
     if (!mounted) return;
     final wantsTime = await showDialog<bool>(
       context: ctx,
-      builder: (_) => AlertDialog(
-        backgroundColor: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
-        title: Text('Add time?',
-            style: GoogleFonts.dmSans(fontSize: 14, color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
-        content: Text('Add a specific hour to see the hourly chart as well.',
-            style: GoogleFonts.dmSans(fontSize: 12, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Skip', style: GoogleFonts.dmSans(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true),
-              child: Text('Add Hour', style: GoogleFonts.dmSans(color: gold))),
-        ],
-      ),
+      builder: (dCtx) {
+        final dIsDark = Theme.of(dCtx).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: dIsDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+          title: Text('Add time?',
+              style: GoogleFonts.dmSans(fontSize: 14,
+                  color: dIsDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+          content: Text('Add a specific hour to see the hourly chart as well.',
+              style: GoogleFonts.dmSans(fontSize: 12,
+                  color: dIsDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dCtx, false),
+                child: Text('Skip', style: GoogleFonts.dmSans(
+                    color: dIsDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight))),
+            TextButton(onPressed: () => Navigator.pop(dCtx, true),
+                child: Text('Add Hour', style: GoogleFonts.dmSans(color: gold))),
+          ],
+        );
+      },
     );
 
     if (wantsTime == true && mounted) {
@@ -108,11 +123,19 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
         initialTime: TimeOfDay(hour: _selectedHour ?? DateTime.now().hour, minute: 0),
         builder: (context, child) => Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: gold,
-              onPrimary: Colors.black,
-              surface: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
-            ),
+            colorScheme: isDark
+                ? ColorScheme.dark(
+                    primary: gold,
+                    onPrimary: Colors.black,
+                    surface: AppColors.bgCardDark,
+                    onSurface: AppColors.textPrimaryDark,
+                  )
+                : ColorScheme.light(
+                    primary: gold,
+                    onPrimary: Colors.black,
+                    surface: AppColors.bgCardLight,
+                    onSurface: AppColors.textPrimaryLight,
+                  ),
           ),
           child: child!,
         ),
@@ -261,6 +284,16 @@ class _ChartView extends StatelessWidget {
             isDark: isDark,
             gold: gold,
           ),
+          const SizedBox(height: 10),
+
+          // ── Today's active numbers (daily/hourly shown if not in natal grid) ──
+          if (daily != null || hourly != null)
+            _ActiveNumbersRow(
+              daily: daily,
+              hourly: hourly,
+              isDark: isDark,
+              gold: gold,
+            ),
           const SizedBox(height: 16),
 
           // ── Running Periods ───────────────────────────────────────
@@ -333,8 +366,8 @@ class _ChartView extends StatelessWidget {
               if (lucky['color'] != null) const SizedBox(width: 10),
               Expanded(child: _InfoCard(
                 title: 'Karmic Debt',
-                value: karmic['hasDebt'] == true
-                    ? 'Number ${karmic['number']}'
+                value: karmic['hasKarmicDebt'] == true
+                    ? (karmic['title'] as String? ?? 'Karmic Debt')
                     : 'None',
                 isDark: isDark, gold: gold,
               )),
@@ -362,6 +395,59 @@ class _ChartView extends StatelessWidget {
     final d = DateTime.parse(s.toString());
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return '${d.day} ${months[d.month-1]}';
+  }
+}
+
+// ─── Active Numbers Row ──────────────────────────────────────────────────────
+// Shows daily + hourly numbers prominently — especially when absent from natal grid
+class _ActiveNumbersRow extends StatelessWidget {
+  final int? daily, hourly;
+  final bool isDark;
+  final Color gold;
+
+  const _ActiveNumbersRow({this.daily, this.hourly, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final cyan = const Color(0xFF06B6D4);
+    final amber = const Color(0xFFF59E0B);
+
+    return Row(children: [
+      if (daily != null) Expanded(child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: cyan.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: cyan.withOpacity(0.25), width: 0.5),
+        ),
+        child: Row(children: [
+          Container(width: 6, height: 6,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: cyan)),
+          const SizedBox(width: 8),
+          Expanded(child: Text('Daily', style: GoogleFonts.dmSans(fontSize: 11, color: secondary))),
+          Text('$daily', style: GoogleFonts.cormorantGaramond(
+              fontSize: 26, color: cyan, height: 1)),
+        ]),
+      )),
+      if (daily != null && hourly != null) const SizedBox(width: 10),
+      if (hourly != null) Expanded(child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: amber.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: amber.withOpacity(0.25), width: 0.5),
+        ),
+        child: Row(children: [
+          Container(width: 6, height: 6,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: amber)),
+          const SizedBox(width: 8),
+          Expanded(child: Text('Hourly', style: GoogleFonts.dmSans(fontSize: 11, color: secondary))),
+          Text('$hourly', style: GoogleFonts.cormorantGaramond(
+              fontSize: 26, color: amber, height: 1)),
+        ]),
+      )),
+    ]);
   }
 }
 
