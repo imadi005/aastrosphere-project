@@ -802,7 +802,6 @@ class _YearlyDomainCard extends StatelessWidget {
   }
 }
 
-}
 
 class _RetryView extends StatelessWidget {
   final VoidCallback onRetry;
