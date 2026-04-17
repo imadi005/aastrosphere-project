@@ -41,32 +41,84 @@ app.get('/', (req, res) => res.json({ status: 'Aastrosphere API running' }));
 
 // ─── /api/chart ───────────────────────────────────────────────
 // Full chart: grid, basic, destiny, supportive, all dashas
+// ─── Chart builder helper ────────────────────────────────────────────────────
+function buildChartData(dob, targetDate, targetHour = null) {
+  const d = new Date(dob);
+  const day = d.getDate();
+  const basic = basicNumber(day);
+  const destiny = destinyNumber(dob);
+  const supportive = supportiveNumbers(day);
+  const maha = currentMahadasha(dob);
+  const antar = currentAntardasha(dob);
+  const monthly = currentMonthlyDasha(dob, targetDate);
+  const karmic = karmicDebt(dob);
+  const lucky = LUCKY_INFO[destiny];
+
+  // Daily number for the target date
+  const targetD = new Date(targetDate);
+  const weekday = targetD.getDay();
+  const WEEKDAY_LORDS = [1, 2, 9, 5, 3, 6, 8]; // Sun-Sat
+  const dayLord = WEEKDAY_LORDS[weekday];
+  function redToSingle(n) { while(n > 9) { n = String(n).split('').reduce((a,b)=>a+parseInt(b),0); } return n; }
+  const dailyNum = redToSingle(monthly.number + dayLord);
+
+  // Hourly number if time provided
+  let hourlyNum = null;
+  if (targetHour !== null && targetHour >= 0 && targetHour <= 23) {
+    const hour12 = targetHour === 0 ? 12 : targetHour > 12 ? targetHour - 12 : targetHour;
+    hourlyNum = redToSingle(dailyNum + hour12);
+  }
+
+  // Build grid with daily (and optionally hourly) highlight
+  const rawGrid = buildGrid(dob);
+  // rawGrid cells already have maha/antar/monthly highlights
+  // We add daily highlight on top — if a cell number matches dailyNum, add 'daily' highlight
+  const enhancedGrid = rawGrid.map(row =>
+    row.map(cell =>
+      cell.map(item => {
+        let highlight = item.highlight;
+        const val = item.value;
+        if (highlight === 'none' || highlight === '') {
+          if (hourlyNum !== null && val === hourlyNum) highlight = 'hourly';
+          else if (val === dailyNum) highlight = 'daily';
+        }
+        return { ...item, highlight };
+      })
+    )
+  );
+
+  return {
+    basic, basicPlanet: PLANET_NAMES[basic],
+    destiny, destinyPlanet: PLANET_NAMES[destiny],
+    supportive,
+    maha, antar, monthly,
+    daily: dailyNum,
+    hourly: hourlyNum,
+    target_date: targetD.toISOString().slice(0, 10),
+    target_hour: targetHour,
+    grid: enhancedGrid,
+    freqMap: buildFrequencyMap(dob, maha.number, antar.number, monthly.number),
+    karmic, lucky,
+  };
+}
+
 app.post('/api/chart', (req, res) => {
   try {
     const { dob } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
+    res.json(buildChartData(dob, new Date().toISOString(), new Date().getHours()));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
-    const d = new Date(dob);
-    const day = d.getDate();
-    const basic = basicNumber(day);
-    const destiny = destinyNumber(dob);
-    const supportive = supportiveNumbers(day);
-    const maha = currentMahadasha(dob);
-    const antar = currentAntardasha(dob);
-    const monthly = currentMonthlyDasha(dob);
-    const grid = buildGrid(dob);
-    const freqMap = buildFrequencyMap(dob);
-    const karmic = karmicDebt(dob);
-    const lucky = LUCKY_INFO[destiny];
-
-    res.json({
-      basic, basicPlanet: PLANET_NAMES[basic],
-      destiny, destinyPlanet: PLANET_NAMES[destiny],
-      supportive,
-      maha, antar, monthly,
-      grid, freqMap,
-      karmic, lucky,
-    });
+// ─── /api/chart/date — chart for any date+time ───────────────────────────────
+app.post('/api/chart/date', (req, res) => {
+  try {
+    const { dob, date, hour } = req.body;
+    if (!dob || !date) return res.status(400).json({ error: 'dob and date required' });
+    const targetHour = (hour !== undefined && hour !== null) ? parseInt(hour) : null;
+    res.json(buildChartData(dob, new Date(date).toISOString(), targetHour));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

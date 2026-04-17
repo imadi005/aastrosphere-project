@@ -45,6 +45,13 @@ class ApiService {
   static Future<Map<String, dynamic>> getDeepInsights(String dob) =>
       _post('/api/insights/deep', {'dob': dob});
 
+  static Future<Map<String, dynamic>> getChartForDate(String dob, String date, int? hour) =>
+      _post('/api/chart/date', {
+        'dob': dob,
+        'date': date,
+        if (hour != null) 'hour': hour,
+      });
+
   static Future<Map<String, dynamic>> getDailyInsights(String dob) =>
       _post('/api/insights/daily', {'dob': dob});
 
