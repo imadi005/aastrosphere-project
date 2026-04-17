@@ -147,8 +147,13 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
     setState(() => _loadingCustom = true);
     try {
       final dob = _dobToIso(user.dob as DateTime);
-      final dateStr = pickedDate.toIso8601String();
-      final data = await ApiService.getChartForDate(dob, dateStr, pickedHour);
+      final dateStr = pickedDate!.toIso8601String();
+      // Use local hour for today, specific picked hour otherwise
+      final isToday = pickedDate!.year == DateTime.now().year &&
+          pickedDate!.month == DateTime.now().month &&
+          pickedDate!.day == DateTime.now().day;
+      final effectiveHour = pickedHour ?? (isToday ? DateTime.now().hour : null);
+      final data = await ApiService.getChartForDate(dob, dateStr, effectiveHour);
       setState(() {
         _customChartData = data;
         _selectedDate = pickedDate;
@@ -284,16 +289,8 @@ class _ChartView extends StatelessWidget {
             isDark: isDark,
             gold: gold,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
-          // ── Today's active numbers (daily/hourly shown if not in natal grid) ──
-          if (daily != null || hourly != null)
-            _ActiveNumbersRow(
-              daily: daily,
-              hourly: hourly,
-              isDark: isDark,
-              gold: gold,
-            ),
           const SizedBox(height: 16),
 
           // ── Running Periods ───────────────────────────────────────
@@ -398,58 +395,6 @@ class _ChartView extends StatelessWidget {
   }
 }
 
-// ─── Active Numbers Row ──────────────────────────────────────────────────────
-// Shows daily + hourly numbers prominently — especially when absent from natal grid
-class _ActiveNumbersRow extends StatelessWidget {
-  final int? daily, hourly;
-  final bool isDark;
-  final Color gold;
-
-  const _ActiveNumbersRow({this.daily, this.hourly, required this.isDark, required this.gold});
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final cyan = const Color(0xFF06B6D4);
-    final amber = const Color(0xFFF59E0B);
-
-    return Row(children: [
-      if (daily != null) Expanded(child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: cyan.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: cyan.withOpacity(0.25), width: 0.5),
-        ),
-        child: Row(children: [
-          Container(width: 6, height: 6,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: cyan)),
-          const SizedBox(width: 8),
-          Expanded(child: Text('Daily', style: GoogleFonts.dmSans(fontSize: 11, color: secondary))),
-          Text('$daily', style: GoogleFonts.cormorantGaramond(
-              fontSize: 26, color: cyan, height: 1)),
-        ]),
-      )),
-      if (daily != null && hourly != null) const SizedBox(width: 10),
-      if (hourly != null) Expanded(child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: amber.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: amber.withOpacity(0.25), width: 0.5),
-        ),
-        child: Row(children: [
-          Container(width: 6, height: 6,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: amber)),
-          const SizedBox(width: 8),
-          Expanded(child: Text('Hourly', style: GoogleFonts.dmSans(fontSize: 11, color: secondary))),
-          Text('$hourly', style: GoogleFonts.cormorantGaramond(
-              fontSize: 26, color: amber, height: 1)),
-        ]),
-      )),
-    ]);
-  }
-}
 
 // ─── Grid Legend ──────────────────────────────────────────────────────────────
 class _GridLegend extends StatelessWidget {

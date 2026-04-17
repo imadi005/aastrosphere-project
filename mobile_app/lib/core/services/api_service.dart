@@ -57,8 +57,8 @@ class ApiService {
 
   // ─── CORE METHODS ──────────────────────────────────────────────────
   
-  static Future<Map<String, dynamic>> getChart(String dob) =>
-      _post('/api/chart', {'dob': dob});
+  static Future<Map<String, dynamic>> getChart(String dob, [int? clientHour]) =>
+      _post('/api/chart', {'dob': dob, if (clientHour != null) 'client_hour': clientHour});
 
   static Future<Map<String, dynamic>> getDashas(String dob, {String type = 'mahadasha'}) =>
       _post('/api/dashas', {'dob': dob, 'type': type});

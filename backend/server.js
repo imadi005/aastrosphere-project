@@ -42,6 +42,15 @@ app.get('/', (req, res) => res.json({ status: 'Aastrosphere API running' }));
 // ─── /api/chart ───────────────────────────────────────────────
 // Full chart: grid, basic, destiny, supportive, all dashas
 // ─── Chart builder helper ────────────────────────────────────────────────────
+// Grid position map: which [row,col] each number 1-9 occupies
+const GRID_POSITIONS = { 1:[0,1], 2:[2,0], 3:[0,0], 4:[2,2], 5:[1,2], 6:[1,0], 7:[1,1], 8:[2,1], 9:[0,2] };
+const GRID_PLANETS = ['Jupiter','Sun','Mars','Venus','Ketu','Mercury','Moon','Saturn','Rahu'];
+const CELL_PLANETS = {
+  '0,0':'Jupiter','0,1':'Sun','0,2':'Mars',
+  '1,0':'Venus',  '1,1':'Ketu','1,2':'Mercury',
+  '2,0':'Moon',   '2,1':'Saturn','2,2':'Rahu',
+};
+
 function buildChartData(dob, targetDate, targetHour = null) {
   const d = new Date(dob);
   const day = d.getDate();
@@ -54,12 +63,13 @@ function buildChartData(dob, targetDate, targetHour = null) {
   const karmic = karmicDebt(dob);
   const lucky = LUCKY_INFO[destiny];
 
+  function redToSingle(n) { while(n > 9) { n = String(n).split('').reduce((a,b)=>a+parseInt(b),0); } return n; }
+
   // Daily number for the target date
   const targetD = new Date(targetDate);
   const weekday = targetD.getDay();
   const WEEKDAY_LORDS = [1, 2, 9, 5, 3, 6, 8]; // Sun-Sat
   const dayLord = WEEKDAY_LORDS[weekday];
-  function redToSingle(n) { while(n > 9) { n = String(n).split('').reduce((a,b)=>a+parseInt(b),0); } return n; }
   const dailyNum = redToSingle(monthly.number + dayLord);
 
   // Hourly number if time provided
@@ -69,23 +79,62 @@ function buildChartData(dob, targetDate, targetHour = null) {
     hourlyNum = redToSingle(dailyNum + hour12);
   }
 
-  // Build grid with daily (and optionally hourly) highlight
+  // Build enhanced grid — inject daily/hourly into their grid cell even if absent from natal
   const rawGrid = buildGrid(dob);
-  // rawGrid cells already have maha/antar/monthly highlights
-  // We add daily highlight on top — if a cell number matches dailyNum, add 'daily' highlight
-  const enhancedGrid = rawGrid.map(row =>
-    row.map(cell =>
-      cell.map(item => {
-        let highlight = item.highlight;
-        const val = item.value;
-        if (highlight === 'none' || highlight === '') {
-          if (hourlyNum !== null && val === hourlyNum) highlight = 'hourly';
-          else if (val === dailyNum) highlight = 'daily';
+
+  // Deep clone grid
+  const enhancedGrid = rawGrid.map(row => row.map(cell => cell.map(item => ({...item}))));
+
+  // Step 1: mark existing items with daily/hourly highlight (priority: existing items first)
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      enhancedGrid[r][c] = enhancedGrid[r][c].map(item => {
+        if (item.highlight === '' || item.highlight === 'none') {
+          if (hourlyNum !== null && item.value === hourlyNum) return {...item, highlight: 'hourly'};
+          if (item.value === dailyNum) return {...item, highlight: 'daily'};
         }
-        return { ...item, highlight };
-      })
-    )
-  );
+        return item;
+      });
+    }
+  }
+
+  // Step 2: inject daily into its grid cell if not already present
+  const dailyPos = GRID_POSITIONS[dailyNum];
+  if (dailyPos) {
+    const [dr, dc] = dailyPos;
+    const cellHasDailyAlready = enhancedGrid[dr][dc].some(i => i.value === dailyNum);
+    if (!cellHasDailyAlready) {
+      enhancedGrid[dr][dc] = [...enhancedGrid[dr][dc], {
+        value: dailyNum,
+        highlight: 'daily',
+        planet: CELL_PLANETS[`${dr},${dc}`] || '',
+        injected: true,
+      }];
+    }
+  }
+
+  // Step 3: inject hourly into its grid cell if not already present (and different from daily)
+  if (hourlyNum !== null && hourlyNum !== dailyNum) {
+    const hourlyPos = GRID_POSITIONS[hourlyNum];
+    if (hourlyPos) {
+      const [hr, hc] = hourlyPos;
+      const cellHasHourlyAlready = enhancedGrid[hr][hc].some(i => i.value === hourlyNum && i.highlight === 'hourly');
+      if (!cellHasHourlyAlready) {
+        // If cell already has this number but not highlighted as hourly, update highlight
+        const existingIdx = enhancedGrid[hr][hc].findIndex(i => i.value === hourlyNum);
+        if (existingIdx >= 0) {
+          enhancedGrid[hr][hc][existingIdx] = {...enhancedGrid[hr][hc][existingIdx], highlight: 'hourly'};
+        } else {
+          enhancedGrid[hr][hc] = [...enhancedGrid[hr][hc], {
+            value: hourlyNum,
+            highlight: 'hourly',
+            planet: CELL_PLANETS[`${hr},${hc}`] || '',
+            injected: true,
+          }];
+        }
+      }
+    }
+  }
 
   return {
     basic, basicPlanet: PLANET_NAMES[basic],
@@ -104,9 +153,11 @@ function buildChartData(dob, targetDate, targetHour = null) {
 
 app.post('/api/chart', (req, res) => {
   try {
-    const { dob } = req.body;
+    // Accept client_hour so timezone is correct (server is UTC, client knows local time)
+    const { dob, client_hour } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
-    res.json(buildChartData(dob, new Date().toISOString(), new Date().getHours()));
+    const hour = (client_hour !== undefined && client_hour !== null) ? parseInt(client_hour) : new Date().getHours();
+    res.json(buildChartData(dob, new Date().toISOString(), hour));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

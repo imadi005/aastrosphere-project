@@ -53,7 +53,8 @@ final yearlyInsightsProvider = FutureProvider<Map<String, dynamic>>((ref) async 
 final chartDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(userProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  return ApiService.getChart(_dobToIso(user.dob));
+  // Send client's local hour so timezone is correct (server runs UTC)
+  return ApiService.getChart(_dobToIso(user.dob), DateTime.now().hour);
 });
 
 final mahaTimelineProvider = FutureProvider<List<dynamic>>((ref) async {
