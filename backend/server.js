@@ -98,12 +98,17 @@ function buildChartData(dob, targetDate, targetHour = null) {
     }
   }
 
-  // Step 2: inject daily into its grid cell if not already present
+  // Step 2: inject daily into its grid cell
+  // If number already exists with another highlight (e.g. maha=8, daily=8),
+  // ADD a second entry so both colors show simultaneously
   const dailyPos = GRID_POSITIONS[dailyNum];
   if (dailyPos) {
     const [dr, dc] = dailyPos;
-    const cellHasDailyAlready = enhancedGrid[dr][dc].some(i => i.value === dailyNum);
-    if (!cellHasDailyAlready) {
+    const existingDailyIdx = enhancedGrid[dr][dc].findIndex(
+      i => i.value === dailyNum && i.highlight === 'daily'
+    );
+    if (existingDailyIdx < 0) {
+      // Always add daily entry — even if same number exists with maha/antar/monthly
       enhancedGrid[dr][dc] = [...enhancedGrid[dr][dc], {
         value: dailyNum,
         highlight: 'daily',
@@ -113,25 +118,22 @@ function buildChartData(dob, targetDate, targetHour = null) {
     }
   }
 
-  // Step 3: inject hourly into its grid cell if not already present (and different from daily)
-  if (hourlyNum !== null && hourlyNum !== dailyNum) {
+  // Step 3: inject hourly into its grid cell
+  if (hourlyNum !== null) {
     const hourlyPos = GRID_POSITIONS[hourlyNum];
     if (hourlyPos) {
       const [hr, hc] = hourlyPos;
-      const cellHasHourlyAlready = enhancedGrid[hr][hc].some(i => i.value === hourlyNum && i.highlight === 'hourly');
-      if (!cellHasHourlyAlready) {
-        // If cell already has this number but not highlighted as hourly, update highlight
-        const existingIdx = enhancedGrid[hr][hc].findIndex(i => i.value === hourlyNum);
-        if (existingIdx >= 0) {
-          enhancedGrid[hr][hc][existingIdx] = {...enhancedGrid[hr][hc][existingIdx], highlight: 'hourly'};
-        } else {
-          enhancedGrid[hr][hc] = [...enhancedGrid[hr][hc], {
-            value: hourlyNum,
-            highlight: 'hourly',
-            planet: CELL_PLANETS[`${hr},${hc}`] || '',
-            injected: true,
-          }];
-        }
+      const existingHourlyIdx = enhancedGrid[hr][hc].findIndex(
+        i => i.value === hourlyNum && i.highlight === 'hourly'
+      );
+      if (existingHourlyIdx < 0) {
+        // Always add hourly entry — even if same number exists with other highlights
+        enhancedGrid[hr][hc] = [...enhancedGrid[hr][hc], {
+          value: hourlyNum,
+          highlight: 'hourly',
+          planet: CELL_PLANETS[`${hr},${hc}`] || '',
+          injected: true,
+        }];
       }
     }
   }
