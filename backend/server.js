@@ -77,23 +77,66 @@ app.post('/api/today', (req, res) => {
     const { dob } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
 
-    const today = new Date().toISOString();
+    const now = new Date();
+    const today = now.toISOString();
+    const currentHour = now.getHours();
+
     const ctx = buildChartContext(dob, today);
     const daily = generateDailyPrediction(ctx);
     const hourly = generateHourlyPredictions(ctx);
+
+    // Current hour data
+    const allHours = hourly.all || [];
+    const currentHourData = allHours.find(h => h.hour === currentHour) || null;
+
+    // Next best hour (after current hour)
+    const nextBestHour = hourly.best?.find(h => h.hour > currentHour) || 
+                         hourly.best?.[0] || null;
+
+    // Structural yogas (positive — for pills display)
+    const structuralYogas = (daily.active_yogas || [])
+      .filter(y => !y.combo_key && y.positive);
+    
+    // Combo yogas (Running Energy, Monthly Energy, Today's Drive)
+    const comboYogas = (daily.active_yogas || [])
+      .filter(y => y.combo_key);
+
+    // Single most important action for the day
+    const primaryAction = daily.what_to_do?.[0] || null;
+    const primaryAvoid = daily.what_to_avoid?.[0] || null;
 
     res.json({
       date: today,
       daily_number: ctx.daily,
       rating: daily.rating,
+
+      // The quote
       quote: daily.quote,
+
+      // Main insight paragraph
       insight: daily.insight,
+
+      // Full guidance lists
       what_to_do: daily.what_to_do,
       what_to_avoid: daily.what_to_avoid,
-      yoga_messages: daily.yoga_messages,
-      active_yogas: daily.active_yogas,
+
+      // Highlighted single actions
+      primary_action: primaryAction,
+      primary_avoid: primaryAvoid,
+
+      // Yoga pills (structural only)
+      structural_yogas: structuralYogas,
+
+      // Combo yogas (the three running energies)
+      combo_yogas: comboYogas,
+
+      // Hourly data
+      current_hour: currentHour,
+      current_hour_data: currentHourData,
+      next_best_hour: nextBestHour,
       best_hours: hourly.best,
       caution_hours: hourly.caution,
+      all_hours: allHours,
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
