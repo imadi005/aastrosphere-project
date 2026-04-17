@@ -6,12 +6,13 @@ class ApiService {
 
   /// Client's local date as ISO string — YYYY-MM-DD
   /// This ensures server uses correct local date regardless of UTC offset
-  static String get _clientDate {
+  static String get clientDate {
     final now = DateTime.now();
     return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
-  static int get _clientHour => DateTime.now().hour;
+  static int get clientHour => DateTime.now().hour;
+  static int get _clientHour => clientHour;
 
   static Future<Map<String, dynamic>> _post(
       String endpoint, Map<String, dynamic> body) async {
@@ -37,7 +38,7 @@ class ApiService {
   static Future<Map<String, dynamic>> getToday(String dob) =>
       _post('/api/today', {
         'dob': dob,
-        'client_date': _clientDate,
+        'client_date': clientDate,
         'client_hour': _clientHour,
       });
 
@@ -45,26 +46,26 @@ class ApiService {
   static Future<Map<String, dynamic>> getWeeklyInsights(String dob) =>
       _post('/api/insights/weekly', {
         'dob': dob,
-        'client_date': _clientDate,
+        'client_date': clientDate,
       });
 
   static Future<Map<String, dynamic>> getMonthlyInsights(String dob) =>
       _post('/api/insights/monthly', {
         'dob': dob,
-        'client_date': _clientDate,
+        'client_date': clientDate,
       });
 
   static Future<Map<String, dynamic>> getYearlyInsights(String dob) =>
       _post('/api/insights/yearly', {
         'dob': dob,
-        'client_date': _clientDate,
+        'client_date': clientDate,
       });
 
   // ─── CHART ────────────────────────────────────────────────────────────
   static Future<Map<String, dynamic>> getChart(String dob, [int? clientHour]) =>
       _post('/api/chart', {
         'dob': dob,
-        'client_date': _clientDate,
+        'client_date': clientDate,
         'client_hour': clientHour ?? _clientHour,
       });
 
@@ -91,8 +92,12 @@ class ApiService {
       _post('/api/dashas', {'dob': dob, 'type': type});
 
   static Future<Map<String, dynamic>> getCompatibility(
-          String dob1, String dob2) =>
-      _post('/api/compatibility', {'dob1': dob1, 'dob2': dob2});
+      String dob1, String dob2, {String? clientDate, int? clientHour}) =>
+      _post('/api/compatibility', {
+        'dob1': dob1, 'dob2': dob2,
+        'client_date': clientDate ?? _clientDate,
+        'client_hour': clientHour ?? _clientHour,
+      });
 
   static Future<Map<String, dynamic>> checkName(String name, String dob) =>
       _post('/api/name', {'name': name, 'dob': dob});

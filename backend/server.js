@@ -277,77 +277,139 @@ app.post('/api/hourly', (req, res) => {
   }
 });
 
-// ─── /api/compatibility ───────────────────────────────────────
+// ─── /api/compatibility ─────────────────────────────────────────────────────
+import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
+
 app.post('/api/compatibility', (req, res) => {
   try {
-    const { dob1, dob2 } = req.body;
+    const { dob1, dob2, client_date, client_hour } = req.body;
     if (!dob1 || !dob2) return res.status(400).json({ error: 'dob1 and dob2 required' });
 
-    const result = compatibility(dob1, dob2);
-    const chart1 = {
-      basic: basicNumber(new Date(dob1).getDate()),
-      destiny: destinyNumber(dob1),
-      maha: currentMahadasha(dob1),
-      antar: currentAntardasha(dob1),
-      grid: buildGrid(dob1),
-    };
-    const chart2 = {
-      basic: basicNumber(new Date(dob2).getDate()),
-      destiny: destinyNumber(dob2),
-      maha: currentMahadasha(dob2),
-      antar: currentAntardasha(dob2),
-      grid: buildGrid(dob2),
-    };
+    const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
+    const targetHour = (client_hour !== undefined) ? parseInt(client_hour) : new Date().getHours();
 
-    res.json({ ...result, chart1, chart2 });
+    function red(n) { while(n>9){n=String(n).split('').reduce((a,b)=>a+parseInt(b),0);} return n; }
+
+    // Person 1
+    const b1 = basicNumber(new Date(dob1).getDate());
+    const d1 = destinyNumber(dob1);
+    const maha1 = currentMahadasha(dob1);
+    const antar1 = currentAntardasha(dob1);
+    const monthly1 = currentMonthlyDasha(dob1, targetDate);
+    const freq1 = buildFrequencyMap(dob1, maha1.number, antar1.number, monthly1.number);
+    const WLORDS = [1,2,9,5,3,6,8];
+    const wd = new Date(targetDate).getDay();
+    const daily1 = red(monthly1.number + WLORDS[wd]);
+    const h12 = targetHour===0?12:targetHour>12?targetHour-12:targetHour;
+    const hourly1 = red(daily1 + h12);
+    const yogas1ctx = { basic:b1, destiny:d1, maha:maha1.number, antar:antar1.number,
+      monthly:monthly1.number, daily:daily1, yogas:[], freqMap:freq1, natalNums:Object.keys(freq1).map(Number),
+      _dob:dob1, allNums:Object.keys(freq1).map(Number), modifiers:[], hours:[], natalFreq:{} };
+
+    // Person 2
+    const b2 = basicNumber(new Date(dob2).getDate());
+    const d2 = destinyNumber(dob2);
+    const maha2 = currentMahadasha(dob2);
+    const antar2 = currentAntardasha(dob2);
+    const monthly2 = currentMonthlyDasha(dob2, targetDate);
+    const freq2 = buildFrequencyMap(dob2, maha2.number, antar2.number, monthly2.number);
+    const daily2 = red(monthly2.number + WLORDS[wd]);
+    const hourly2 = red(daily2 + h12);
+
+    // Natal compatibility score
+    const natalKey = [Math.min(b1,b2), Math.max(b1,b2)].join('_');
+    const natalPair = PAIR_DYNAMICS[natalKey] || {};
+    const destinyKey = [Math.min(d1,d2), Math.max(d1,d2)].join('_');
+    const destinyPair = PAIR_DYNAMICS[destinyKey] || {};
+
+    // Scoring
+    const positiveBasic = [[1,3],[1,5],[1,7],[1,9],[3,5],[3,9],[5,7],[5,9],[6,7],[7,9],[2,6],[2,5],[3,6],[6,8]];
+    const tensionBasic = [[1,8],[2,8],[4,9],[4,5],[7,8],[2,4],[6,9],[4,8]];
+    let baseScore = 55;
+    const pos = positiveBasic.some(([a,b])=>(b1===a&&b2===b)||(b1===b&&b2===a));
+    const ten = tensionBasic.some(([a,b])=>(b1===a&&b2===b)||(b1===b&&b2===a));
+    if (pos) baseScore += 18;
+    if (ten) baseScore -= 18;
+    if (b1===b2) baseScore += 10;
+    // Destiny bonus
+    const dpos = positiveBasic.some(([a,b])=>(d1===a&&d2===b)||(d1===b&&d2===a));
+    if (dpos) baseScore += 8;
+    // Shared natal numbers boost
+    const shared = Object.keys(freq1).filter(n => freq2[n]).length;
+    baseScore += Math.min(15, shared * 3);
+    baseScore = Math.min(97, Math.max(15, baseScore));
+
+    // Level
+    let level, levelIcon;
+    if (baseScore >= 80) { level = 'Exceptional'; levelIcon = '✦'; }
+    else if (baseScore >= 65) { level = 'Strong'; levelIcon = '◈'; }
+    else if (baseScore >= 50) { level = 'Good'; levelIcon = '◇'; }
+    else if (baseScore >= 35) { level = 'Challenging'; levelIcon = '△'; }
+    else { level = 'Complex'; levelIcon = '○'; }
+
+    // Today's compatibility
+    const todayCompat = getTodayCompatibility(daily1, daily2, b1, b2);
+
+    // What each brings
+    const p1brings = NUMBER_IN_RELATIONSHIP[b1] || {};
+    const p2brings = NUMBER_IN_RELATIONSHIP[b2] || {};
+
+    res.json({
+      score: baseScore,
+      level,
+      level_icon: levelIcon,
+
+      // Core dynamic
+      core: natalPair.core || 'An interesting combination with unique dynamics.',
+      strength: natalPair.strength || 'Each brings something the other lacks.',
+      tension: natalPair.tension || 'The differences require conscious navigation.',
+      growth: natalPair.growth || 'Both grow through genuine engagement.',
+
+      // Relationship-type specific
+      romantic: natalPair.romantic,
+      friendship: natalPair.friendship,
+
+      // Destiny layer
+      destiny_note: destinyPair.core ? `On a life path level: ${destinyPair.core}` : null,
+
+      // What each person brings
+      person1_brings: {
+        basic: b1,
+        destiny: d1,
+        brings: p1brings.brings,
+        needs: p1brings.needs,
+        blind_spot: p1brings.blind_spot,
+        friendship_style: p1brings.friendship_style,
+        conflict_style: p1brings.conflict_style,
+      },
+      person2_brings: {
+        basic: b2,
+        destiny: d2,
+        brings: p2brings.brings,
+        needs: p2brings.needs,
+        blind_spot: p2brings.blind_spot,
+        friendship_style: p2brings.friendship_style,
+        conflict_style: p2brings.conflict_style,
+      },
+
+      // Today
+      today: {
+        score: todayCompat.score,
+        energy: todayCompat.energy,
+        day_label: todayCompat.day_label,
+        headline: todayCompat.headline,
+        detail: todayCompat.detail,
+        do_together: todayCompat.do_together,
+        watch_together: todayCompat.watch_together,
+        daily1,
+        daily2,
+      },
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// ─── /api/name ────────────────────────────────────────────────
-app.post('/api/name', (req, res) => {
-  try {
-    const { name, dob } = req.body;
-    if (!name || !dob) return res.status(400).json({ error: 'name and dob required' });
-    res.json(nameNumerology(name, dob));
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ─── /api/karmic ──────────────────────────────────────────────
-app.post('/api/karmic', (req, res) => {
-  try {
-    const { dob } = req.body;
-    if (!dob) return res.status(400).json({ error: 'dob required' });
-    res.json(karmicDebt(dob));
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ─── /api/custom-chart ────────────────────────────────────────
-// Astrologer feature: chart for any date
-app.post('/api/custom-chart', (req, res) => {
-  try {
-    const { dob, targetDate } = req.body;
-    if (!dob || !targetDate) return res.status(400).json({ error: 'dob and targetDate required' });
-
-    const d = new Date(targetDate);
-    const daily = dailyDasha(dob, targetDate);
-    const hours = allHourlyDashas(dob, targetDate);
-    const maha = currentMahadasha(dob);
-    const antar = currentAntardasha(dob);
-    const monthly = currentMonthlyDasha(dob);
-    const grid = buildGrid(dob, maha.number, antar.number, monthly.number);
-    const rating = getDayRating(dob, targetDate);
-
-    res.json({ targetDate, daily, dailyPlanet: PLANET_NAMES[daily], hours, maha, antar, monthly, grid, rating });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
 
 // ─── /api/predict/full ────────────────────────────────────────
 // Complete prediction — profile + grid + yogas + dasha behavior + prediction text

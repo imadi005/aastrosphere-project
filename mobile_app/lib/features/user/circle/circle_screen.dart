@@ -7,27 +7,25 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/services/api_service.dart';
 
-// ─── Friend model ─────────────────────────────────────────────
 class Friend {
   final String id, name;
   final DateTime dob;
-  Friend({required this.id, required this.name, required this.dob});
+  final String? relation;
+  Friend({required this.id, required this.name, required this.dob, this.relation});
 
   factory Friend.fromMap(String id, Map<String, dynamic> m) => Friend(
     id: id,
     name: m['name'] as String,
     dob: (m['dob'] as Timestamp).toDate(),
+    relation: m['relation'] as String?,
   );
 }
 
-// ─── Providers ────────────────────────────────────────────────
 final friendsProvider = StreamProvider<List<Friend>>((ref) {
   final uid = FirebaseAuth.instance.currentUser?.uid;
   if (uid == null) return const Stream.empty();
   return FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('friends')
+      .collection('users').doc(uid).collection('friends')
       .snapshots()
       .map((s) => s.docs.map((d) => Friend.fromMap(d.id, d.data())).toList());
 });
@@ -50,8 +48,7 @@ class CircleScreen extends ConsumerWidget {
       ),
       body: friendsAsync.when(
         loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),
-        error: (_, __) => Center(child: Text('Error',
-            style: GoogleFonts.dmSans(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight))),
+        error: (_, __) => Center(child: Text('Error', style: GoogleFonts.dmSans(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight))),
         data: (friends) => friends.isEmpty
             ? _EmptyCircle(isDark: isDark, gold: gold, onAdd: () => _showAddFriend(context, isDark, gold))
             : _FriendsList(friends: friends, isDark: isDark, gold: gold),
@@ -61,38 +58,35 @@ class CircleScreen extends ConsumerWidget {
 
   void _showAddFriend(BuildContext context, bool isDark, Color gold) {
     showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
+      context: context, isScrollControlled: true,
       backgroundColor: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => _AddFriendSheet(isDark: isDark, gold: gold),
     );
   }
 }
 
-// ─── Empty state ──────────────────────────────────────────────
+// ─── Empty state ──────────────────────────────────────────────────────────────
 class _EmptyCircle extends StatelessWidget {
-  final bool isDark;
-  final Color gold;
-  final VoidCallback onAdd;
+  final bool isDark; final Color gold; final VoidCallback onAdd;
   const _EmptyCircle({required this.isDark, required this.gold, required this.onAdd});
 
   @override
   Widget build(BuildContext context) {
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Text('Your Circle', style: GoogleFonts.cormorantGaramond(fontSize: 22, color: gold)),
+      Text('Your Circle', style: GoogleFonts.cormorantGaramond(fontSize: 24, color: gold)),
       const SizedBox(height: 8),
-      Text('Add people to check compatibility', style: GoogleFonts.dmSans(fontSize: 13, color: secondary)),
+      Text('Add anyone — partner, friend, family, colleague',
+          style: GoogleFonts.dmSans(fontSize: 13, color: secondary), textAlign: TextAlign.center),
+      const SizedBox(height: 6),
+      Text('See how your numbers interact', style: GoogleFonts.dmSans(fontSize: 12, color: secondary.withOpacity(0.6))),
       const SizedBox(height: 24),
       GestureDetector(
         onTap: onAdd,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          decoration: BoxDecoration(
-              color: gold.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(24),
+          decoration: BoxDecoration(color: gold.withOpacity(0.1), borderRadius: BorderRadius.circular(24),
               border: Border.all(color: gold.withOpacity(0.3), width: 0.5)),
           child: Text('Add someone', style: GoogleFonts.dmSans(fontSize: 13, color: gold)),
         ),
@@ -101,11 +95,9 @@ class _EmptyCircle extends StatelessWidget {
   }
 }
 
-// ─── Friends list ─────────────────────────────────────────────
+// ─── Friends list ─────────────────────────────────────────────────────────────
 class _FriendsList extends StatelessWidget {
-  final List<Friend> friends;
-  final bool isDark;
-  final Color gold;
+  final List<Friend> friends; final bool isDark; final Color gold;
   const _FriendsList({required this.friends, required this.isDark, required this.gold});
 
   @override
@@ -115,11 +107,11 @@ class _FriendsList extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       children: [
         Text('Your Circle', style: GoogleFonts.cormorantGaramond(fontSize: 22, color: gold)),
-        Text('${friends.length} ${friends.length == 1 ? 'person' : 'people'} in your circle',
+        Text('${friends.length} ${friends.length == 1 ? 'person' : 'people'} — tap to see full reading',
             style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
         const SizedBox(height: 16),
         ...friends.map((f) => Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.only(bottom: 12),
           child: _FriendCard(friend: f, isDark: isDark, gold: gold),
         )),
       ],
@@ -127,10 +119,9 @@ class _FriendsList extends StatelessWidget {
   }
 }
 
+// ─── Friend card (expandable) ─────────────────────────────────────────────────
 class _FriendCard extends StatefulWidget {
-  final Friend friend;
-  final bool isDark;
-  final Color gold;
+  final Friend friend; final bool isDark; final Color gold;
   const _FriendCard({required this.friend, required this.isDark, required this.gold});
 
   @override
@@ -140,6 +131,8 @@ class _FriendCard extends StatefulWidget {
 class _FriendCardState extends State<_FriendCard> {
   Map<String, dynamic>? _compat;
   bool _loading = false;
+  bool _expanded = false;
+  int _activeTab = 0; // 0=Today 1=Overall 2=Details
 
   Future<void> _loadCompat() async {
     if (_compat != null) return;
@@ -153,6 +146,8 @@ class _FriendCardState extends State<_FriendCard> {
       final result = await ApiService.getCompatibility(
         myDob.toIso8601String(),
         widget.friend.dob.toIso8601String(),
+        clientDate: ApiService.clientDate,
+        clientHour: ApiService.clientHour,
       );
       if (mounted) setState(() { _compat = result; _loading = false; });
     } catch (_) {
@@ -176,90 +171,376 @@ class _FriendCardState extends State<_FriendCard> {
 
     final score = _compat?['score'] as int?;
     final level = _compat?['level'] as String?;
+    final today = _compat?['today'] as Map<String, dynamic>?;
+    final todayScore = today?['score'] as int?;
 
-    Color scoreColor = gold;
-    if (score != null) {
-      if (score >= 70) scoreColor = isDark ? AppColors.successDark : AppColors.success;
-      else if (score < 40) scoreColor = isDark ? AppColors.dangerDark : AppColors.danger;
+    Color scoreColor(int? s) {
+      if (s == null) return gold;
+      if (s >= 75) return isDark ? AppColors.successDark : AppColors.success;
+      if (s >= 50) return gold;
+      return isDark ? AppColors.dangerDark : AppColors.danger;
     }
 
     return AstroCard(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.zero,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(
-                  color: gold.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20)),
-              child: Center(child: Text(
-                  widget.friend.name[0].toUpperCase(),
-                  style: GoogleFonts.cormorantGaramond(fontSize: 20, color: gold))),
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(widget.friend.name,
-                    style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w500, color: primary)),
-                Text(_dobStr(widget.friend.dob),
-                    style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
-              ],
-            )),
-            if (_loading) SizedBox(
-              width: 16, height: 16,
-              child: CircularProgressIndicator(strokeWidth: 1.5, color: gold),
-            ) else if (score != null) Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text('$score%', style: GoogleFonts.cormorantGaramond(
-                    fontSize: 22, color: scoreColor)),
-                if (level != null)
-                  Text(level, style: GoogleFonts.dmSans(fontSize: 9, color: secondary)),
-              ],
-            ),
-          ]),
-          if (_compat != null) ...[
-            const SizedBox(height: 12),
-            Divider(color: border, thickness: 0.5, height: 1),
-            const SizedBox(height: 12),
-            Text(_compat!['summary'] as String? ?? '',
-                style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.5)),
-          ],
-          // Delete
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: GestureDetector(
-              onTap: () async {
-                final uid = FirebaseAuth.instance.currentUser?.uid;
-                if (uid == null) return;
-                await FirebaseFirestore.instance
-                    .collection('users').doc(uid)
-                    .collection('friends').doc(widget.friend.id)
-                    .delete();
-              },
-              child: Text('Remove', style: GoogleFonts.dmSans(
-                  fontSize: 11, color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight)),
+          // ── Header row ──────────────────────────────────────────
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(children: [
+                // Avatar
+                Container(
+                  width: 44, height: 44,
+                  decoration: BoxDecoration(color: gold.withOpacity(0.1), borderRadius: BorderRadius.circular(22)),
+                  child: Center(child: Text(widget.friend.name[0].toUpperCase(),
+                      style: GoogleFonts.cormorantGaramond(fontSize: 22, color: gold))),
+                ),
+                const SizedBox(width: 12),
+                // Name + relation
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(widget.friend.name, style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.w500, color: primary)),
+                  if (widget.friend.relation != null)
+                    Text(widget.friend.relation!, style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
+                  Text(_dobStr(widget.friend.dob), style: GoogleFonts.dmSans(fontSize: 11, color: secondary.withOpacity(0.7))),
+                ])),
+                // Score + today indicator
+                if (_loading) SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 1.5, color: gold))
+                else if (score != null) Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text('$score%', style: GoogleFonts.cormorantGaramond(fontSize: 26, color: scoreColor(score), height: 1)),
+                  if (todayScore != null)
+                    Text('Today: $todayScore%', style: GoogleFonts.dmSans(fontSize: 10, color: scoreColor(todayScore))),
+                ]),
+                const SizedBox(width: 8),
+                Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 16, color: secondary),
+              ]),
             ),
           ),
+
+          // ── Expanded content ─────────────────────────────────────
+          if (_expanded && _compat != null) ...[
+            Divider(color: border, height: 1, thickness: 0.5),
+
+            // Tab bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: Row(children: [
+                _Tab(label: 'Today', active: _activeTab == 0, gold: gold, isDark: isDark, onTap: () => setState(() => _activeTab = 0)),
+                const SizedBox(width: 8),
+                _Tab(label: 'Overall', active: _activeTab == 1, gold: gold, isDark: isDark, onTap: () => setState(() => _activeTab = 1)),
+                const SizedBox(width: 8),
+                _Tab(label: 'Dynamics', active: _activeTab == 2, gold: gold, isDark: isDark, onTap: () => setState(() => _activeTab = 2)),
+              ]),
+            ),
+
+            // Tab content
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: _activeTab == 0
+                  ? _TodayTab(today: today!, isDark: isDark, gold: gold)
+                  : _activeTab == 1
+                      ? _OverallTab(compat: _compat!, isDark: isDark, gold: gold)
+                      : _DynamicsTab(compat: _compat!, isDark: isDark, gold: gold),
+            ),
+
+            // Delete button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              child: GestureDetector(
+                onTap: () => _deleteFriend(context),
+                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  Icon(Icons.remove_circle_outline, size: 14, color: secondary.withOpacity(0.5)),
+                  const SizedBox(width: 4),
+                  Text('Remove', style: GoogleFonts.dmSans(fontSize: 11, color: secondary.withOpacity(0.5))),
+                ]),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
+  void _deleteFriend(BuildContext context) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    await FirebaseFirestore.instance
+        .collection('users').doc(uid).collection('friends').doc(widget.friend.id).delete();
+  }
+
   String _dobStr(DateTime d) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return '${d.day} ${months[d.month-1]} ${d.year}';
+    const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${d.day} ${m[d.month-1]} ${d.year}';
   }
 }
 
-// ─── Add friend sheet ─────────────────────────────────────────
+// ─── Tab widget ───────────────────────────────────────────────────────────────
+class _Tab extends StatelessWidget {
+  final String label; final bool active, isDark; final Color gold; final VoidCallback onTap;
+  const _Tab({required this.label, required this.active, required this.isDark, required this.gold, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? gold.withOpacity(0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: active ? gold.withOpacity(0.4) : (isDark ? AppColors.borderDark : AppColors.borderLight), width: 0.5),
+        ),
+        child: Text(label, style: GoogleFonts.dmSans(fontSize: 11, fontWeight: active ? FontWeight.w600 : FontWeight.w400, color: active ? gold : secondary)),
+      ),
+    );
+  }
+}
+
+// ─── TODAY TAB ────────────────────────────────────────────────────────────────
+class _TodayTab extends StatelessWidget {
+  final Map<String, dynamic> today; final bool isDark; final Color gold;
+  const _TodayTab({required this.today, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final successColor = isDark ? AppColors.successDark : AppColors.success;
+    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
+
+    final todayScore = today['score'] as int? ?? 50;
+    final headline = today['headline'] as String? ?? '';
+    final detail = today['detail'] as String? ?? '';
+    final dayLabel = today['day_label'] as String? ?? '';
+    final doList = (today['do_together'] as List? ?? []).cast<String>();
+    final watchList = (today['watch_together'] as List? ?? []).cast<String>();
+    final daily1 = today['daily1'] as int?;
+    final daily2 = today['daily2'] as int?;
+
+    Color scoreColor;
+    if (todayScore >= 75) scoreColor = successColor;
+    else if (todayScore >= 50) scoreColor = gold;
+    else scoreColor = dangerColor;
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // Today score + label
+      Row(children: [
+        Text('$todayScore%', style: GoogleFonts.cormorantGaramond(fontSize: 40, color: scoreColor, height: 1)),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(dayLabel, style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, color: scoreColor)),
+          if (daily1 != null && daily2 != null)
+            Text('You: $daily1  ·  Them: $daily2',
+                style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
+        ])),
+      ]),
+      const SizedBox(height: 10),
+
+      // Headline
+      Text(headline, style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w500, color: primary, height: 1.5)),
+      const SizedBox(height: 8),
+
+      // Detail
+      Text(detail, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6)),
+
+      if (doList.isNotEmpty) ...[
+        const SizedBox(height: 14),
+        Divider(color: border, height: 1, thickness: 0.5),
+        const SizedBox(height: 10),
+        Text('DO TOGETHER', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: successColor)),
+        const SizedBox(height: 6),
+        ...doList.map((item) => Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Padding(padding: const EdgeInsets.only(top: 5),
+                child: Container(width: 4, height: 4, decoration: BoxDecoration(shape: BoxShape.circle, color: successColor))),
+            const SizedBox(width: 8),
+            Expanded(child: Text(item, style: GoogleFonts.dmSans(fontSize: 12, color: primary, height: 1.4))),
+          ]),
+        )),
+      ],
+
+      if (watchList.isNotEmpty) ...[
+        const SizedBox(height: 10),
+        Text('BE CAREFUL TODAY', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: dangerColor)),
+        const SizedBox(height: 6),
+        ...watchList.map((item) => Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Padding(padding: const EdgeInsets.only(top: 5),
+                child: Container(width: 4, height: 4, decoration: BoxDecoration(shape: BoxShape.circle, color: dangerColor))),
+            const SizedBox(width: 8),
+            Expanded(child: Text(item, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.4))),
+          ]),
+        )),
+      ],
+    ]);
+  }
+}
+
+// ─── OVERALL TAB ──────────────────────────────────────────────────────────────
+class _OverallTab extends StatelessWidget {
+  final Map<String, dynamic> compat; final bool isDark; final Color gold;
+  const _OverallTab({required this.compat, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final successColor = isDark ? AppColors.successDark : AppColors.success;
+    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
+
+    final core = compat['core'] as String? ?? '';
+    final strength = compat['strength'] as String? ?? '';
+    final tension = compat['tension'] as String? ?? '';
+    final growth = compat['growth'] as String? ?? '';
+    final romantic = compat['romantic'] as String?;
+    final friendship = compat['friendship'] as String?;
+    final destinyNote = compat['destiny_note'] as String?;
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(core, style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.65)),
+      const SizedBox(height: 14),
+      Divider(color: border, height: 1, thickness: 0.5),
+      const SizedBox(height: 12),
+
+      _CompatRow(label: 'What works', text: strength, color: successColor, secondary: secondary, primary: primary),
+      const SizedBox(height: 10),
+      _CompatRow(label: 'The tension', text: tension, color: dangerColor, secondary: secondary, primary: primary),
+      const SizedBox(height: 10),
+      _CompatRow(label: 'Growth edge', text: growth, color: gold, secondary: secondary, primary: primary),
+
+      if (romantic != null || friendship != null) ...[
+        const SizedBox(height: 12),
+        Divider(color: border, height: 1, thickness: 0.5),
+        const SizedBox(height: 10),
+        if (romantic != null)
+          _CompatRow(label: 'Romantic', text: romantic, color: Colors.pinkAccent, secondary: secondary, primary: primary),
+        if (romantic != null && friendship != null) const SizedBox(height: 10),
+        if (friendship != null)
+          _CompatRow(label: 'Friendship', text: friendship, color: const Color(0xFF6366F1), secondary: secondary, primary: primary),
+      ],
+
+      if (destinyNote != null) ...[
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: gold.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: gold.withOpacity(0.15), width: 0.5),
+          ),
+          child: Text(destinyNote, style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.5, fontStyle: FontStyle.italic)),
+        ),
+      ],
+    ]);
+  }
+}
+
+class _CompatRow extends StatelessWidget {
+  final String label, text; final Color color, secondary, primary;
+  const _CompatRow({required this.label, required this.text, required this.color, required this.secondary, required this.primary});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label.toUpperCase(), style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: color)),
+      const SizedBox(height: 4),
+      Text(text, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.5)),
+    ]);
+  }
+}
+
+// ─── DYNAMICS TAB ─────────────────────────────────────────────────────────────
+class _DynamicsTab extends StatelessWidget {
+  final Map<String, dynamic> compat; final bool isDark; final Color gold;
+  const _DynamicsTab({required this.compat, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+
+    final p1 = compat['person1_brings'] as Map<String, dynamic>?;
+    final p2 = compat['person2_brings'] as Map<String, dynamic>?;
+
+    if (p1 == null || p2 == null) return const SizedBox();
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('How you show up for each other', style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600, color: primary)),
+      const SizedBox(height: 12),
+
+      // Person 1
+      _PersonDynamic(person: p1, label: 'You', gold: gold, isDark: isDark),
+      const SizedBox(height: 12),
+      Divider(color: border, height: 1, thickness: 0.5),
+      const SizedBox(height: 12),
+
+      // Person 2
+      _PersonDynamic(person: p2, label: 'Them', gold: gold, isDark: isDark),
+    ]);
+  }
+}
+
+class _PersonDynamic extends StatelessWidget {
+  final Map<String, dynamic> person; final String label;
+  final Color gold; final bool isDark;
+  const _PersonDynamic({required this.person, required this.label, required this.gold, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
+    final successColor = isDark ? AppColors.successDark : AppColors.success;
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: gold)),
+        const SizedBox(width: 8),
+        Text(label, style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600, color: gold)),
+        const SizedBox(width: 6),
+        Text('(Basic ${person['basic']}, Destiny ${person['destiny']})',
+            style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
+      ]),
+      const SizedBox(height: 8),
+      if (person['brings'] != null)
+        _DynRow('Brings', person['brings'] as String, successColor, secondary),
+      if (person['needs'] != null)
+        _DynRow('Needs', person['needs'] as String, gold, secondary),
+      if (person['blind_spot'] != null)
+        _DynRow('Blind spot', person['blind_spot'] as String, dangerColor, secondary),
+      if (person['conflict_style'] != null)
+        _DynRow('In conflict', person['conflict_style'] as String, const Color(0xFF6366F1), secondary),
+    ]);
+  }
+}
+
+class _DynRow extends StatelessWidget {
+  final String label, text; final Color labelColor, secondary;
+  const _DynRow(this.label, this.text, this.labelColor, this.secondary);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SizedBox(width: 70, child: Text(label, style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w600, color: labelColor))),
+        Expanded(child: Text(text, style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.4))),
+      ]),
+    );
+  }
+}
+
+// ─── Add friend sheet ─────────────────────────────────────────────────────────
 class _AddFriendSheet extends StatefulWidget {
-  final bool isDark;
-  final Color gold;
+  final bool isDark; final Color gold;
   const _AddFriendSheet({required this.isDark, required this.gold});
 
   @override
@@ -267,9 +548,12 @@ class _AddFriendSheet extends StatefulWidget {
 }
 
 class _AddFriendSheetState extends State<_AddFriendSheet> {
-  final _name = TextEditingController();
+  final _nameCtrl = TextEditingController();
   DateTime? _dob;
+  String _relation = 'Friend';
   bool _saving = false;
+
+  static const _relations = ['Partner', 'Friend', 'Family', 'Colleague', 'Other'];
 
   @override
   Widget build(BuildContext context) {
@@ -280,93 +564,113 @@ class _AddFriendSheetState extends State<_AddFriendSheet> {
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 40),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(child: Container(width: 36, height: 3,
-              decoration: BoxDecoration(color: border, borderRadius: BorderRadius.circular(2)))),
-          const SizedBox(height: 20),
-          Text('Add to Circle', style: GoogleFonts.cormorantGaramond(fontSize: 20, color: gold)),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _name,
-            style: GoogleFonts.dmSans(fontSize: 14, color: primary),
-            decoration: InputDecoration(
-              labelText: 'Name',
-              labelStyle: GoogleFonts.dmSans(fontSize: 12, color: secondary),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: border, width: 0.5)),
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: gold, width: 1)),
-            ),
+      padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 40),
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Center(child: Container(width: 36, height: 3, decoration: BoxDecoration(color: border, borderRadius: BorderRadius.circular(2)))),
+        const SizedBox(height: 20),
+        Text('Add to your circle', style: GoogleFonts.cormorantGaramond(fontSize: 20, color: gold)),
+        const SizedBox(height: 4),
+        Text('Partner, friend, family, colleague — anyone', style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
+        const SizedBox(height: 20),
+
+        // Name
+        TextField(
+          controller: _nameCtrl,
+          style: GoogleFonts.dmSans(fontSize: 14, color: primary),
+          decoration: InputDecoration(
+            hintText: 'Their name',
+            hintStyle: GoogleFonts.dmSans(color: secondary),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: border, width: 0.5)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: gold, width: 1)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
-          const SizedBox(height: 14),
-          GestureDetector(
-            onTap: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: DateTime(1995),
-                firstDate: DateTime(1920),
-                lastDate: DateTime.now(),
-              );
-              if (picked != null) setState(() => _dob = picked);
-            },
+        ),
+        const SizedBox(height: 12),
+
+        // Relation selector
+        Wrap(spacing: 8, children: _relations.map((r) {
+          final active = _relation == r;
+          return GestureDetector(
+            onTap: () => setState(() => _relation = r),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              margin: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: border, width: 0.5)),
-              child: Row(children: [
-                Expanded(child: Text(
-                  _dob == null ? 'Date of Birth' : _fmt(_dob!),
-                  style: GoogleFonts.dmSans(fontSize: 14,
-                      color: _dob == null ? secondary : primary),
-                )),
-                Icon(Icons.calendar_today_outlined, size: 16, color: secondary),
-              ]),
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: GestureDetector(
-              onTap: _saving ? null : _save,
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                    color: gold, borderRadius: BorderRadius.circular(12)),
-                child: Center(child: _saving
-                    ? const SizedBox(width: 18, height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 1.5, color: Colors.black))
-                    : Text('Add to Circle',
-                        style: GoogleFonts.dmSans(fontSize: 14,
-                            fontWeight: FontWeight.w500, color: Colors.black))),
+                color: active ? gold.withOpacity(0.12) : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: active ? gold.withOpacity(0.4) : border, width: 0.5),
               ),
+              child: Text(r, style: GoogleFonts.dmSans(fontSize: 12, color: active ? gold : secondary)),
+            ),
+          );
+        }).toList()),
+        const SizedBox(height: 12),
+
+        // DOB picker
+        GestureDetector(
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: DateTime(1995),
+              firstDate: DateTime(1900),
+              lastDate: DateTime.now(),
+              builder: (ctx, child) => Theme(
+                data: Theme.of(ctx).copyWith(
+                  colorScheme: isDark
+                      ? ColorScheme.dark(primary: gold, onPrimary: Colors.black, surface: AppColors.bgCardDark)
+                      : ColorScheme.light(primary: gold, onPrimary: Colors.black, surface: AppColors.bgCardLight),
+                ),
+                child: child!,
+              ),
+            );
+            if (picked != null) setState(() => _dob = picked);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _dob != null ? gold.withOpacity(0.4) : border, width: 0.5),
+            ),
+            child: Row(children: [
+              Icon(Icons.calendar_today_outlined, size: 16, color: _dob != null ? gold : secondary),
+              const SizedBox(width: 10),
+              Text(_dob != null ? _fmt(_dob!) : 'Date of birth',
+                  style: GoogleFonts.dmSans(fontSize: 14, color: _dob != null ? primary : secondary)),
+            ]),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Save button
+        SizedBox(
+          width: double.infinity,
+          child: GestureDetector(
+            onTap: _saving ? null : _save,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: (_nameCtrl.text.isNotEmpty && _dob != null) ? gold : gold.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(child: _saving
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                  : Text('Add to circle', style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black))),
             ),
           ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
 
   Future<void> _save() async {
-    if (_name.text.isEmpty || _dob == null) return;
+    if (_nameCtrl.text.isEmpty || _dob == null) return;
     setState(() => _saving = true);
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
       await FirebaseFirestore.instance
-          .collection('users').doc(uid)
-          .collection('friends')
-          .add({
-        'name': _name.text.trim(),
-        'dob': Timestamp.fromDate(_dob!),
-        'addedAt': FieldValue.serverTimestamp(),
-      });
+          .collection('users').doc(uid).collection('friends')
+          .add({'name': _nameCtrl.text.trim(), 'dob': Timestamp.fromDate(_dob!), 'relation': _relation});
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) setState(() => _saving = false);
