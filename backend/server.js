@@ -153,11 +153,11 @@ function buildChartData(dob, targetDate, targetHour = null) {
 
 app.post('/api/chart', (req, res) => {
   try {
-    // Accept client_hour so timezone is correct (server is UTC, client knows local time)
-    const { dob, client_hour } = req.body;
+    const { dob, client_date, client_hour } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
+    const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const hour = (client_hour !== undefined && client_hour !== null) ? parseInt(client_hour) : new Date().getHours();
-    res.json(buildChartData(dob, new Date().toISOString(), hour));
+    res.json(buildChartData(dob, targetDate, hour));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -178,12 +178,15 @@ app.post('/api/chart/date', (req, res) => {
 // ─── /api/today ───────────────────────────────────────────────
 app.post('/api/today', (req, res) => {
   try {
-    const { dob } = req.body;
+    const { dob, client_date, client_hour } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
 
-    const now = new Date();
+    // Always use client's local date/time — server runs UTC which differs by timezone
+    const now = client_date ? new Date(client_date) : new Date();
     const today = now.toISOString();
-    const currentHour = now.getHours();
+    const currentHour = (client_hour !== undefined && client_hour !== null)
+      ? parseInt(client_hour)
+      : now.getHours();
 
     const ctx = buildChartContext(dob, today);
     const daily = generateDailyPrediction(ctx);
@@ -676,9 +679,9 @@ app.post('/api/insights/daily', (req, res) => {
 // ─── /api/insights/weekly ─────────────────────────────────────
 app.post('/api/insights/weekly', (req, res) => {
   try {
-    const { dob } = req.body;
+    const { dob, client_date } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
-    const targetDate = new Date().toISOString();
+    const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const ctx = buildChartContext(dob, targetDate);
     res.json(generateWeeklyPrediction(ctx, targetDate));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -687,9 +690,9 @@ app.post('/api/insights/weekly', (req, res) => {
 // ─── /api/insights/monthly ────────────────────────────────────
 app.post('/api/insights/monthly', (req, res) => {
   try {
-    const { dob } = req.body;
+    const { dob, client_date } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
-    const targetDate = new Date().toISOString();
+    const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const ctx = buildChartContext(dob, targetDate);
     res.json(generateMonthlyPrediction(ctx, targetDate));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -698,9 +701,9 @@ app.post('/api/insights/monthly', (req, res) => {
 // ─── /api/insights/yearly ─────────────────────────────────────
 app.post('/api/insights/yearly', (req, res) => {
   try {
-    const { dob } = req.body;
+    const { dob, client_date } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
-    const targetDate = new Date().toISOString();
+    const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const ctx = buildChartContext(dob, targetDate);
     res.json(generateYearlyPrediction(ctx, targetDate));
   } catch (e) { res.status(500).json({ error: e.message }); }
