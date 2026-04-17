@@ -2,95 +2,63 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
 import '../../features/auth/providers/user_provider.dart';
 
-// Helper function to format DOB
 String _dobToIso(DateTime dob) => dob.toIso8601String();
 
-// ─── SMART PREDICTION PROVIDERS (NEW ENGINE) ───────────────────────────
+// ─── All providers use .autoDispose so they re-fetch on next access ──────────
+// This means when invalidated, they don't keep stale cache
 
-/// Today's Smart Prediction: includes quote, rating, insight, do/avoid, yogas
-// Date key — changes at midnight, forces todayDataProvider to re-fetch
-final _todayDateKeyProvider = Provider<String>((ref) {
-  final now = DateTime.now();
-  return '${now.year}-${now.month.toString().padLeft(2, "0")}-${now.day.toString().padLeft(2, "0")}';
-});
-
-final todayDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  // Watching dateKey means this re-fetches whenever the date changes
-  ref.watch(_todayDateKeyProvider);
+final todayDataProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(userProfileProvider.future);
   if (user == null) throw Exception('No user profile');
   return ApiService.getToday(_dobToIso(user.dob));
 });
 
-/// Permanent Life Predictions: core nature, money/love patterns, work style
-final lifeInsightsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+final lifeInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(userProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  
   return ApiService.getLifeInsights(_dobToIso(user.dob));
 });
 
-/// Weekly Outlook: Finance signal, relationship depth, watch-outs
-final weeklyInsightsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+final weeklyInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(userProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  
   return ApiService.getWeeklyInsights(_dobToIso(user.dob));
 });
 
-/// Monthly Outlook: Career drive + Energy levels
-final monthlyInsightsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+final monthlyInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(userProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  
   return ApiService.getMonthlyInsights(_dobToIso(user.dob));
 });
 
-/// Yearly Outlook: The big picture context
-final yearlyInsightsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+final yearlyInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(userProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  
   return ApiService.getYearlyInsights(_dobToIso(user.dob));
 });
 
-// ─── CORE CHART & DASHA PROVIDERS (RETAINED) ──────────────────────────
-
-final chartDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final user = await ref.watch(userProfileProvider.future);
-  if (user == null) throw Exception('No user profile');
-  // Send client's local hour so timezone is correct (server runs UTC)
-  return ApiService.getChart(_dobToIso(user.dob), DateTime.now().hour);
-});
-
-final mahaTimelineProvider = FutureProvider<List<dynamic>>((ref) async {
-  final user = await ref.watch(userProfileProvider.future);
-  if (user == null) throw Exception('No user profile');
-  final result = await ApiService.getDashas(_dobToIso(user.dob), type: 'mahadasha');
-  return result['timeline'] as List<dynamic>;
-});
-
-final antarTimelineProvider = FutureProvider<List<dynamic>>((ref) async {
-  final user = await ref.watch(userProfileProvider.future);
-  if (user == null) throw Exception('No user profile');
-  final result = await ApiService.getDashas(_dobToIso(user.dob), type: 'antardasha');
-  return result['timeline'] as List<dynamic>;
-});
-
-/// Deep profile: core nature, patterns, chapter, warnings, natal combinations
-final deepInsightsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+final deepInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(userProfileProvider.future);
   if (user == null) throw Exception('No user profile');
   return ApiService.getDeepInsights(_dobToIso(user.dob));
 });
 
-// ─── LEGACY SUPPORT (OPTIONAL) ─────────────────────────────────────────
-
-// If your UI still uses specific feature providers, we keep them pointing to the new engine's logic
-final yogasProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+final chartDataProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(userProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  // New engine provides yogas within the today/life endpoints, 
-  // but if you have a separate screen:
-  return ApiService.getYogas(_dobToIso(user.dob));
+  return ApiService.getChart(_dobToIso(user.dob), DateTime.now().hour);
+});
+
+final mahaTimelineProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  final user = await ref.watch(userProfileProvider.future);
+  if (user == null) throw Exception('No user profile');
+  final data = await ApiService.getDashas(_dobToIso(user.dob));
+  return data['maha'] as List<dynamic>? ?? [];
+});
+
+final antarTimelineProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  final user = await ref.watch(userProfileProvider.future);
+  if (user == null) throw Exception('No user profile');
+  final data = await ApiService.getDashas(_dobToIso(user.dob));
+  return data['antar'] as List<dynamic>? ?? [];
 });

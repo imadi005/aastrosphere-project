@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/providers/role_provider.dart';
+import '../../core/services/midnight_refresh.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
@@ -38,9 +39,14 @@ class AppShell extends ConsumerWidget {
 }
 
 // ─── User Shell ───────────────────────────────────────────────────────────────
-class _UserShell extends ConsumerWidget {
+class _UserShell extends ConsumerStatefulWidget {
   const _UserShell();
 
+  @override
+  ConsumerState<_UserShell> createState() => _UserShellState();
+}
+
+class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObserver {
   static const _screens = [
     TodayScreen(),
     InsightsScreen(),
@@ -48,6 +54,25 @@ class _UserShell extends ConsumerWidget {
     ChartScreen(),
     MeScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      MidnightRefreshService.checkDateOnResume();
+    }
+  }
 
   static const _items = [
     BottomNavigationBarItem(icon: Icon(Icons.wb_sunny_outlined), activeIcon: Icon(Icons.wb_sunny), label: 'Today'),
@@ -58,7 +83,7 @@ class _UserShell extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final index = ref.watch(_userIndexProvider);
     final isDark = ref.watch(themeProvider) == ThemeMode.dark;
     final role = ref.watch(roleProvider);

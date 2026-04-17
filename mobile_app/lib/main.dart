@@ -9,6 +9,7 @@ import 'features/shell/app_shell.dart';
 import 'features/splash/screens/splash_screen.dart';
 import 'features/auth/screens/role_selection_screen.dart';
 import 'firebase_options.dart';
+import 'core/services/midnight_refresh.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +18,9 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const ProviderScope(child: AastrosphereApp()));
+  final container = ProviderContainer();
+  MidnightRefreshService.init(container);
+  runApp(ProviderScope(parent: container, child: const AastrosphereApp()));
 }
 
 class AastrosphereApp extends ConsumerWidget {

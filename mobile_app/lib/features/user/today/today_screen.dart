@@ -7,51 +7,11 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/providers/today_provider.dart';
 import '../../auth/providers/user_provider.dart';
 
-class TodayScreen extends ConsumerStatefulWidget {
+class TodayScreen extends ConsumerWidget {
   const TodayScreen({super.key});
 
   @override
-  ConsumerState<TodayScreen> createState() => _TodayScreenState();
-}
-
-class _TodayScreenState extends ConsumerState<TodayScreen> with WidgetsBindingObserver {
-  String? _lastKnownDate;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _lastKnownDate = _todayStr();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      final today = _todayStr();
-      if (today != _lastKnownDate) {
-        // Day changed while app was in background — force refresh
-        _lastKnownDate = today;
-        ref.invalidate(todayDataProvider);
-        ref.invalidate(weeklyInsightsProvider);
-        ref.invalidate(monthlyInsightsProvider);
-        ref.invalidate(chartDataProvider);
-      }
-    }
-  }
-
-  String _todayStr() {
-    final n = DateTime.now();
-    return '${n.year}-${n.month}-${n.day}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProfileProvider);
     final todayAsync = ref.watch(todayDataProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
