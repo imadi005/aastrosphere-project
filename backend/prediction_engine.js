@@ -530,6 +530,70 @@ export function generateHourlyPredictions(ctx) {
 }
 
 
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ─── Day/week/month processing helpers ───────────────────────────────────────
+function getDailyForDate(dob, dateStr) {
+  const d = new Date(dateStr);
+  const monthly = currentMonthlyDasha(dob, dateStr);
+  const monthlyNum = monthly ? monthly.number : basicNumber(new Date(dob).getDate());
+  const weekday = d.getDay();
+  const dayLord = WEEKDAY_VALUES[weekday];
+  return reduceToSingle(monthlyNum + dayLord);
+}
+
+function processWeekDays(dob, startDate) {
+  const days = [];
+  const d = new Date(startDate);
+  for (let i = 0; i < 7; i++) {
+    const dateStr = new Date(d.getTime() + i * 86400000).toISOString();
+    const dayNum = getDailyForDate(dob, dateStr);
+    const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(dateStr).getDay()];
+    days.push({ day: dayName, date: dateStr, number: dayNum });
+  }
+  const numberScores = { 1:7, 2:5, 3:7, 4:3, 5:8, 6:6, 7:8, 8:4, 9:6 };
+  const sorted = [...days].sort((a,b) => numberScores[b.number] - numberScores[a.number]);
+  const bestDays = sorted.slice(0,2).map(d => ({ day: d.day, number: d.number }));
+  const heavyDays = sorted.slice(-2).map(d => ({ day: d.day, number: d.number }));
+  const numbers = days.map(d => d.number);
+  const dominant = numbers.reduce((acc, n) => { acc[n] = (acc[n]||0)+1; return acc; }, {});
+  const dominantNum = parseInt(Object.entries(dominant).sort((a,b)=>b[1]-a[1])[0][0]);
+  return { days, bestDays, heavyDays, dominantNum, numbers };
+}
+
+function processMonthWeeks(dob, startDate) {
+  const weeks = [];
+  const d = new Date(startDate);
+  const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+  for (let w = 0; w < 4; w++) {
+    const weekStart = new Date(monthStart.getTime() + w * 7 * 86400000);
+    const weekData = processWeekDays(dob, weekStart.toISOString());
+    weeks.push({ week: w+1, ...weekData });
+  }
+  const allNumbers = weeks.flatMap(w => w.numbers);
+  const dominant = allNumbers.reduce((acc,n) => { acc[n]=(acc[n]||0)+1; return acc; }, {});
+  const dominantNum = parseInt(Object.entries(dominant).sort((a,b)=>b[1]-a[1])[0][0]);
+  const dayOfMonth = new Date(startDate).getDate();
+  const currentWeek = Math.ceil(dayOfMonth / 7);
+  return { weeks, dominantNum, currentWeek };
+}
+
+function processYearMonths(dob, year) {
+  const months = [];
+  const numberScores = { 1:8, 2:5, 3:7, 4:2, 5:9, 6:6, 7:8, 8:4, 9:7 };
+  for (let m = 0; m < 12; m++) {
+    const monthStart = new Date(year, m, 1).toISOString();
+    const monthly = currentMonthlyDasha(dob, monthStart);
+    const monthNum = monthly ? monthly.number : 0;
+    const score = numberScores[monthNum] || 5;
+    months.push({ month: m+1, number: monthNum, score });
+  }
+  const sorted = [...months].sort((a,b) => b.score - a.score);
+  const bestMonths = sorted.slice(0,3).map(m => m.month);
+  const riskyMonths = sorted.slice(-2).map(m => m.month);
+  return { months, bestMonths, riskyMonths };
+}
+
 export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOString()) {
   const { basic, destiny, maha, antar, monthly, yogas, freqMap, dob: ctxDob } = ctx;
 
