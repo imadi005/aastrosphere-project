@@ -300,6 +300,74 @@ function getChartModifiers(nums, freq, basic, destiny) {
   return mods;
 }
 
+// ─── Primary action — chart-specific, not from generic guidance list ─────────
+// Based on active yogas + maha+antar+daily combination
+export function getPrimaryAction(ctx) {
+  const { basic, destiny, maha, antar, monthly, daily, yogas, natalNums } = ctx;
+  const yogaIds = yogas.map(y => y.id);
+
+  if (yogaIds.includes('raj_yoga') || yogaIds.includes('sun_ketu_raj')) {
+    return {
+      do: "Make the authority move you've been postponing — the conditions are right today.",
+      avoid: "Letting ego override the opportunity. Confidence is warranted, arrogance isn't.",
+    };
+  }
+  if (yogaIds.includes('easy_money')) {
+    return {
+      do: "Act on the financial opportunity in front of you — the luck is structural, not random.",
+      avoid: "Letting easy income leave as easily as it arrived. Save something from what comes.",
+    };
+  }
+  if (yogaIds.includes('financial_bandhan')) {
+    return {
+      do: "Set aside money before spending anything today — even a small amount breaks the pattern.",
+      avoid: "Any purchase that feels justified by the moment. It isn't.",
+    };
+  }
+  if (yogaIds.includes('bandhan')) {
+    return {
+      do: "Navigate the constraint rather than fight it. Find the door instead of breaking the wall.",
+      avoid: "Explosive reactions to being blocked — they make the cage smaller.",
+    };
+  }
+  if (yogaIds.includes('uplifting_319')) {
+    return {
+      do: "Lead on something today — authority, wisdom, and energy are all available simultaneously.",
+      avoid: "Wasting the full-power day on things that don't matter.",
+    };
+  }
+  if (yogaIds.includes('vipreet_raj')) {
+    return {
+      do: "Show up fully today — the adversity you're navigating is building something real.",
+      avoid: "Shortcuts and substances. The difficult path today is the right one.",
+    };
+  }
+  if (yogaIds.includes('high_intuition')) {
+    return {
+      do: "Trust the first read on the situation or person today — your instincts are accurate.",
+      avoid: "Overanalyzing what only feeling can resolve.",
+    };
+  }
+
+  const dailyActions = {
+    1: { do: "Take initiative on the one thing requiring a decision — your confidence is warranted today.", avoid: "Letting pride turn a small disagreement into a larger conflict." },
+    2: { do: "Have the meaningful conversation you've been avoiding — emotional honesty lands well today.", avoid: "Making financial decisions from emotional reasoning." },
+    3: { do: "Seek or give advice on something that matters — your judgment is particularly sound today.", avoid: "Ethical shortcuts. The consequences multiply today." },
+    4: { do: "Research before committing to anything — your analytical ability is sharp today.", avoid: "Impulsive purchases or commitments. Verify first." },
+    5: { do: "Negotiate, pitch, or close the business conversation you've been putting off.", avoid: "Letting the sharp mind run into overthinking and anxiety tonight." },
+    6: { do: "Express genuine appreciation to someone who deserves it — it lands unusually well today.", avoid: "Harsh words when frustrated. Your tongue carries extra weight today." },
+    7: { do: "Trust your gut over the spreadsheet today — intuition is outperforming analysis.", avoid: "Forcing outcomes. What needs to arrive will, when you stop pushing." },
+    8: { do: "Do the one hard thing you've been postponing. Today's effort compounds.", avoid: "Shortcuts. Saturn is watching every one of them today." },
+    9: { do: "Make the bold move that requires courage. The energy is behind you today.", avoid: "Starting fights that aren't worth the energy they'll cost." },
+  };
+
+  return dailyActions[daily] || {
+    do: "Focus on what matters most today and give it full attention.",
+    avoid: "Distractions that feel important but aren't.",
+  };
+}
+
+
 // ─── Generate daily prediction ────────────────────────────────────────────────
 export function generateDailyPrediction(ctx) {
   const { basic, destiny, maha, antar, monthly, daily, yogas, freqMap, allNums } = ctx;
@@ -513,34 +581,53 @@ function classifyHour(hourNum, daily, maha, antar, yogas, natalNums) {
   // ── Default based on alignment ──────────────────────────────────
   const aligned = isAligned(hourNum, daily, maha, antar);
   if (aligned.positive) return { type: 'good', reason: aligned.reason, good_for: hourQuality.good_for, avoid: hourQuality.avoid };
-  if (aligned.negative) return { type: 'caution', reason: aligned.reason, good_for: hourQuality.good_for, avoid: hourQuality.avoid };
+  if (aligned.negative) {
+    // Use combination-specific reason from isAligned, but add time context to differentiate
+    const hourPeriod = hourNum < 12 ? 'morning' : hourNum < 17 ? 'afternoon' : 'evening';
+    const reason = aligned.reason;
+    return { type: 'caution', reason, good_for: hourQuality.good_for, avoid: hourQuality.avoid };
+  }
 
   return { type: 'neutral', reason: 'Steady energy this hour', good_for: hourQuality.good_for, avoid: hourQuality.avoid };
 }
 
 function isAligned(hourNum, daily, maha, antar) {
-  const positiveAlignments = [
-    [1, 3], [1, 9], [3, 9], [5, 7], [5, 9], [6, 7], [7, 9], [1, 5], [3, 5],
-  ];
-  const negativeAlignments = [
-    [4, 9], [4, 5], [7, 8], [1, 8], [2, 8], [8, 8],
-  ];
+  // Specific reasons for negative alignments — different per pair
+  const negativeReasons = {
+    '4_9': 'Frustration and impatience peak — avoid confrontations',
+    '4_5': 'Impulsive spending risk — avoid purchases',
+    '7_8': 'Heavy, slow energy — avoid launches and new starts',
+    '1_8': 'Ego meets resistance — avoid authority conflicts',
+    '2_8': 'Emotional weight this hour — avoid major decisions',
+    '8_8': 'Maximum karmic pressure — work quietly, avoid shortcuts',
+  };
+
+  // Specific reasons for positive alignments
+  const positiveReasons = {
+    '1_3': 'Authority and wisdom aligned — good for decisions',
+    '1_9': 'Maximum drive this hour — good for bold action',
+    '3_9': 'Bold wisdom — good for important conversations',
+    '5_7': 'Easy money energy — good for financial decisions',
+    '5_9': 'Sharp and competitive — good for business',
+    '6_7': 'Lucky and harmonious — good for social and creative',
+    '7_9': 'Courageous luck — good for bold asks',
+    '1_5': 'Authority meets intelligence — good for negotiations',
+    '3_5': 'Knowledge meets business — good for advisory work',
+  };
 
   const pair1 = [hourNum, daily].sort().join('_');
   const pair2 = [hourNum, maha].sort().join('_');
   const pair3 = [hourNum, antar].sort().join('_');
 
-  for (const [a, b] of positiveAlignments) {
-    const key = [a, b].sort().join('_');
+  for (const [key, reason] of Object.entries(positiveReasons)) {
     if (pair1 === key || pair2 === key || pair3 === key) {
-      return { positive: true, reason: `${HOUR_QUALITIES[hourNum]?.quality} energy aligns with the day's frequency` };
+      return { positive: true, reason };
     }
   }
 
-  for (const [a, b] of negativeAlignments) {
-    const key = [a, b].sort().join('_');
+  for (const [key, reason] of Object.entries(negativeReasons)) {
     if (pair1 === key || pair2 === key || pair3 === key) {
-      return { negative: true, reason: `Conflicting energies this hour — move carefully` };
+      return { negative: true, reason };
     }
   }
 

@@ -29,6 +29,7 @@ import {
   getDeepNumberProfile,
   getHonestWarnings,
   getDeepPeriodText,
+  getPrimaryAction,
 } from './prediction_engine.js';
 
 const app = express();
@@ -93,9 +94,10 @@ app.post('/api/today', (req, res) => {
     const comboYogas = (daily.active_yogas || [])
       .filter(y => y.combo_key);
 
-    // Single most important action for the day
-    const primaryAction = daily.what_to_do?.[0] || null;
-    const primaryAvoid = daily.what_to_avoid?.[0] || null;
+    // Primary action — chart-specific, from yogas + daily number
+    const primaryActionData = getPrimaryAction(ctx);
+    const primaryAction = primaryActionData.do;
+    const primaryAvoid = primaryActionData.avoid;
 
     // All hours with full detail for clickable cards
     const allHours = (hourly.all || []).map(h => ({
