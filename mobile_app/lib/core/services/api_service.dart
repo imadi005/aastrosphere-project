@@ -95,7 +95,7 @@ class ApiService {
       String dob1, String dob2, {String? clientDate, int? clientHour}) =>
       _post('/api/compatibility', {
         'dob1': dob1, 'dob2': dob2,
-        'client_date': clientDate ?? _clientDate,
+        'client_date': clientDate ?? ApiService.clientDate,
         'client_hour': clientHour ?? _clientHour,
       });
 
