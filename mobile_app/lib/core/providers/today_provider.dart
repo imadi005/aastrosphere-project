@@ -8,11 +8,17 @@ String _dobToIso(DateTime dob) => dob.toIso8601String();
 // ─── SMART PREDICTION PROVIDERS (NEW ENGINE) ───────────────────────────
 
 /// Today's Smart Prediction: includes quote, rating, insight, do/avoid, yogas
+// Date key — changes at midnight, forces todayDataProvider to re-fetch
+final _todayDateKeyProvider = Provider<String>((ref) {
+  final now = DateTime.now();
+  return '${now.year}-${now.month.toString().padLeft(2, "0")}-${now.day.toString().padLeft(2, "0")}';
+});
+
 final todayDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  // Watching dateKey means this re-fetches whenever the date changes
+  ref.watch(_todayDateKeyProvider);
   final user = await ref.watch(userProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  
-  // Hit updated /api/today endpoint
   return ApiService.getToday(_dobToIso(user.dob));
 });
 
