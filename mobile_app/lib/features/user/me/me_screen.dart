@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../consult/consult_screen.dart';
 import '../../../core/providers/today_provider.dart';
 import '../../auth/providers/user_provider.dart';
 
@@ -43,6 +44,8 @@ class MeScreen extends ConsumerWidget {
                 _ProfileHeader(user: user, isDark: isDark, gold: gold),
                 const SizedBox(height: 24),
                 _MeContent(data: deep, isDark: isDark, gold: gold),
+                const SizedBox(height: 24),
+                AskAstrologerCard(isDark: isDark, gold: gold),
                 const SizedBox(height: 32),
                 _SignOutButton(isDark: isDark),
               ],
