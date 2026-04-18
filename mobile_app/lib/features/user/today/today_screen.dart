@@ -5,18 +5,34 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/providers/today_provider.dart';
+import '../../../core/services/notification_service.dart';
 import '../../auth/providers/user_provider.dart';
 
-class TodayScreen extends ConsumerWidget {
+class TodayScreen extends ConsumerStatefulWidget {
   const TodayScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TodayScreen> createState() => _TodayScreenState();
+}
+
+class _TodayScreenState extends ConsumerState<TodayScreen> {
+  bool _notificationsScheduled = false;
+
+  @override
+  Widget build(BuildContext context) {
     final userAsync = ref.watch(userProfileProvider);
     final todayAsync = ref.watch(todayDataProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
+    // Schedule notifications when data loads (once per day)
+    todayAsync.whenData((data) {
+      if (!_notificationsScheduled) {
+        _notificationsScheduled = true;
+        _scheduleNotifications(data);
+      }
+    });
 
     return userAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
@@ -73,6 +89,8 @@ class _TodayView extends StatelessWidget {
     final allHours = (data['all_hours'] as List? ?? []);
     final currentHour = data['current_hour'] as int? ?? now.hour;
     final dailyNum = data['daily_number'] as int? ?? 0;
+    final accidentRiskHours = (data['accident_risk_hours'] as List? ?? []).cast<Map<String, dynamic>>();
+    final dailyAccidentRisk = data['daily_accident_risk'] as Map<String, dynamic>?;
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -109,6 +127,16 @@ class _TodayView extends StatelessWidget {
               isDark: isDark, gold: gold,
             ),
             const SizedBox(height: 16),
+
+            // ── 4b. Accident risk warning ────────────────────────
+            if (dailyAccidentRisk != null || accidentRiskHours.isNotEmpty)
+              _AccidentWarningCard(
+                dailyRisk: dailyAccidentRisk,
+                riskHours: accidentRiskHours,
+                isDark: isDark,
+              ),
+            if (dailyAccidentRisk != null || accidentRiskHours.isNotEmpty)
+              const SizedBox(height: 16),
 
             // ── 5. Today's one action ────────────────────────────
             if (primaryAction != null || primaryAvoid != null)
@@ -181,6 +209,26 @@ class _GreetingRow extends StatelessWidget {
     return 'Hello, $first';
   }
 }
+
+  Future<void> _scheduleNotifications(Map<String, dynamic> data) async {
+    try {
+      final quote = data['quote'] as String? ?? '';
+      final rating = data['rating'] as String? ?? 'caution';
+      final layers = data['layers'] as Map<String, dynamic>?;
+      final dailyQuality = layers?['daily'] as String? ?? 'Today';
+      final accidentRiskHours = (data['accident_risk_hours'] as List? ?? [])
+          .cast<Map<String, dynamic>>();
+      await NotificationService.scheduleDailySnapshot(
+        quote: quote, rating: rating, dailyQuality: dailyQuality,
+      );
+      if (accidentRiskHours.isNotEmpty) {
+        await NotificationService.scheduleAccidentWarnings(
+          accidentRiskHours: accidentRiskHours,
+        );
+      }
+    } catch (_) {}
+  }
+
 
 // ─── 2. Yoga pills ────────────────────────────────────────────────────────────
 class _YogaPills extends StatelessWidget {
@@ -944,5 +992,89 @@ class _NoProfileView extends StatelessWidget {
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     return Center(child: Text('Complete your profile to begin',
         style: GoogleFonts.dmSans(fontSize: 13, color: gold)));
+  }
+}
+
+// ─── Accident Warning Card ────────────────────────────────────────────────────
+class _AccidentWarningCard extends StatelessWidget {
+  final Map<String, dynamic>? dailyRisk;
+  final List<Map<String, dynamic>> riskHours;
+  final bool isDark;
+
+  const _AccidentWarningCard({
+    this.dailyRisk, required this.riskHours, required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
+    final warnColor = const Color(0xFFF59E0B);
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+
+    final isHighDaily = dailyRisk?['level'] == 'high';
+    final accentColor = isHighDaily ? dangerColor : warnColor;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: accentColor.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: accentColor.withOpacity(0.25), width: 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.warning_amber_rounded, size: 15, color: accentColor),
+          const SizedBox(width: 8),
+          Text('PHYSICAL CAUTION',
+              style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w700,
+                  letterSpacing: 1, color: accentColor)),
+        ]),
+        if (dailyRisk != null) ...[
+          const SizedBox(height: 8),
+          Text(dailyRisk!['reason'] as String? ?? '',
+              style: GoogleFonts.dmSans(fontSize: 12, color: primary, height: 1.5)),
+        ],
+        if (riskHours.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Divider(color: border, height: 1, thickness: 0.5),
+          const SizedBox(height: 8),
+          Text('CAUTION WINDOWS TODAY',
+              style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w600,
+                  letterSpacing: 0.8, color: secondary)),
+          const SizedBox(height: 6),
+          ...riskHours.map((h) {
+            final isHigh = h['risk_level'] == 'high';
+            final timeLabel = h['time_label'] as String? ?? '';
+            final reason = h['reason'] as String? ?? '';
+            final color = isHigh ? dangerColor : warnColor;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  width: 6, height: 6,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+                ),
+                const SizedBox(width: 8),
+                Expanded(child: RichText(text: TextSpan(children: [
+                  TextSpan(text: '$timeLabel  ',
+                      style: GoogleFonts.dmSans(fontSize: 12,
+                          fontWeight: FontWeight.w600, color: color)),
+                  TextSpan(text: reason,
+                      style: GoogleFonts.dmSans(fontSize: 11,
+                          color: secondary, height: 1.4)),
+                ]))),
+              ]),
+            );
+          }),
+          const SizedBox(height: 6),
+          Text('You will be notified 1 hour before each window.',
+              style: GoogleFonts.dmSans(fontSize: 10,
+                  color: secondary.withOpacity(0.6), fontStyle: FontStyle.italic)),
+        ],
+      ]),
+    );
   }
 }

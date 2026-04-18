@@ -10,6 +10,7 @@ import 'features/splash/screens/splash_screen.dart';
 import 'features/auth/screens/role_selection_screen.dart';
 import 'firebase_options.dart';
 import 'core/services/midnight_refresh.dart';
+import 'core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final container = ProviderContainer();
   MidnightRefreshService.init(container);
+  await NotificationService.init();
   runApp(ProviderScope(parent: container, child: const AastrosphereApp()));
 }
 

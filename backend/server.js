@@ -207,6 +207,54 @@ app.post('/api/today', (req, res) => {
     const primaryAction = primaryActionData.do;
     const primaryAvoid = primaryActionData.avoid;
 
+    // ── Accident risk detection ──────────────────────────────────────────────
+    function getAccidentRisk(hourNum, daily, maha, antar, monthly) {
+      const risks = [];
+      if (hourNum === 4 && [9].includes(daily)) risks.push({ level: 'high', reason: 'Rahu hour meets Mars day — avoid reckless physical action' });
+      if (hourNum === 9 && daily === 4) risks.push({ level: 'high', reason: 'Mars hour meets Rahu day — impulsive decisions cause accidents' });
+      if (hourNum === 4 && daily === 4) risks.push({ level: 'high', reason: 'Double Rahu hour — maximum instability window, move carefully' });
+      if (hourNum === 4 && daily === 8) risks.push({ level: 'medium', reason: 'Rahu hour in Saturn day — karmic disruption, structural care needed' });
+      if (hourNum === 8 && daily === 4) risks.push({ level: 'medium', reason: 'Saturn hour meets Rahu day — slow heavy accident risk' });
+      if (hourNum === 4 && maha === 9) risks.push({ level: 'high', reason: 'Rahu hour in Mars period — highest physical accident window' });
+      if (hourNum === 9 && maha === 4) risks.push({ level: 'high', reason: 'Mars hour in Rahu period — unexpected dangerous situations' });
+      if (hourNum === 4 && maha === 8) risks.push({ level: 'medium', reason: 'Rahu hour in Saturn period — verify before acting, move carefully' });
+      if (hourNum === 9 && hourNum === daily && maha === 9) risks.push({ level: 'high', reason: 'Triple Mars energy — physical recklessness risk is maximum' });
+      if (hourNum === 4 && antar === 4) risks.push({ level: 'medium', reason: 'Double Rahu (hour + chapter) — instability amplified' });
+      return risks;
+    }
+
+    // Find accident risk hours with 1-hour advance warning
+    const accidentRiskHours = [];
+    for (const h of (hourly.all || [])) {
+      const risks = getAccidentRisk(h.number, ctx.daily, ctx.maha, ctx.antar, ctx.monthly);
+      if (risks.length > 0) {
+        accidentRiskHours.push({
+          hour: h.hour,
+          risk_level: risks[0].level,
+          reason: risks[0].reason,
+          warn_at_hour: h.hour - 1, // notify 1 hour before
+          time_label: `${h.hour > 12 ? h.hour - 12 : h.hour === 0 ? 12 : h.hour}:00 ${h.hour < 12 ? 'AM' : 'PM'}`,
+          warn_time_label: `${(h.hour-1) > 12 ? (h.hour-1) - 12 : (h.hour-1) === 0 ? 12 : (h.hour-1)}:00 ${(h.hour-1) < 12 ? 'AM' : 'PM'}`,
+        });
+      }
+    }
+
+    // Daily accident risk summary
+    const dailyAccidentRisk = (() => {
+      const RISK_COMBOS = [
+        [4,9],[9,4],[4,4],[4,8],[8,4],[9,9]
+      ];
+      const hasDailyRisk = RISK_COMBOS.some(([a,b]) => ctx.daily===a && ctx.maha===b)
+        || RISK_COMBOS.some(([a,b]) => ctx.daily===a && ctx.antar===b)
+        || (ctx.daily === 4 && ctx.monthly === 9)
+        || (ctx.daily === 9 && ctx.monthly === 4);
+      if (ctx.daily === 4 && ctx.maha === 9) return { level: 'high', reason: 'Rahu day in Mars period — heightened physical accident risk today' };
+      if (ctx.daily === 9 && ctx.maha === 4) return { level: 'high', reason: 'Mars day in Rahu period — impulsive action risks today' };
+      if (ctx.daily === 4 && ctx.monthly === 9) return { level: 'medium', reason: 'Rahu day in Mars month — extra caution with physical activities' };
+      if (hasDailyRisk) return { level: 'medium', reason: 'Elevated physical caution recommended today' };
+      return null;
+    })();
+
     // All hours with full detail for clickable cards
     const allHours = (hourly.all || []).map(h => ({
       ...h,
@@ -244,6 +292,8 @@ app.post('/api/today', (req, res) => {
       best_hours: bestHourSummaries,
       caution_hours: cautionHourSummaries,
       all_hours: allHours,
+      accident_risk_hours: accidentRiskHours,
+      daily_accident_risk: dailyAccidentRisk,
     });
   } catch (e) {
     res.status(500).json({ error: e.message });

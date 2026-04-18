@@ -856,6 +856,7 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
               final watchOut = (day['watch_out'] as List? ?? []).cast<String>();
               final money = day['money'] as String? ?? '';
               final relationships = day['relationships'] as String? ?? '';
+              final accidentRisk = day['accident_risk'] as Map<String, dynamic>?;
               // Quality color and label
               final successColor2 = widget.isDark ? AppColors.successDark : AppColors.success;
               final dangerColor2 = widget.isDark ? AppColors.dangerDark : AppColors.danger;
@@ -898,6 +899,13 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
                                 fontSize: 9, fontWeight: FontWeight.w600,
                                 color: qualityColor)),
                           ),
+                          if (accidentRisk != null) ...[
+                            const SizedBox(width: 5),
+                            Icon(Icons.warning_amber_rounded, size: 13,
+                                color: accidentRisk['level'] == 'high'
+                                    ? (widget.isDark ? AppColors.dangerDark : AppColors.danger)
+                                    : const Color(0xFFF59E0B)),
+                          ],
                           const SizedBox(width: 8),
                           Icon(isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                               size: 14, color: secondary),
@@ -906,6 +914,29 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
                         Text(headline, style: GoogleFonts.dmSans(
                             fontSize: 11, color: secondary, fontStyle: FontStyle.italic)),
                         if (isOpen) ...[
+                        if (accidentRisk != null) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: (accidentRisk['level'] == 'high'
+                                  ? (widget.isDark ? AppColors.dangerDark : AppColors.danger)
+                                  : const Color(0xFFF59E0B)).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(children: [
+                              Icon(Icons.warning_amber_rounded, size: 12,
+                                  color: accidentRisk['level'] == 'high'
+                                      ? (widget.isDark ? AppColors.dangerDark : AppColors.danger)
+                                      : const Color(0xFFF59E0B)),
+                              const SizedBox(width: 6),
+                              Expanded(child: Text(accidentRisk['reason'] as String? ?? '',
+                                  style: GoogleFonts.dmSans(fontSize: 11,
+                                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                                      height: 1.4))),
+                            ]),
+                          ),
+                        ],
                           const SizedBox(height: 10),
                           if (goodFor.isNotEmpty) ...[
                             Text('GOOD FOR', style: GoogleFonts.dmSans(

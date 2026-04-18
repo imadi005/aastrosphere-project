@@ -630,12 +630,25 @@ export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOStrin
     const dayQuality = (dayNum === basic || dayNum === destiny) ? 'good'
       : basicRel;
 
+    // Accident risk for this day
+    const dayAccidentRisk = (() => {
+      const maha = ctx.maha;
+      const antar = ctx.antar;
+      if (dayNum === 4 && maha === 9) return { level: 'high', reason: 'Rahu day in Mars period — heightened physical accident risk' };
+      if (dayNum === 9 && maha === 4) return { level: 'high', reason: 'Mars day in Rahu period — impulsive action risks' };
+      if (dayNum === 4 && dayNum === basic) return { level: 'medium', reason: 'Rahu day amplified by Rahu natal — physical caution' };
+      if (dayNum === 4 && antar === 9) return { level: 'medium', reason: 'Rahu day in Mars chapter — extra physical care' };
+      if (dayNum === 9 && antar === 4) return { level: 'medium', reason: 'Mars day in Rahu chapter — verify before acting' };
+      return null;
+    })();
+
     days_breakdown.push({
       date_label: `${dayName}, ${date.getDate()} ${MONTH_NAMES_LOCAL[date.getMonth()]}`,
       day_name: dayName,
       daily_number: dayNum,
       is_today: isToday,
       day_quality: dayQuality,  // neutral | good | caution | danger
+      accident_risk: dayAccidentRisk,
       label: char?.label || '',
       headline: char?.headline || '',
       character: char?.character || '',
