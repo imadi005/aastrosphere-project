@@ -857,12 +857,12 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
               final money = day['money'] as String? ?? '';
               final relationships = day['relationships'] as String? ?? '';
               // Quality color and label
-              final successColor2 = isDark ? AppColors.successDark : AppColors.success;
-              final dangerColor2 = isDark ? AppColors.dangerDark : AppColors.danger;
+              final successColor2 = widget.isDark ? AppColors.successDark : AppColors.success;
+              final dangerColor2 = widget.isDark ? AppColors.dangerDark : AppColors.danger;
               final qualityColor = quality == 'good' ? successColor2
                   : quality == 'caution' ? const Color(0xFFF59E0B)
                   : quality == 'danger' ? dangerColor2
-                  : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight);
+                  : (widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight);
               final qualityText = quality == 'good' ? 'Good'
                   : quality == 'caution' ? 'Caution'
                   : quality == 'danger' ? 'Difficult'
