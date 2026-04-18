@@ -256,8 +256,8 @@ class _AttributionFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isDark
-        ? AppColors.textSecondaryDark.withOpacity(0.30)
-        : AppColors.textSecondaryLight.withOpacity(0.28);
+        ? Colors.white.withOpacity(0.75)
+        : Colors.black.withOpacity(0.70);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(bottom: 6, top: 4),
