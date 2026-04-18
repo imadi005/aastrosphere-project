@@ -634,11 +634,11 @@ export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOStrin
     const dayAccidentRisk = (() => {
       const maha = ctx.maha;
       const antar = ctx.antar;
-      if (dayNum === 4 && maha === 9) return { level: 'high', reason: 'Rahu day in Mars period — heightened physical accident risk' };
-      if (dayNum === 9 && maha === 4) return { level: 'high', reason: 'Mars day in Rahu period — impulsive action risks' };
-      if (dayNum === 4 && dayNum === basic) return { level: 'medium', reason: 'Rahu day amplified by Rahu natal — physical caution' };
-      if (dayNum === 4 && antar === 9) return { level: 'medium', reason: 'Rahu day in Mars chapter — extra physical care' };
-      if (dayNum === 9 && antar === 4) return { level: 'medium', reason: 'Mars day in Rahu chapter — verify before acting' };
+      if (dayNum === 4 && maha === 9) return { level: 'high', reason: 'Higher accident risk. Drive carefully, avoid risky physical activity.' };
+      if (dayNum === 9 && maha === 4) return { level: 'high', reason: 'Higher accident risk. Slow down — impulsive moves lead to physical damage.' };
+      if (dayNum === 4 && dayNum === basic) return { level: 'medium', reason: 'Accident-prone day. Be careful with physical tasks and decisions.' };
+      if (dayNum === 4 && antar === 9) return { level: 'medium', reason: 'Mild accident risk. Take extra care with physical activities today.' };
+      if (dayNum === 9 && antar === 4) return { level: 'medium', reason: 'Mild accident risk. Verify before acting, avoid rushing.' };
       return null;
     })();
 

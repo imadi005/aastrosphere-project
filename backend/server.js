@@ -210,16 +210,16 @@ app.post('/api/today', (req, res) => {
     // ── Accident risk detection ──────────────────────────────────────────────
     function getAccidentRisk(hourNum, daily, maha, antar, monthly) {
       const risks = [];
-      if (hourNum === 4 && [9].includes(daily)) risks.push({ level: 'high', reason: 'Rahu hour meets Mars day — avoid reckless physical action' });
-      if (hourNum === 9 && daily === 4) risks.push({ level: 'high', reason: 'Mars hour meets Rahu day — impulsive decisions cause accidents' });
-      if (hourNum === 4 && daily === 4) risks.push({ level: 'high', reason: 'Double Rahu hour — maximum instability window, move carefully' });
-      if (hourNum === 4 && daily === 8) risks.push({ level: 'medium', reason: 'Rahu hour in Saturn day — karmic disruption, structural care needed' });
-      if (hourNum === 8 && daily === 4) risks.push({ level: 'medium', reason: 'Saturn hour meets Rahu day — slow heavy accident risk' });
-      if (hourNum === 4 && maha === 9) risks.push({ level: 'high', reason: 'Rahu hour in Mars period — highest physical accident window' });
-      if (hourNum === 9 && maha === 4) risks.push({ level: 'high', reason: 'Mars hour in Rahu period — unexpected dangerous situations' });
-      if (hourNum === 4 && maha === 8) risks.push({ level: 'medium', reason: 'Rahu hour in Saturn period — verify before acting, move carefully' });
-      if (hourNum === 9 && hourNum === daily && maha === 9) risks.push({ level: 'high', reason: 'Triple Mars energy — physical recklessness risk is maximum' });
-      if (hourNum === 4 && antar === 4) risks.push({ level: 'medium', reason: 'Double Rahu (hour + chapter) — instability amplified' });
+      if (hourNum === 4 && [9].includes(daily)) risks.push({ level: 'high', reason: 'High accident risk this hour. Avoid speeding, sharp tools, and anything requiring precision.' });
+      if (hourNum === 9 && daily === 4) risks.push({ level: 'high', reason: 'High accident risk this hour. Slow down — impulsive moves cause physical damage right now.' });
+      if (hourNum === 4 && daily === 4) risks.push({ level: 'high', reason: 'Very high accident risk this hour. Do not rush. Double-check everything before you act.' });
+      if (hourNum === 4 && daily === 8) risks.push({ level: 'medium', reason: 'Accident risk this hour. Be careful with physical tasks, driving, and anything mechanical.' });
+      if (hourNum === 8 && daily === 4) risks.push({ level: 'medium', reason: 'Accident risk this hour. Move slowly and deliberately — this is not the hour to rush.' });
+      if (hourNum === 4 && maha === 9) risks.push({ level: 'high', reason: 'High accident risk this hour. Your body is running hot — physical caution is essential right now.' });
+      if (hourNum === 9 && maha === 4) risks.push({ level: 'high', reason: 'High accident risk this hour. Sudden unexpected situations can cause physical harm — stay alert.' });
+      if (hourNum === 4 && maha === 8) risks.push({ level: 'medium', reason: 'Accident risk this hour. Slow down, verify before acting, and avoid physical shortcuts.' });
+      if (hourNum === 9 && hourNum === daily && maha === 9) risks.push({ level: 'high', reason: 'Very high accident risk this hour. Energy is at its most reckless — physical outlet, not physical risk.' });
+      if (hourNum === 4 && antar === 4) risks.push({ level: 'medium', reason: 'Accident risk this hour. Double instability — do not make quick physical decisions right now.' });
       return risks;
     }
 
@@ -248,9 +248,9 @@ app.post('/api/today', (req, res) => {
         || RISK_COMBOS.some(([a,b]) => ctx.daily===a && ctx.antar===b)
         || (ctx.daily === 4 && ctx.monthly === 9)
         || (ctx.daily === 9 && ctx.monthly === 4);
-      if (ctx.daily === 4 && ctx.maha === 9) return { level: 'high', reason: 'Rahu day in Mars period — heightened physical accident risk today' };
-      if (ctx.daily === 9 && ctx.maha === 4) return { level: 'high', reason: 'Mars day in Rahu period — impulsive action risks today' };
-      if (ctx.daily === 4 && ctx.monthly === 9) return { level: 'medium', reason: 'Rahu day in Mars month — extra caution with physical activities' };
+      if (ctx.daily === 4 && ctx.maha === 9) return { level: 'high', reason: 'Higher accident risk today. Stay alert, drive carefully, avoid risky physical activities.' };
+      if (ctx.daily === 9 && ctx.maha === 4) return { level: 'high', reason: 'Higher accident risk today. Slow down before acting — impulsive moves lead to physical damage.' };
+      if (ctx.daily === 4 && ctx.monthly === 9) return { level: 'medium', reason: 'Mild accident risk today. Be careful with physical tasks, machinery, and driving.' };
       if (hasDailyRisk) return { level: 'medium', reason: 'Elevated physical caution recommended today' };
       return null;
     })();
