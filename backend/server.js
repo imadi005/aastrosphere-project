@@ -31,6 +31,8 @@ import {
   getDeepPeriodText,
   getPrimaryAction,
 } from './prediction_engine.js';
+import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
+import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
 
 const app = express();
 app.use(cors());
@@ -346,7 +348,6 @@ app.post('/api/hourly', (req, res) => {
 });
 
 // ─── /api/compatibility ─────────────────────────────────────────────────────
-import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
 
 app.post('/api/compatibility', (req, res) => {
   try {
