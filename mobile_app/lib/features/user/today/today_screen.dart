@@ -401,28 +401,28 @@ class _HourSummaryCard extends StatelessWidget {
       _HourChip(hour: h['hour'] as int, color: warningColor, isDark: isDark)).toList();
 
     return AstroCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(children: [
-        // Best hours
-        if (bestChips.isNotEmpty) ...[
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Best hours row
+        if (bestChips.isNotEmpty) Row(children: [
           Container(width: 5, height: 5,
               decoration: BoxDecoration(shape: BoxShape.circle, color: successColor)),
           const SizedBox(width: 6),
-          ...bestChips.map((c) => Padding(padding: const EdgeInsets.only(right: 6), child: c)),
-        ],
-        if (bestChips.isNotEmpty && cautionChips.isNotEmpty) ...[
-          Container(width: 0.5, height: 20,
-              color: border, margin: const EdgeInsets.symmetric(horizontal: 6)),
-        ],
-        // Caution hours
-        if (cautionChips.isNotEmpty) ...[
+          Expanded(child: Wrap(spacing: 6, children:
+            bestChips.map((c) => c).toList())),
+        ]),
+        if (bestChips.isNotEmpty && cautionChips.isNotEmpty) const SizedBox(height: 8),
+        // Caution hours row
+        if (cautionChips.isNotEmpty) Row(children: [
           Container(width: 5, height: 5,
               decoration: BoxDecoration(shape: BoxShape.circle, color: warningColor)),
           const SizedBox(width: 6),
-          ...cautionChips.map((c) => Padding(padding: const EdgeInsets.only(right: 6), child: c)),
-        ],
-        const Spacer(),
-        Text('tap hours below', style: GoogleFonts.dmSans(fontSize: 10, color: secondary.withOpacity(0.5))),
+          Expanded(child: Wrap(spacing: 6, children:
+            cautionChips.map((c) => c).toList())),
+        ]),
+        const SizedBox(height: 4),
+        Text('tap any hour below for detail',
+            style: GoogleFonts.dmSans(fontSize: 9, color: secondary.withOpacity(0.45))),
       ]),
     );
   }

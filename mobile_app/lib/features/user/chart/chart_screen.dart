@@ -199,10 +199,11 @@ class _ChartView extends StatelessWidget {
     final daily = data['daily'] as int?;
     final hourly = data['hourly'] as int?;
     final grid = data['grid'] as List<dynamic>;
-    final karmic = data['karmic'] as Map<String, dynamic>;
     final lucky = data['lucky'] as Map<String, dynamic>? ?? {};
     final targetDate = data['target_date'] as String?;
     final targetHour = data['target_hour'] as int?;
+    final dayAnalysis = (data['day_analysis'] as List? ?? []).cast<Map<String, dynamic>>();
+    final dayScore = data['day_score'] as int? ?? 50;
 
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
@@ -333,6 +334,20 @@ class _ChartView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
+          // ── Day Analysis ──────────────────────────────────────────
+          if (dayAnalysis.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            SectionLabel('Day Analysis'),
+            const SizedBox(height: 8),
+            _DayAnalysisSection(
+              findings: dayAnalysis,
+              dayScore: dayScore,
+              isDark: isDark,
+              gold: gold,
+            ),
+            const SizedBox(height: 16),
+          ],
+
           // ── Core Numbers ──────────────────────────────────────────
           SectionLabel('Core Numbers'),
           const SizedBox(height: 8),
@@ -351,24 +366,13 @@ class _ChartView extends StatelessWidget {
           ]),
           const SizedBox(height: 16),
 
-          // ── Lucky & Karmic ────────────────────────────────────────
-          if (lucky.isNotEmpty || karmic.isNotEmpty) ...[
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              if (lucky['color'] != null)
-                Expanded(child: _InfoCard(
-                  title: 'Lucky Color',
-                  value: lucky['color'] as String? ?? '',
-                  isDark: isDark, gold: gold,
-                )),
-              if (lucky['color'] != null) const SizedBox(width: 10),
-              Expanded(child: _InfoCard(
-                title: 'Karmic Debt',
-                value: karmic['hasKarmicDebt'] == true
-                    ? (karmic['title'] as String? ?? 'Karmic Debt')
-                    : 'None',
-                isDark: isDark, gold: gold,
-              )),
-            ]),
+          // ── Lucky Color only ──────────────────────────────────────
+          if (lucky.isNotEmpty && lucky['color'] != null) ...[
+            _InfoCard(
+              title: 'Lucky Color',
+              value: lucky['color'] as String? ?? '',
+              isDark: isDark, gold: gold,
+            ),
           ],
         ],
       ),
@@ -652,5 +656,129 @@ class _ErrorView extends StatelessWidget {
       const SizedBox(height: 12),
       GestureDetector(onTap: onRetry, child: const Text('Retry')),
     ]));
+  }
+}
+
+// ─── Day Analysis Section ─────────────────────────────────────────────────────
+class _DayAnalysisSection extends StatelessWidget {
+  final List<Map<String, dynamic>> findings;
+  final int dayScore;
+  final bool isDark;
+  final Color gold;
+
+  const _DayAnalysisSection({
+    required this.findings, required this.dayScore,
+    required this.isDark, required this.gold,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final successColor = isDark ? AppColors.successDark : AppColors.success;
+    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
+
+    // Score color
+    Color scoreColor;
+    String scoreLabel;
+    if (dayScore >= 70) { scoreColor = successColor; scoreLabel = 'Strong day'; }
+    else if (dayScore >= 55) { scoreColor = gold; scoreLabel = 'Steady day'; }
+    else if (dayScore >= 40) { scoreColor = const Color(0xFFF59E0B); scoreLabel = 'Mixed day'; }
+    else { scoreColor = dangerColor; scoreLabel = 'Difficult day'; }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // Day score bar
+      AstroCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(children: [
+          Text('$dayScore', style: GoogleFonts.cormorantGaramond(
+              fontSize: 32, color: scoreColor, height: 1)),
+          const SizedBox(width: 10),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(scoreLabel, style: GoogleFonts.dmSans(
+                fontSize: 12, fontWeight: FontWeight.w600, color: scoreColor)),
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: dayScore / 100,
+                backgroundColor: scoreColor.withOpacity(0.1),
+                valueColor: AlwaysStoppedAnimation(scoreColor),
+                minHeight: 4,
+              ),
+            ),
+          ])),
+        ]),
+      ),
+      const SizedBox(height: 8),
+
+      // Findings
+      ...findings.map((f) {
+        final type = f['type'] as String? ?? 'opportunity';
+        final level = f['level'] as String? ?? 'medium';
+        final label = f['label'] as String? ?? '';
+        final detail = f['detail'] as String? ?? '';
+
+        Color accent;
+        IconData icon;
+        switch (type) {
+          case 'accident': accent = dangerColor; icon = Icons.warning_amber_rounded;
+          case 'legal': accent = dangerColor; icon = Icons.gavel_outlined;
+          case 'financial': accent = const Color(0xFFF59E0B); icon = Icons.account_balance_wallet_outlined;
+          case 'health': accent = Colors.teal; icon = Icons.monitor_heart_outlined;
+          case 'relationship': accent = Colors.pinkAccent; icon = Icons.favorite_border;
+          case 'karma': accent = gold; icon = Icons.all_inclusive;
+          case 'spiritual': accent = const Color(0xFF6366F1); icon = Icons.self_improvement_outlined;
+          case 'opportunity': accent = successColor; icon = Icons.star_outline;
+          default: accent = secondary; icon = Icons.info_outline;
+        }
+        if (level == 'high' && type != 'opportunity') accent = dangerColor;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: accent.withOpacity(0.2), width: 0.5),
+            ),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 14, color: accent),
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Text(label, style: GoogleFonts.dmSans(
+                      fontSize: 12, fontWeight: FontWeight.w600, color: accent)),
+                  if (level == 'high') ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text('HIGH', style: GoogleFonts.dmSans(
+                          fontSize: 8, fontWeight: FontWeight.w700, color: accent)),
+                    ),
+                  ],
+                ]),
+                const SizedBox(height: 3),
+                Text(detail, style: GoogleFonts.dmSans(
+                    fontSize: 11, color: secondary, height: 1.5)),
+              ])),
+            ]),
+          ),
+        );
+      }),
+    ]);
   }
 }

@@ -138,6 +138,22 @@ function buildChartData(dob, targetDate, targetHour = null) {
     }
   }
 
+  // Day analysis — combinations, warnings, opportunities
+  const natalNums = Object.keys(buildFrequencyMap(dob)).map(Number);
+  const dayAnalysis = analyzeDayChart({
+    basic, destiny,
+    maha: maha.number, antar: antar.number,
+    monthly: monthly.number, daily: dailyNum,
+    hourly: hourlyNum,
+    natalNums,
+  });
+  const dayScore = getDayScore({
+    basic, destiny,
+    maha: maha.number, antar: antar.number,
+    monthly: monthly.number, daily: dailyNum,
+    natalNums,
+  });
+
   return {
     basic, basicPlanet: PLANET_NAMES[basic],
     destiny, destinyPlanet: PLANET_NAMES[destiny],
@@ -149,7 +165,9 @@ function buildChartData(dob, targetDate, targetHour = null) {
     target_hour: targetHour,
     grid: enhancedGrid,
     freqMap: buildFrequencyMap(dob, maha.number, antar.number, monthly.number),
-    karmic, lucky,
+    lucky,
+    day_analysis: dayAnalysis,
+    day_score: dayScore,
   };
 }
 
