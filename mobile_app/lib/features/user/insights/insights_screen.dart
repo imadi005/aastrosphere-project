@@ -91,6 +91,15 @@ class _WeeklyTab extends ConsumerWidget {
               _OverviewCard(text: data['overview'] as String? ?? '', gold: gold, isDark: isDark, label: 'THIS WEEK'),
               const SizedBox(height: 14),
 
+              // Best / heavy day signals
+              if ((data['best_days'] as List? ?? []).isNotEmpty || (data['heavy_days'] as List? ?? []).isNotEmpty)
+                _DaySummaryRow(
+                  bestDays: (data['best_days'] as List? ?? []),
+                  heavyDays: (data['heavy_days'] as List? ?? []),
+                  isDark: isDark, gold: gold,
+                ),
+              const SizedBox(height: 4),
+
               // Opps + Watch
               _OppWatchRow(
                 opps: (data['opportunities'] as List? ?? []).cast<String>(),
@@ -160,6 +169,15 @@ class _MonthlyTab extends ConsumerWidget {
               const SizedBox(height: 8),
               _PhaseTimeline(phases: data['phases'] as List? ?? [], isDark: isDark, gold: gold),
               const SizedBox(height: 14),
+
+              // Best / heavy day signals
+              if ((data['best_days'] as List? ?? []).isNotEmpty || (data['heavy_days'] as List? ?? []).isNotEmpty)
+                _DaySummaryRow(
+                  bestDays: (data['best_days'] as List? ?? []),
+                  heavyDays: (data['heavy_days'] as List? ?? []),
+                  isDark: isDark, gold: gold,
+                ),
+              const SizedBox(height: 4),
 
               // Opps + Watch
               _OppWatchRow(
@@ -1314,5 +1332,35 @@ class _MiniRow extends StatelessWidget {
         Expanded(child: Text(text, style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.4))),
       ]),
     );
+  }
+}
+
+// ─── Day summary row (replaces pills, less intrusive) ────────────────────────
+class _DaySummaryRow extends StatelessWidget {
+  final List<dynamic> bestDays, heavyDays;
+  final bool isDark;
+  final Color gold;
+  const _DaySummaryRow({required this.bestDays, required this.heavyDays,
+      required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final successColor = isDark ? AppColors.successDark : AppColors.success;
+    final warnColor = const Color(0xFFF59E0B);
+    if (bestDays.isEmpty && heavyDays.isEmpty) return const SizedBox.shrink();
+    return Row(children: [
+      Icon(Icons.circle, size: 7, color: successColor),
+      const SizedBox(width: 5),
+      Text('Best: ${bestDays.take(2).map((d) => d['day'] as String? ?? '').join(', ')}',
+          style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
+      if (heavyDays.isNotEmpty) ...[
+        const SizedBox(width: 14),
+        Icon(Icons.circle, size: 7, color: warnColor),
+        const SizedBox(width: 5),
+        Text('Caution: ${heavyDays.take(2).map((d) => d['day'] as String? ?? '').join(', ')}',
+            style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
+      ],
+    ]);
   }
 }

@@ -117,6 +117,7 @@ class _TodayView extends StatelessWidget {
               quote: quote, insight: insight,
               rating: rating, dailyNum: dailyNum,
               isDark: isDark, gold: gold,
+              layers: data['layers'] as Map<String, dynamic>?,
             ),
             const SizedBox(height: 16),
 
@@ -271,8 +272,9 @@ class _DayCard extends StatefulWidget {
   final int dailyNum;
   final bool isDark;
   final Color gold;
+  final Map<String, dynamic>? layers;
   const _DayCard({required this.quote, required this.insight, required this.rating,
-      required this.dailyNum, required this.isDark, required this.gold});
+      required this.dailyNum, required this.isDark, required this.gold, this.layers});
 
   @override
   State<_DayCard> createState() => _DayCardState();
@@ -291,8 +293,10 @@ class _DayCardState extends State<_DayCard> {
     String ratingLabel;
     switch (widget.rating) {
       case 'favorable': ratingColor = widget.isDark ? AppColors.successDark : AppColors.success; ratingLabel = 'FAVORABLE';
+      case 'good': ratingColor = widget.isDark ? AppColors.successDark : AppColors.success; ratingLabel = 'GOOD';
       case 'avoid': ratingColor = widget.isDark ? AppColors.dangerDark : AppColors.danger; ratingLabel = 'CHALLENGING';
-      default: ratingColor = widget.gold; ratingLabel = 'MIXED';
+      case 'caution': ratingColor = const Color(0xFFF59E0B); ratingLabel = 'CAUTION';
+      default: ratingColor = widget.gold; ratingLabel = 'STEADY';
     }
 
     return AstroCard(
@@ -350,15 +354,24 @@ class _DayCardState extends State<_DayCard> {
             ]),
           ),
 
-          // Expanded detail
+          // Expanded detail — actual layers
           if (_expanded) ...[
             const SizedBox(height: 12),
             Divider(color: border, thickness: 0.5),
             const SizedBox(height: 10),
-            Text(
-              'Your chart today is a layered combination — the multi-year energy running, the year\'s chapter, this month\'s current, and today\'s frequency all interact. The rating above reflects the sum of those layers, not just one.',
-              style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6, fontStyle: FontStyle.italic),
-            ),
+            if (widget.layers != null) ...{
+              if (widget.layers!['maha'] != null)
+                _LayerRow('Multi-year', widget.layers!['maha'] as String, secondary, widget.gold),
+              if (widget.layers!['antar'] != null)
+                _LayerRow('This chapter', widget.layers!['antar'] as String, secondary, widget.gold),
+              if (widget.layers!['monthly'] != null)
+                _LayerRow('This month', widget.layers!['monthly'] as String, secondary, widget.gold),
+              if (widget.layers!['daily'] != null)
+                _LayerRow('Today', widget.layers!['daily'] as String, secondary, widget.gold),
+            } else ...[
+              Text('Four layers shape today: your multi-year period, current chapter, this month, and today's frequency.',
+                  style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6, fontStyle: FontStyle.italic)),
+            ],
           ],
         ],
       ),
@@ -829,6 +842,9 @@ class _HourStrip extends StatelessWidget {
     final reason = h['reason'] as String? ?? '';
     final goodFor = (h['good_for'] as List? ?? []).cast<String>();
     final avoidList = (h['avoid'] as List? ?? []).cast<String>();
+    final bestAction = h['best_action'] as String?;
+    final hourEssence = h['hour_essence'] as String?;
+    final layers = (h['layers'] as List? ?? []).cast<Map<String, dynamic>>();
 
     final h12 = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
     final ampm = hr < 12 ? 'AM' : 'PM';
@@ -886,15 +902,34 @@ class _HourStrip extends StatelessWidget {
               ),
             ]),
             const SizedBox(height: 4),
-            Text('Hourly number: $num',
-                style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
 
-            // Main reason
+            // Essence + reason
+            if (hourEssence != null)
+              Text(hourEssence.toUpperCase(),
+                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
+                      letterSpacing: 1, color: secondary)),
+            if (hourEssence != null) const SizedBox(height: 6),
             if (reason.isNotEmpty) ...[
               Text(reason,
                   style: GoogleFonts.dmSans(fontSize: 14, color: primary, height: 1.5)),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+            ],
+            if (bestAction != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: gold.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(children: [
+                  Icon(Icons.bolt, size: 13, color: gold),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text(bestAction,
+                      style: GoogleFonts.dmSans(fontSize: 12, color: primary, height: 1.4))),
+                ]),
+              ),
+              const SizedBox(height: 12),
             ],
 
             Divider(color: border, thickness: 0.5),
@@ -938,6 +973,45 @@ class _HourStrip extends StatelessWidget {
                 ]),
               )),
             ],
+
+            // 6-layer context
+            if (layers.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Divider(color: border, thickness: 0.5),
+              const SizedBox(height: 10),
+              Text('WHY THIS HOUR',
+                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
+                      letterSpacing: 1, color: secondary)),
+              const SizedBox(height: 8),
+              ...layers.take(3).map((layer) {
+                final src = layer['source'] as String? ?? '';
+                final txt = layer['text'] as String? ?? '';
+                final srcLabel = src == 'today' ? 'Today'
+                    : src == 'period' ? 'Your period'
+                    : src == 'chapter' ? 'Your chapter'
+                    : src == 'natal' ? 'Your chart'
+                    : src == 'yoga' ? 'Active yoga'
+                    : 'Context';
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: gold.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: Text(srcLabel,
+                          style: GoogleFonts.dmSans(fontSize: 8, color: gold, fontWeight: FontWeight.w600)),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(txt,
+                        style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.4))),
+                  ]),
+                );
+              }),
+            ],
           ],
         ),
       ),
@@ -960,6 +1034,35 @@ class _LegendDot extends StatelessWidget {
       const SizedBox(width: 5),
       Text(label, style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
     ]);
+  }
+}
+
+// ─── Layer row for DayCard expanded ──────────────────────────────────────────
+class _LayerRow extends StatelessWidget {
+  final String label, text;
+  final Color secondary, gold;
+  const _LayerRow(this.label, this.text, this.secondary, this.gold, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Container(
+          width: 76,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: gold.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(label, style: GoogleFonts.dmSans(
+              fontSize: 9, fontWeight: FontWeight.w600, color: gold)),
+        ),
+        const SizedBox(width: 10),
+        Expanded(child: Text(text, style: GoogleFonts.dmSans(
+            fontSize: 11, color: secondary, height: 1.4))),
+      ]),
+    );
   }
 }
 
