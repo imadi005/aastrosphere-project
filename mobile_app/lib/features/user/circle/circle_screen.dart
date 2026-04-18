@@ -328,25 +328,25 @@ class _TodayTab extends StatelessWidget {
     else scoreColor = dangerColor;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      // Today score + label
-      Row(children: [
-        Text('$todayScore%', style: GoogleFonts.cormorantGaramond(fontSize: 40, color: scoreColor, height: 1)),
-        const SizedBox(width: 12),
+      // Score row — visual
+      Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Text('$todayScore%', style: GoogleFonts.cormorantGaramond(
+            fontSize: 48, color: scoreColor, height: 1, fontWeight: FontWeight.w300)),
+        const SizedBox(width: 14),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(dayLabel, style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, color: scoreColor)),
-          if (daily1 != null && daily2 != null)
-            Text('You: $daily1  ·  Them: $daily2',
-                style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
+          Text(dayLabel, style: GoogleFonts.dmSans(
+              fontSize: 12, fontWeight: FontWeight.w600, color: scoreColor)),
+          const SizedBox(height: 3),
+          Text(headline, style: GoogleFonts.dmSans(
+              fontSize: 11, color: primary, height: 1.4),
+              maxLines: 2, overflow: TextOverflow.ellipsis),
         ])),
       ]),
       const SizedBox(height: 10),
 
-      // Headline
-      Text(headline, style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w500, color: primary, height: 1.5)),
-      const SizedBox(height: 8),
-
-      // Detail
-      Text(detail, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6)),
+      // Detail — collapsible
+      Text(detail, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6),
+          maxLines: 3, overflow: TextOverflow.ellipsis),
 
       if (doList.isNotEmpty) ...[
         const SizedBox(height: 14),

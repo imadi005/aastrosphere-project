@@ -332,28 +332,42 @@ class _YearlyTab extends ConsumerWidget {
 // COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-class _OverviewCard extends StatelessWidget {
+class _OverviewCard extends StatefulWidget {
   final String text, label;
   final Color gold;
   final bool isDark;
   const _OverviewCard({required this.text, required this.label, required this.gold, required this.isDark});
+  @override
+  State<_OverviewCard> createState() => _OverviewCardState();
+}
+
+class _OverviewCardState extends State<_OverviewCard> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
-    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    return AstroCard(
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    final primary = widget.isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    return GestureDetector(
+      onTap: () => setState(() => _expanded = !_expanded),
+      child: AstroCard(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Icon(Icons.auto_awesome, size: 12, color: gold),
+            Icon(Icons.auto_awesome, size: 12, color: widget.gold),
             const SizedBox(width: 6),
-            Text(label, style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: gold)),
+            Text(widget.label, style: GoogleFonts.dmSans(
+                fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: widget.gold)),
+            const Spacer(),
+            Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                size: 14, color: secondary.withOpacity(0.4)),
           ]),
-          const SizedBox(height: 10),
-          Text(text, style: GoogleFonts.dmSans(fontSize: 14, color: primary, height: 1.65)),
-        ],
+          const SizedBox(height: 8),
+          Text(widget.text,
+              maxLines: _expanded ? null : 3,
+              overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+              style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.65)),
+        ]),
       ),
     );
   }
@@ -431,34 +445,81 @@ class _SignalList extends StatelessWidget {
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
+    // Expandable: collapsed = icon chips row, expanded = full text
+    return _ExpandableSignals(items: items, isDark: isDark);
+  }
+}
+
+class _ExpandableSignals extends StatefulWidget {
+  final List<_SignalItem> items;
+  final bool isDark;
+  const _ExpandableSignals({required this.items, required this.isDark});
+  @override
+  State<_ExpandableSignals> createState() => _ExpandableSignalsState();
+}
+
+class _ExpandableSignalsState extends State<_ExpandableSignals> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
+
+    if (!_expanded) {
+      // Collapsed: horizontal row of labeled chips
+      return GestureDetector(
+        onTap: () => setState(() => _expanded = true),
+        child: AstroCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(children: [
+            ...widget.items.map((item) => Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(item.icon, size: 13, color: item.color),
+                const SizedBox(width: 5),
+                Text(item.label, style: GoogleFonts.dmSans(
+                    fontSize: 11, fontWeight: FontWeight.w500, color: item.color)),
+              ]),
+            )),
+            const Spacer(),
+            Icon(Icons.keyboard_arrow_down, size: 14, color: secondary.withOpacity(0.5)),
+          ]),
+        ),
+      );
+    }
+
     return AstroCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: items.asMap().entries.map((entry) {
+      child: Column(children: [
+        ...widget.items.asMap().entries.map((entry) {
           final i = entry.key;
           final item = entry.value;
-          return Column(
-            children: [
-              if (i > 0) Divider(color: border, height: 16, thickness: 0.5),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [
-                      Icon(item.icon, size: 14, color: item.color),
-                      const SizedBox(width: 6),
-                      Text(item.label, style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, color: item.color)),
-                    ]),
-                    const SizedBox(height: 5),
-                    Text(item.text, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.5)),
-                  ],
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
+          return Column(children: [
+            if (i > 0) Divider(color: border, height: 14, thickness: 0.5),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Icon(item.icon, size: 13, color: item.color),
+                  const SizedBox(width: 6),
+                  Text(item.label, style: GoogleFonts.dmSans(
+                      fontSize: 10, fontWeight: FontWeight.w700, color: item.color)),
+                  const Spacer(),
+                  if (i == widget.items.length - 1)
+                    GestureDetector(
+                      onTap: () => setState(() => _expanded = false),
+                      child: Icon(Icons.keyboard_arrow_up, size: 14, color: secondary.withOpacity(0.5)),
+                    ),
+                ]),
+                const SizedBox(height: 4),
+                Text(item.text, style: GoogleFonts.dmSans(
+                    fontSize: 12, color: secondary, height: 1.5)),
+              ]),
+            ),
+          ]);
+        }),
+      ]),
     );
   }
 }

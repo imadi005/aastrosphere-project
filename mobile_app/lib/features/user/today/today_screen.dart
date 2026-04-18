@@ -394,87 +394,60 @@ class _HourSummaryCard extends StatelessWidget {
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
+    // Build all hour chips
+    final bestChips = bestHours.take(4).map((h) =>
+      _HourChip(hour: h['hour'] as int, color: successColor, isDark: isDark)).toList();
+    final cautionChips = cautionHours.take(3).map((h) =>
+      _HourChip(hour: h['hour'] as int, color: warningColor, isDark: isDark)).toList();
+
     return AstroCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Best hours
-          if (bestHours.isNotEmpty) ...[
-            Row(children: [
-              Container(width: 6, height: 6,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: successColor)),
-              const SizedBox(width: 8),
-              Text('BEST HOURS TODAY',
-                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
-                      letterSpacing: 1, color: successColor)),
-            ]),
-            const SizedBox(height: 8),
-            ...bestHours.take(3).map((h) {
-              final hr = h['hour'] as int;
-              final reason = h['reason'] as String? ?? '';
-              final goodFor = (h['good_for'] as List? ?? []).cast<String>();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(children: [
-                  Text(_fmtHour(hr),
-                      style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600,
-                          color: successColor)),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(
-                    reason.isNotEmpty ? reason : goodFor.take(2).join(', '),
-                    style: GoogleFonts.dmSans(fontSize: 12, color: secondary),
-                  )),
-                ]),
-              );
-            }),
-          ],
-
-          if (bestHours.isNotEmpty && cautionHours.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Divider(color: border, height: 1, thickness: 0.5),
-            const SizedBox(height: 8),
-          ],
-
-          // Caution hours
-          if (cautionHours.isNotEmpty) ...[
-            Row(children: [
-              Container(width: 6, height: 6,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: warningColor)),
-              const SizedBox(width: 8),
-              Text('CAUTION HOURS',
-                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
-                      letterSpacing: 1, color: warningColor)),
-            ]),
-            const SizedBox(height: 8),
-            ...cautionHours.take(3).map((h) {
-              final hr = h['hour'] as int;
-              final reason = h['reason'] as String? ?? '';
-              final avoidFor = (h['avoid'] as List? ?? []).cast<String>();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(children: [
-                  Text(_fmtHour(hr),
-                      style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600,
-                          color: warningColor)),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(
-                    reason.isNotEmpty ? reason : avoidFor.take(2).join(', '),
-                    style: GoogleFonts.dmSans(fontSize: 12, color: secondary),
-                  )),
-                ]),
-              );
-            }),
-          ],
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(children: [
+        // Best hours
+        if (bestChips.isNotEmpty) ...[
+          Container(width: 5, height: 5,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: successColor)),
+          const SizedBox(width: 6),
+          ...bestChips.map((c) => Padding(padding: const EdgeInsets.only(right: 6), child: c)),
         ],
-      ),
+        if (bestChips.isNotEmpty && cautionChips.isNotEmpty) ...[
+          Container(width: 0.5, height: 20,
+              color: border, margin: const EdgeInsets.symmetric(horizontal: 6)),
+        ],
+        // Caution hours
+        if (cautionChips.isNotEmpty) ...[
+          Container(width: 5, height: 5,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: warningColor)),
+          const SizedBox(width: 6),
+          ...cautionChips.map((c) => Padding(padding: const EdgeInsets.only(right: 6), child: c)),
+        ],
+        const Spacer(),
+        Text('tap hours below', style: GoogleFonts.dmSans(fontSize: 10, color: secondary.withOpacity(0.5))),
+      ]),
     );
   }
+}
 
-  String _fmtHour(int hr) {
-    final h12 = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
-    final ampm = hr < 12 ? 'AM' : 'PM';
-    return '$h12 $ampm';
+class _HourChip extends StatelessWidget {
+  final int hour;
+  final Color color;
+  final bool isDark;
+  const _HourChip({required this.hour, required this.color, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final h12 = hour == 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    final ampm = hour < 12 ? 'AM' : 'PM';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3), width: 0.5),
+      ),
+      child: Text('$h12 $ampm',
+          style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+    );
   }
 }
 
@@ -564,8 +537,7 @@ class _GuidanceCardState extends State<_GuidanceCard> {
     final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final border = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
 
-    // Show 2 by default, all when expanded
-    final showDo = _expanded ? widget.toDo : widget.toDo.take(2).toList();
+    final showDo = _expanded ? widget.toDo : widget.toDo.take(3).toList();
     final showAvoid = _expanded ? widget.avoid : widget.avoid.take(2).toList();
 
     return AstroCard(
@@ -578,11 +550,15 @@ class _GuidanceCardState extends State<_GuidanceCard> {
                 fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: widget.gold)),
             GestureDetector(
               onTap: () => setState(() => _expanded = !_expanded),
-              child: Text(_expanded ? 'Less' : 'More',
-                  style: GoogleFonts.dmSans(fontSize: 11, color: widget.gold)),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(_expanded ? 'Less' : 'More',
+                    style: GoogleFonts.dmSans(fontSize: 11, color: widget.gold)),
+                Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    size: 14, color: widget.gold),
+              ]),
             ),
           ]),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
 
           // Two columns
           Row(

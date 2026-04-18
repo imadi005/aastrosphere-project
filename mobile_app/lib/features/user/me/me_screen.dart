@@ -294,29 +294,26 @@ class _MeContent extends StatelessWidget {
         if (warnings.isNotEmpty) ...[
           SectionLabel('Be Honest With Yourself'),
           const SizedBox(height: 8),
-          ...warnings.take(3).map((w) {
-            final warning = w as Map<String, dynamic>;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: dangerColor.withOpacity(0.04),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: dangerColor.withOpacity(0.2), width: 0.5),
+          AstroCard(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            child: Column(children: warnings.take(3).toList().asMap().entries.map((entry) {
+              final i = entry.key;
+              final warning = entry.value as Map<String, dynamic>;
+              final border2 = isDark ? AppColors.borderDark : AppColors.borderLight;
+              return Column(children: [
+                if (i > 0) Divider(color: border2, height: 12, thickness: 0.5),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Icon(Icons.remove_circle_outline, size: 13, color: dangerColor),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(warning['short'] as String? ?? '',
+                        style: GoogleFonts.dmSans(fontSize: 12, color: primary, height: 1.5))),
+                  ]),
                 ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(warning['short'] as String? ?? '',
-                      style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w500, color: primary, height: 1.5)),
-                  if (warning['probability'] != null) ...[
-                    const SizedBox(height: 5),
-                    Text(warning['probability'] as String,
-                        style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.4, fontStyle: FontStyle.italic)),
-                  ],
-                ]),
-              ),
-            );
-          }),
+              ]);
+            }).toList()),
+          ),
         ],
       ],
     );
