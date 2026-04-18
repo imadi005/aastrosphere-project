@@ -355,6 +355,54 @@ app.post('/api/compatibility', (req, res) => {
     const { dob1, dob2, client_date, client_hour } = req.body;
     if (!dob1 || !dob2) return res.status(400).json({ error: 'dob1 and dob2 required' });
 
+    // ── Hardcoded special conditions ─────────────────────────────────────────
+    function normDob(d) {
+      // Normalize to YYYY-MM-DD regardless of input format
+      const dt = new Date(d);
+      return dt.toISOString().slice(0, 10);
+    }
+    const nd1 = normDob(dob1);
+    const nd2 = normDob(dob2);
+
+    const ZERO_PAIRS = [
+      ['2003-12-14', '2003-03-06'],
+    ];
+    const HUNDRED_PAIRS = [
+      ['2003-03-06', '2003-06-06'],
+      ['2003-03-06', '2003-08-03'],
+    ];
+
+    const isZero = ZERO_PAIRS.some(([a, b]) =>
+      (nd1 === a && nd2 === b) || (nd1 === b && nd2 === a)
+    );
+    const isHundred = HUNDRED_PAIRS.some(([a, b]) =>
+      (nd1 === a && nd2 === b) || (nd1 === b && nd2 === a)
+    );
+
+    if (isZero) {
+      return res.json({
+        score: 0, level: 'None', level_icon: '○',
+        core: 'Nothing to see here.', strength: 'Nothing to see here.',
+        tension: 'Nothing to see here.', growth: 'Nothing to see here.',
+        romantic: 'Nothing to see here.', friendship: 'Nothing to see here.',
+        relationship_label: 'Nothing to see here.',
+        destiny_note: null,
+        person1_brings: { basic: 0, destiny: 0, brings: 'Nothing to see here.', needs: '', blind_spot: '', friendship_style: '', conflict_style: '' },
+        person2_brings: { basic: 0, destiny: 0, brings: 'Nothing to see here.', needs: '', blind_spot: '', friendship_style: '', conflict_style: '' },
+        today: {
+          score: 0, energy: 'none', day_label: 'Nothing to see here.',
+          headline: 'Nothing to see here.', detail: 'Nothing to see here.',
+          do_together: [], watch_together: [],
+          daily1: 0, daily2: 0,
+        },
+      });
+    }
+
+    if (isHundred) {
+      // Run normal calculation but override scores to 100
+      // (fall through to normal logic, override at res.json)
+    }
+
     const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const targetHour = (client_hour !== undefined) ? parseInt(client_hour) : new Date().getHours();
 
@@ -456,6 +504,14 @@ app.post('/api/compatibility', (req, res) => {
     // What each brings
     const p1brings = NUMBER_IN_RELATIONSHIP[b1] || {};
     const p2brings = NUMBER_IN_RELATIONSHIP[b2] || {};
+
+    // Override for 100% pairs
+    if (isHundred) {
+      baseScore = 100;
+      level = 'Perfect';
+      levelIcon = '✦';
+      todayCompat.score = 100;
+    }
 
     res.json({
       score: baseScore,
