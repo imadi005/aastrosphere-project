@@ -462,27 +462,33 @@ class _PaymentScreenState extends State<_PaymentScreen> {
           ),
           const SizedBox(height: 20),
 
-          // QR Code placeholder
+          // QR Code
           Center(
             child: Column(children: [
               Container(
-                width: 200, height: 200,
+                width: 180, height: 180,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: gold.withOpacity(0.3), width: 1),
                 ),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon(Icons.qr_code_2, size: 80, color: Colors.black87),
-                  const SizedBox(height: 8),
-                  Text('UPI QR Code',
-                      style: GoogleFonts.dmSans(fontSize: 12,
-                          color: Colors.black54, fontWeight: FontWeight.w500)),
-                  Text('Coming soon',
-                      style: GoogleFonts.dmSans(fontSize: 10, color: Colors.black38)),
-                ]),
+                padding: const EdgeInsets.all(12),
+                child: Image.asset(
+                  'assets/images/upi_qr.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.qr_code_2, size: 70, color: Colors.black87),
+                      const SizedBox(height: 6),
+                      Text('UPI QR Code',
+                          style: GoogleFonts.dmSans(fontSize: 11,
+                              color: Colors.black54, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text('Scan & pay ₹200 via any UPI app',
                   style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
             ]),
@@ -519,6 +525,18 @@ class _PaymentScreenState extends State<_PaymentScreen> {
           Text('After paying, enter the UTR/reference number from your payment app.',
               style: GoogleFonts.dmSans(fontSize: 11,
                   color: secondary.withOpacity(0.6), height: 1.4)),
+          const SizedBox(height: 14),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(Icons.lock_outline, size: 13,
+                color: (isDark ? AppColors.successDark : AppColors.success).withOpacity(0.8)),
+            const SizedBox(width: 7),
+            Expanded(child: Text(
+              'Your questions are 100% confidential — seen only by Pankajj Kumar Mishra.',
+              style: GoogleFonts.dmSans(fontSize: 11,
+                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                  height: 1.5),
+            )),
+          ]),
           const SizedBox(height: 24),
 
           // Submit
