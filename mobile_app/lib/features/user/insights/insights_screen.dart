@@ -91,15 +91,6 @@ class _WeeklyTab extends ConsumerWidget {
               _OverviewCard(text: data['overview'] as String? ?? '', gold: gold, isDark: isDark, label: 'THIS WEEK'),
               const SizedBox(height: 14),
 
-              // Best + Heavy days
-              if ((data['best_days'] as List? ?? []).isNotEmpty)
-                _DayPillsRow(
-                  bestDays: (data['best_days'] as List? ?? []),
-                  heavyDays: (data['heavy_days'] as List? ?? []),
-                  isDark: isDark, gold: gold,
-                ),
-              const SizedBox(height: 14),
-
               // Opps + Watch
               _OppWatchRow(
                 opps: (data['opportunities'] as List? ?? []).cast<String>(),
@@ -857,6 +848,7 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
               final isToday = day['is_today'] as bool? ?? false;
               final isOpen = _expanded == i;
               final label = day['label'] as String? ?? '';
+              final quality = day['day_quality'] as String? ?? 'neutral';
               final dayName = day['day_name'] as String? ?? '';
               final dateLabel = day['date_label'] as String? ?? '';
               final headline = day['headline'] as String? ?? '';
@@ -864,6 +856,17 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
               final watchOut = (day['watch_out'] as List? ?? []).cast<String>();
               final money = day['money'] as String? ?? '';
               final relationships = day['relationships'] as String? ?? '';
+              // Quality color and label
+              final successColor2 = isDark ? AppColors.successDark : AppColors.success;
+              final dangerColor2 = isDark ? AppColors.dangerDark : AppColors.danger;
+              final qualityColor = quality == 'good' ? successColor2
+                  : quality == 'caution' ? const Color(0xFFF59E0B)
+                  : quality == 'danger' ? dangerColor2
+                  : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight);
+              final qualityText = quality == 'good' ? 'Good'
+                  : quality == 'caution' ? 'Caution'
+                  : quality == 'danger' ? 'Difficult'
+                  : 'Neutral';
 
               return Column(children: [
                 if (i > 0) Divider(color: border, height: 14, thickness: 0.5),
@@ -888,12 +891,12 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: widget.gold.withOpacity(0.07),
+                              color: qualityColor.withOpacity(0.10),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: Text(label, style: GoogleFonts.dmSans(
+                            child: Text(qualityText, style: GoogleFonts.dmSans(
                                 fontSize: 9, fontWeight: FontWeight.w600,
-                                color: widget.gold)),
+                                color: qualityColor)),
                           ),
                           const SizedBox(width: 8),
                           Icon(isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,

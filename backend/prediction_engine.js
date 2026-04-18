@@ -623,11 +623,25 @@ export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOStrin
     const char = DAY_CHARACTER[dayNum];
     const dayName = DAY_NAMES[wd];
     const isToday = date.toDateString() === todayDate.toDateString();
+    // Day quality based on planetary relationship between user's basic and daily number
+    const PLANET_RELS_WK = {
+      1:{f:[3,9,5],e:[2,7]}, 2:{f:[1,3],e:[4,5,8]}, 3:{f:[1,2,9],e:[5,6]},
+      4:{f:[4,6,7],e:[1,2,8]}, 5:{f:[1,4],e:[2,3,9]}, 6:{f:[4,5],e:[1,2,3]},
+      7:{f:[4,6],e:[1,2]}, 8:{f:[4,5,6],e:[1,2,3]}, 9:{f:[1,2,3],e:[5,6]},
+    };
+    const basicRel = PLANET_RELS_WK[basic]?.f?.includes(dayNum) ? 'good'
+      : PLANET_RELS_WK[basic]?.e?.includes(dayNum) ? (dayNum === 4 ? 'danger' : 'caution')
+      : 'neutral';
+    // Same number as destiny or basic = boost
+    const dayQuality = (dayNum === basic || dayNum === destiny) ? 'good'
+      : basicRel;
+
     days_breakdown.push({
       date_label: `${dayName}, ${date.getDate()} ${MONTH_NAMES_LOCAL[date.getMonth()]}`,
       day_name: dayName,
       daily_number: dayNum,
       is_today: isToday,
+      day_quality: dayQuality,  // neutral | good | caution | danger
       label: char?.label || '',
       headline: char?.headline || '',
       character: char?.character || '',

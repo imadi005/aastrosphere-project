@@ -322,43 +322,52 @@ app.post('/api/compatibility', (req, res) => {
     const destinyKey = [Math.min(d1,d2), Math.max(d1,d2)].join('_');
     const destinyPair = PAIR_DYNAMICS[destinyKey] || {};
 
-    // ── Granular pair scoring — every combination has its own weight ─────────
-    const PAIR_SCORES = {
-      '1_1':72,'1_2':68,'1_3':82,'1_4':51,'1_5':85,'1_6':74,'1_7':88,'1_8':47,'1_9':78,
-      '2_2':71,'2_3':76,'2_4':44,'2_5':73,'2_6':84,'2_7':69,'2_8':62,'2_9':66,
-      '3_3':74,'3_4':58,'3_5':83,'3_6':79,'3_7':81,'3_8':77,'3_9':75,
-      '4_4':48,'4_5':55,'4_6':61,'4_7':42,'4_8':38,'4_9':35,
-      '5_5':76,'5_6':72,'5_7':86,'5_8':69,'5_9':80,
-      '6_6':73,'6_7':82,'6_8':71,'6_9':64,
-      '7_7':58,'7_8':54,'7_9':79,
-      '8_8':67,'8_9':72,
-      '9_9':66,
+    // ── Book-accurate scoring: Vedic planetary relationship model ────────────
+    // Standard planetary friend/enemy/neutral relationships (Lo Shu / Vedic)
+    const PLANET_RELS = {
+      1: { f:[3,9,5], e:[2,7] },
+      2: { f:[1,3],   e:[4,5,8] },
+      3: { f:[1,2,9], e:[5,6] },
+      4: { f:[4,6,7], e:[1,2,8] },
+      5: { f:[1,4],   e:[2,3,9] },
+      6: { f:[4,5],   e:[1,2,3] },
+      7: { f:[4,6],   e:[1,2] },
+      8: { f:[4,5,6], e:[1,2,3] },
+      9: { f:[1,2,3], e:[5,6] },
     };
-    const basicKey = [Math.min(b1,b2),Math.max(b1,b2)].join('_');
-    let baseScore = PAIR_SCORES[basicKey] || 55;
+    function getRel(a, b) {
+      const r = PLANET_RELS[a];
+      if (!r) return 'n';
+      if (r.f.includes(b)) return 'f';
+      if (r.e.includes(b)) return 'e';
+      return 'n';
+    }
+    function relPts(r) { return r==='f'?3:r==='n'?1:0; }
 
-    // Destiny modifier — adds or subtracts based on destiny alignment
-    const PAIR_MODIFIER = {
-      '1_3':+6,'1_5':+5,'1_7':+7,'3_5':+5,'5_7':+6,'5_9':+5,'6_7':+5,'3_9':+4,'1_9':+4,
-      '1_8':-8,'7_8':-7,'4_9':-7,'2_8':-5,'4_5':-4,'2_4':-5,'4_8':-8,'6_9':-4,
-    };
-    const destinyBasicKey = [Math.min(d1,b2),Math.max(d1,b2)].join('_');
-    const destinyMod = (PAIR_MODIFIER[destinyBasicKey] || 0) + (PAIR_MODIFIER[[Math.min(d1,d2),Math.max(d1,d2)].join('_')] || 0);
-    baseScore += Math.round(destinyMod * 0.4);
+    // 4 checks, both directions averaged for fairness
+    const pts =
+      (relPts(getRel(b1,b2)) + relPts(getRel(b2,b1))) / 2 +  // basic-basic
+      (relPts(getRel(d1,d2)) + relPts(getRel(d2,d1))) / 2 +  // destiny-destiny
+      relPts(getRel(b1,d2)) +                                  // my basic vs their destiny
+      relPts(getRel(d1,b2));                                   // my destiny vs their basic
+    // Max = 12, raw score 0-100
+    let baseScore = Math.round((pts / 12) * 100);
 
-    // Maha dasha alignment — shared maha energy boosts
-    const mahaKey = [Math.min(maha1.number,maha2.number),Math.max(maha1.number,maha2.number)].join('_');
-    const mahaMod = PAIR_SCORES[mahaKey] ? Math.round((PAIR_SCORES[mahaKey] - 65) * 0.15) : 0;
-    baseScore += mahaMod;
+    // Maha dasha layer (+/- 8 based on maha relationship)
+    const mahaRel = getRel(maha1.number, maha2.number);
+    const mahaBoost = mahaRel==='f'?6 : mahaRel==='e'?-6 : 0;
+    baseScore += mahaBoost;
 
-    // Shared natal numbers — more overlap = more resonance
+    // Antar dasha layer (+/- 4)
+    const antarRel = getRel(antar1.number, antar2.number);
+    const antarBoost = antarRel==='f'?4 : antarRel==='e'?-4 : 0;
+    baseScore += antarBoost;
+
+    // Shared natal numbers (unique per person, small boost)
     const shared = Object.keys(freq1).filter(n => freq2[n]).length;
-    baseScore += Math.min(12, shared * 2);
+    baseScore += Math.min(6, shared);
 
-    // Same basic number amplifier
-    if (b1 === b2) baseScore += 5;
-
-    baseScore = Math.min(97, Math.max(18, Math.round(baseScore)));
+    baseScore = Math.min(95, Math.max(12, Math.round(baseScore)));
 
     // Level
     let level, levelIcon;

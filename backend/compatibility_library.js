@@ -540,35 +540,39 @@ export function getTodayCompatibility(daily1, daily2, basic1, basic2, periods1 =
   const pair = [Math.min(daily1, daily2), Math.max(daily1, daily2)].join('_');
   const sameNum = daily1 === daily2;
 
-  // Score logic — granular, uses daily + period layers for unique scores
-  const DAILY_PAIR_SCORES = {
-    '1_1':76,'1_2':69,'1_3':84,'1_4':48,'1_5':87,'1_6':75,'1_7':90,'1_8':44,'1_9':80,
-    '2_2':72,'2_3':77,'2_4':41,'2_5':74,'2_6':86,'2_7':71,'2_8':60,'2_9':63,
-    '3_3':75,'3_4':55,'3_5':85,'3_6':80,'3_7':83,'3_8':74,'3_9':77,
-    '4_4':45,'4_5':52,'4_6':58,'4_7':40,'4_8':35,'4_9':32,
-    '5_5':78,'5_6':73,'5_7':88,'5_8':67,'5_9':82,
-    '6_6':74,'6_7':84,'6_8':69,'6_9':61,
-    '7_7':56,'7_8':51,'7_9':81,
-    '8_8':65,'8_9':73,
-    '9_9':64,
+  // Score logic — book-accurate planetary relationships for daily numbers
+  const PLANET_RELS_TODAY = {
+    1:{f:[3,9,5],e:[2,7]}, 2:{f:[1,3],e:[4,5,8]}, 3:{f:[1,2,9],e:[5,6]},
+    4:{f:[4,6,7],e:[1,2,8]}, 5:{f:[1,4],e:[2,3,9]}, 6:{f:[4,5],e:[1,2,3]},
+    7:{f:[4,6],e:[1,2]}, 8:{f:[4,5,6],e:[1,2,3]}, 9:{f:[1,2,3],e:[5,6]},
   };
-  const pairKey = [Math.min(daily1,daily2),Math.max(daily1,daily2)].join('_');
-  let score = DAILY_PAIR_SCORES[pairKey] || 55;
-  let energy = score >= 75 ? 'flowing' : score >= 55 ? 'steady' : 'tense';
-
-  // Period layer — maha alignment adds variation so same daily doesn't = same score
-  if (periods1.length >= 2 && periods2.length >= 2) {
-    const [maha1, antar1, monthly1] = periods1;
-    const [maha2, antar2, monthly2] = periods2;
-    const mahaPairKey = [Math.min(maha1,maha2),Math.max(maha1,maha2)].join('_');
-    const mahaDailyScore = DAILY_PAIR_SCORES[mahaPairKey] || 60;
-    const antarPairKey = [Math.min(antar1,antar2),Math.max(antar1,antar2)].join('_');
-    const antarDailyScore = DAILY_PAIR_SCORES[antarPairKey] || 60;
-    const monthlyPairKey = [Math.min(monthly1,monthly2),Math.max(monthly1,monthly2)].join('_');
-    const monthlyDailyScore = DAILY_PAIR_SCORES[monthlyPairKey] || 60;
-    // Blend: 60% daily, 20% maha, 12% antar, 8% monthly
-    score = Math.round(score * 0.60 + mahaDailyScore * 0.20 + antarDailyScore * 0.12 + monthlyDailyScore * 0.08);
+  function getTodayRel(a,b) {
+    const r=PLANET_RELS_TODAY[a]; if(!r) return 'n';
+    if(r.f.includes(b)) return 'f'; if(r.e.includes(b)) return 'e'; return 'n';
   }
+  function todayPts(r){return r==='f'?3:r==='n'?1:0;}
+
+  // Daily relationship (both directions)
+  const dr1 = getTodayRel(daily1, daily2);
+  const dr2 = getTodayRel(daily2, daily1);
+  let dailyPts = (todayPts(dr1) + todayPts(dr2)) / 2; // 0-3
+  let score = Math.round((dailyPts / 3) * 100); // raw 0-100
+
+  // Period layer for uniqueness — each person's maha/antar affects today
+  if (periods1.length >= 2 && periods2.length >= 2) {
+    const [maha1num, antar1num, monthly1num] = periods1;
+    const [maha2num, antar2num, monthly2num] = periods2;
+    const mahaRel = getTodayRel(maha1num, maha2num);
+    const antarRel = getTodayRel(antar1num, antar2num);
+    const monthlyRel = getTodayRel(monthly1num, monthly2num);
+    const periodBoost = (todayPts(mahaRel)-1)*8 + (todayPts(antarRel)-1)*5 + (todayPts(monthlyRel)-1)*3;
+    score += periodBoost;
+  }
+  // Basic numbers add base resonance
+  score += Math.round(((todayPts(getTodayRel(basic1,basic2))+todayPts(getTodayRel(basic2,basic1)))/2 - 1) * 6);
+  score = Math.min(96, Math.max(12, Math.round(score)));
+
+  let energy = score >= 70 ? 'flowing' : score >= 45 ? 'steady' : 'tense';
 
   let headline = '';
   let detail = '';
@@ -576,9 +580,7 @@ export function getTodayCompatibility(daily1, daily2, basic1, basic2, periods1 =
   let watchTogether = [];
   let dayLabel = '';
 
-  if (sameNum) {
-    energy = 'amplified';
-  }
+  if (sameNum) { energy = 'amplified'; }
 
   // Day label
   const labels = {
