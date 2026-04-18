@@ -369,7 +369,7 @@ class _DayCardState extends State<_DayCard> {
               if (widget.layers!['daily'] != null)
                 _LayerRow('Today', widget.layers!['daily'] as String, secondary, widget.gold),
             } else ...[
-              Text('Four layers shape today: your multi-year period, current chapter, this month, and today's frequency.',
+              Text("Four layers shape today: your multi-year period, current chapter, this month, and today's frequency.",
                   style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6, fontStyle: FontStyle.italic)),
             ],
           ],
