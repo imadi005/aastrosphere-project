@@ -303,6 +303,7 @@ app.post('/api/today', (req, res) => {
       rating: daily.rating,
       quote: daily.quote,
       insight: daily.insight,
+      layers: daily.layers,
       what_to_do: daily.what_to_do,
       what_to_avoid: daily.what_to_avoid,
       primary_action: primaryAction,
@@ -745,11 +746,11 @@ app.post('/api/insights/deep', (req, res) => {
     const yogas = ctx.yogas;
 
     // Core profile
-    const basicProfile = getDeepNumberProfile(basic);
-    const destinyProfile = getDeepNumberProfile(destiny);
+    const basicProfile = getDeepNumberProfile(basic, destiny, maha.number, natalNums);
+    const destinyProfile = getDeepNumberProfile(destiny, basic, maha.number, natalNums);
     const combo = getDeepCombination(basic, destiny);
     const pattern = getPersonalPattern(basic, destiny);
-    const dashaExp = getDashaExperience(maha.number);
+    const dashaExp = getDashaExperience(maha.number, antar.number);
     const warnings = getHonestWarnings(yogas, annualFreq, maha.number, antar.number);
 
     // Natal combination insights (all natal pairs)

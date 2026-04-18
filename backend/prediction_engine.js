@@ -41,12 +41,61 @@ export function getPersonalPattern(basic, destiny) {
   return PERSONAL_PATTERNS[key] || PERSONAL_PATTERNS[rev] || null;
 }
 
-export function getDashaExperience(mahaNum) {
-  return DEEP_DASHA_EXPERIENCE[`maha_${mahaNum}`] || null;
+export function getDashaExperience(mahaNum, antarNum = null) {
+  const base = DEEP_DASHA_EXPERIENCE[`maha_${mahaNum}`] || null;
+  if (!base || !antarNum) return base;
+  // Layer antar context on top of maha base
+  const ANTAR_OVERLAY = {
+    1: "Within this period, the Sun chapter is creating specific authority and visibility opportunities.",
+    2: "Within this period, the Moon chapter is deepening emotional connections and creative work.",
+    3: "Within this period, the Jupiter chapter is activating wisdom, growth, and right decisions.",
+    4: "Within this period, the Rahu chapter is disrupting patterns and opening unconventional paths.",
+    5: "Within this period, the Mercury chapter is sharpening financial intelligence and communication.",
+    6: "Within this period, the Venus chapter is bringing beauty, relationships, and creative opportunity.",
+    7: "Within this period, the Ketu chapter is activating quiet luck and spiritual depth.",
+    8: "Within this period, the Saturn chapter is demanding integrity and sustained effort.",
+    9: "Within this period, the Mars chapter is activating energy, courage, and competitive instinct.",
+  };
+  return {
+    ...base,
+    antar_context: ANTAR_OVERLAY[antarNum] || null,
+  };
 }
 
-export function getDeepNumberProfile(num) {
-  return DEEP_NUMBER_PROFILES[num] || null;
+export function getDeepNumberProfile(num, destinyNum = null, mahaNum = null, natalNums = []) {
+  const base = DEEP_NUMBER_PROFILES[num] || null;
+  if (!base) return null;
+
+  // Enrich current_chapter with maha context
+  const MAHA_CHAPTER_OVERLAY = {
+    1: "Currently in a Sun period — authority and recognition are the active themes.",
+    2: "Currently in a Moon period — emotional depth and creative work are being activated.",
+    3: "Currently in a Jupiter period — growth through wisdom and ethical action.",
+    4: "Currently in a Rahu period — disruption and unconventional paths are opening.",
+    5: "Currently in a Mercury period — commercial intelligence and communication are sharpened.",
+    6: "Currently in a Venus period — beauty, relationships, and creative richness are active.",
+    7: "Currently in a Ketu period — spiritual depth and unexpected luck are running.",
+    8: "Currently in a Saturn period — karma, discipline, and sustained effort are demanded.",
+    9: "Currently in a Mars period — courage, energy, and decisive action are the themes.",
+  };
+
+  // Natal complexity modifier
+  const hasRahu = natalNums.includes(4);
+  const hasMars = natalNums.includes(9);
+  const hasSaturn = natalNums.includes(8);
+  const hasKetu = natalNums.includes(7);
+
+  const natalNote = hasRahu && hasMars
+    ? "Rahu and Mars both in your chart — the accident-prone, financially impulsive combination is permanent background noise. It doesn't define you, but it requires conscious management."
+    : hasRahu ? "Rahu in your natal chart means the financial impulsive tendency is always present — awareness is the management."
+    : hasSaturn && num === 8 ? "Saturn is both natal and personal number — the karmic weight you carry is significant, but so is the loyalty and durability you offer."
+    : null;
+
+  return {
+    ...base,
+    current_chapter: mahaNum ? (MAHA_CHAPTER_OVERLAY[mahaNum] || base.current_chapter) : base.current_chapter,
+    natal_note: natalNote,
+  };
 }
 
 export function getHonestWarnings(yogas, freqMap, maha, antar) {
@@ -368,6 +417,19 @@ export function getPrimaryAction(ctx) {
     9: { do: "Make the bold move that requires courage. The energy is behind you today.", avoid: "Starting fights that aren't worth the energy they'll cost." },
   };
 
+  // Daily + maha combination for those without triggering yogas
+  const MAHA_DAILY_OVERRIDES = {
+    '8_8': { do: "Double Saturn — do the hardest most important work today. The effort here compounds for years.", avoid: "Every shortcut today. Saturn is watching." },
+    '8_1': { do: "Authority earned through sustained effort. Make the bold career move today.", avoid: "Ego moves that haven't been backed by the work yet." },
+    '8_9': { do: "Relentless output today — Mars energy + Saturn discipline. Your most productive combination.", avoid: "Spreading across too many things. Pick the one." },
+    '7_5': { do: "Easy Money combination active — financial luck is structural today. Act on what presents itself.", avoid: "Over-analyzing the opportunity past its window." },
+    '7_7': { do: "Double Ketu — trust instinct completely today. No analysis needed.", avoid: "Forcing outcomes the luck wants to deliver naturally." },
+    '9_9': { do: "Maximum fire. Direct this at one external target today.", avoid: "Internal combustion — the energy needs a real challenge, not a fight." },
+    '4_4': { do: "Generate ideas freely. Something original is in the stream today.", avoid: "Any financial commitment without external verification." },
+  };
+  const mahaDaily = MAHA_DAILY_OVERRIDES[`${maha}_${daily}`];
+  if (mahaDaily) return mahaDaily;
+
   return dailyActions[daily] || {
     do: "Focus on what matters most today and give it full attention.",
     avoid: "Distractions that feel important but aren't.",
@@ -390,7 +452,7 @@ export function generateDailyPrediction(ctx) {
 
   // ── Quote — vary by basic + daily + maha ─────────────────────────────────
   const quotes = DAILY_QUOTES[daily];
-  const quoteIndex = (basic + destiny + maha + antar) % quotes.length;
+  const quoteIndex = (basic + destiny + maha + antar + monthly + daily) % quotes.length;
   const quote = quotes[quoteIndex];
 
   // ── Yoga messages ────────────────────────────────────────────────────────
@@ -1053,30 +1115,31 @@ function getYogaContext(yogas, period) {
   };
 }
 
-function getFinanceSignal(freqMap, maha, antar, period) {
-  const positiveNums = [1, 5, 6];
+function getFinanceSignal(freqMap, maha, antar, period, monthly = null, daily = null) {
   const signals = [];
-
-  // Even 8 check
-  const c8 = freqMap[8] || 0;
-  if (c8 >= 2 && c8 % 2 === 0) signals.push("Even 8 energy is supporting bulk financial gains and disciplined wealth building.");
-
-  // 5-7 Easy Money
   const nums = Object.keys(freqMap).map(Number);
-  if (nums.includes(5) && nums.includes(7)) signals.push("Easy Money combination active — financial opportunities arrive with less friction than usual.");
+  const c8 = freqMap[8] || 0;
 
-  // Maha/antar numbers
-  if (maha === 5 || antar === 5) signals.push("Cash flow improves this period — new income streams are accessible.");
-  if (maha === 1 || antar === 1) signals.push("Bulk money and significant financial events are characteristic of this period.");
-  if (maha === 4 || antar === 4) signals.push("Financial caution is essential — impulsive spending and debt are the main risks.");
-  if ((c8 > 0 && c8 % 2 !== 0)) signals.push("Financial hardship possible — discipline and minimal new commitments are the right approach.");
+  // Natal combinations
+  if (nums.includes(5) && nums.includes(7)) signals.push("Easy Money combination in your chart — financial opportunities arrive with less friction than average.");
+  if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) signals.push("Financial Bandhan in your natal — save actively and defer large purchases.");
+  if (c8 >= 2 && c8 % 2 === 0) signals.push("Even 8s in your chart support disciplined wealth accumulation this period.");
 
-  // Financial Bandhan
-  if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) {
-    signals.push("Financial Bandhan active — save actively and defer large purchases.");
-  }
+  // Maha+antar combination
+  if (maha === 5 && antar === 7) signals.push("Easy Money period + chapter combination — the most financially fortunate dasha window.");
+  else if (maha === 7 && antar === 5) signals.push("Fortune and intelligence aligned in your current periods — financial opportunities are real.");
+  else if (maha === 5 || antar === 5) signals.push("Mercury active in your periods — cash flow and commercial opportunities are elevated.");
+  else if (maha === 1 || antar === 1) signals.push("Sun period/chapter — significant financial events and bulk money are characteristic right now.");
+  else if (maha === 4 || antar === 4) signals.push("Rahu active in your periods — financial caution essential. Impulsive decisions create debt.");
+  else if (maha === 8 && antar === 8) signals.push("Double Saturn period — slow and steady accumulation. No speculation. The discipline is the point.");
+  else if (maha === 8) signals.push("Saturn period — income through sustained disciplined effort. No shortcuts. The compounding is real.");
 
-  return signals.length > 0 ? signals[0] : "Financial energy is neutral this period — steady effort produces steady results.";
+  // Monthly/daily layer
+  if (monthly === 5 || daily === 5) signals.push("Mercury active this " + (daily === 5 ? "day" : "month") + " — financially sharp window. Act on what presents itself.");
+  if (monthly === 4 || daily === 4) signals.push("Rahu active this " + (daily === 4 ? "day" : "month") + " — verify before any financial commitment today.");
+  if (monthly === 7 || daily === 7) signals.push("Ketu active this " + (daily === 7 ? "day" : "month") + " — quiet financial luck available.");
+
+  return signals.length > 0 ? signals[0] : "Financial energy is steady this period — consistent effort produces consistent results.";
 }
 
 function getHealthWatch(basic, destiny, maha, antar) {
