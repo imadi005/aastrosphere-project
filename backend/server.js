@@ -403,7 +403,7 @@ app.post('/api/compatibility', (req, res) => {
                           (req.body.relation === 'Family') ? 'As family' :
                           (req.body.relation === 'Colleague') ? 'At work' :
                           'Close connection',
-      romantic: natalPair.romantic,
+      romantic: natalPair.close_connection || natalPair.romantic,
       friendship: natalPair.friendship,
 
       // Destiny layer
