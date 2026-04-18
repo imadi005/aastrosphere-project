@@ -932,7 +932,7 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
                               const SizedBox(width: 6),
                               Expanded(child: Text(accidentRisk['reason'] as String? ?? '',
                                   style: GoogleFonts.dmSans(fontSize: 11,
-                                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                                      color: widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                                       height: 1.4))),
                             ]),
                           ),
