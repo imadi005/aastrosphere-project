@@ -96,10 +96,16 @@ class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObser
         onRoleToggle: () => ref.read(roleProvider.notifier).toggle(),
       ),
       body: IndexedStack(index: index, children: _screens),
-      bottomNavigationBar: _BottomNav(
-        currentIndex: index,
-        items: _items,
-        onTap: (i) => ref.read(_userIndexProvider.notifier).state = i,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _AttributionFooter(isDark: isDark),
+          _BottomNav(
+            currentIndex: index,
+            items: _items,
+            onTap: (i) => ref.read(_userIndexProvider.notifier).state = i,
+          ),
+        ],
       ),
     );
   }
@@ -136,10 +142,16 @@ class _AstrologerShell extends ConsumerWidget {
         onRoleToggle: () => ref.read(roleProvider.notifier).toggle(),
       ),
       body: IndexedStack(index: index, children: _screens),
-      bottomNavigationBar: _BottomNav(
-        currentIndex: index,
-        items: _items,
-        onTap: (i) => ref.read(_astroIndexProvider.notifier).state = i,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _AttributionFooter(isDark: isDark),
+          _BottomNav(
+            currentIndex: index,
+            items: _items,
+            onTap: (i) => ref.read(_astroIndexProvider.notifier).state = i,
+          ),
+        ],
       ),
     );
   }
@@ -231,6 +243,33 @@ class _BottomNav extends StatelessWidget {
         onTap: onTap,
         items: items,
         iconSize: 20,
+      ),
+    );
+  }
+}
+
+// ─── Attribution Footer ───────────────────────────────────────────────────────
+class _AttributionFooter extends StatelessWidget {
+  final bool isDark;
+  const _AttributionFooter({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isDark
+        ? AppColors.textSecondaryDark.withOpacity(0.30)
+        : AppColors.textSecondaryLight.withOpacity(0.28);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(bottom: 6, top: 4),
+      child: Text(
+        'Aastrosphere  ·  Ank Jyotish & Palmist Pankajj Kumar Mishra',
+        textAlign: TextAlign.center,
+        style: GoogleFonts.cormorantGaramond(
+          fontSize: 10,
+          color: color,
+          letterSpacing: 0.4,
+          fontStyle: FontStyle.italic,
+        ),
       ),
     );
   }
