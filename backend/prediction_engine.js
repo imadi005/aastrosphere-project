@@ -15,6 +15,10 @@ import {
 } from './deep_library.js';
 
 import { classifyHourDeep } from './hour_library.js';
+import {
+  buildFullDailyInsight, getPersonalizedGuidance, assessFullDayRating,
+  DAILY_LAYER, MAHA_CONTEXT, ANTAR_CONTEXT, MONTHLY_CONTEXT,
+} from './daily_prediction_library.js';
 import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
 
 import { DEEP_PERIOD_TEXTS_GENERATED } from './deep_library_generated.js';
@@ -373,23 +377,23 @@ export function getPrimaryAction(ctx) {
 
 // ─── Generate daily prediction ────────────────────────────────────────────────
 export function generateDailyPrediction(ctx) {
-  const { basic, destiny, maha, antar, monthly, daily, yogas, freqMap, allNums } = ctx;
+  const { basic, destiny, maha, antar, monthly, daily, yogas, freqMap, allNums, natalNums } = ctx;
 
-  // Pick quote based on daily number + chart energy
+  // ── Full 6-layer insight ─────────────────────────────────────────────────
+  const insight = buildFullDailyInsight({ basic, destiny, maha, antar, monthly, daily, yogas, natalNums });
+
+  // ── Personalized do/avoid from natal + maha + antar + daily ──────────────
+  const guidance = getPersonalizedGuidance(basic, daily, maha, antar, yogas);
+
+  // ── Day rating using full chart ──────────────────────────────────────────
+  const rating = assessFullDayRating(basic, destiny, maha, antar, monthly, daily, yogas, freqMap);
+
+  // ── Quote — vary by basic + daily + maha ─────────────────────────────────
   const quotes = DAILY_QUOTES[daily];
   const quoteIndex = (basic + destiny + maha + antar) % quotes.length;
   const quote = quotes[quoteIndex];
 
-  // Get dasha combo prediction
-  const comboKey = `${maha}_${antar}`;
-  const comboText = DASHA_COMBO_PREDICTIONS[comboKey] || '';
-
-  // Build what-to-do list based on daily number
-  const guidance = DAILY_GUIDANCE[daily];
-  const doList = guidance.do;
-  const avoidList = guidance.avoid;
-
-  // Yoga-specific insight
+  // ── Yoga messages ────────────────────────────────────────────────────────
   const yogaInsights = [];
   for (const yoga of yogas) {
     const yogaData = COMBO_DAILY_INSIGHTS[yoga.id];
@@ -401,34 +405,24 @@ export function generateDailyPrediction(ctx) {
     }
   }
 
-  // Build main insight paragraph combining everything
-  const dailyEnergy = NUMBER_ENERGY[daily];
-  const mahaEnergy = NUMBER_ENERGY[maha];
-  const antarEnergy = NUMBER_ENERGY[antar];
-
-  // Combination context
-  const mainCombo = `${maha}_${antar}`;
-  const comboMeaning = COMBINATION_MEANINGS[mainCombo] || '';
-
-  // Assess overall day rating
-  const rating = assessDayRating(daily, maha, antar, yogas, freqMap);
-
-  // Build full insight
-  const insight = buildDailyInsight({
-    daily, maha, antar, monthly, basic, destiny,
-    dailyEnergy, comboText, yogaInsights, comboMeaning, rating,
-  });
-
   return {
     quote,
     rating,
     insight,
-    what_to_do: doList,
-    what_to_avoid: avoidList,
+    what_to_do: guidance.do,
+    what_to_avoid: guidance.avoid,
     yoga_messages: yogaInsights,
     active_yogas: yogas,
+    // Layer breakdown for transparency
+    layers: {
+      maha: MAHA_CONTEXT[maha]?.theme,
+      antar: ANTAR_CONTEXT[antar]?.theme,
+      monthly: MONTHLY_CONTEXT[monthly],
+      daily: DAILY_LAYER[daily]?.quality,
+    },
   };
 }
+
 
 function buildDailyInsight({ daily, maha, antar, monthly, basic, destiny,
     dailyEnergy, comboText, yogaInsights, comboMeaning, rating }) {
