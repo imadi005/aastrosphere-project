@@ -24,38 +24,74 @@ const PNAMES = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'K
 export function analyzeDayChart({ basic, destiny, maha, antar, monthly, daily, hourly, natalNums }) {
   const findings = [];
 
-  // ── 1. ACCIDENT & PHYSICAL RISK ─────────────────────────────────────────────
-  // 9 conditions: maha + antar + monthly + daily + hourly combos
-  // Condition 1: Rahu day + Mars period
-  if (daily === 4 && maha === 9) {
+    // ── 1. ACCIDENT & PHYSICAL RISK ─────────────────────────────────────────────
+  // Book-accurate: ALL 6 layers checked simultaneously
+  // 4(Rahu) and 9(Mars) must appear TOGETHER across the full chart
+  // The more layers confirm the combination, the higher the risk
+
+  const has4 = {
+    natal:   natalNums.includes(4),
+    basic:   basic === 4,
+    destiny: destiny === 4,
+    maha:    maha === 4,
+    antar:   antar === 4,
+    monthly: monthly === 4,
+    daily:   daily === 4,
+    hourly:  hourly !== null && hourly === 4,
+  };
+  const has9 = {
+    natal:   natalNums.includes(9),
+    basic:   basic === 9,
+    destiny: destiny === 9,
+    maha:    maha === 9,
+    antar:   antar === 9,
+    monthly: monthly === 9,
+    daily:   daily === 9,
+    hourly:  hourly !== null && hourly === 9,
+  };
+
+  // Count active layers for each
+  const count4 = Object.values(has4).filter(Boolean).length;
+  const count9 = Object.values(has9).filter(Boolean).length;
+
+  // Condition 1: Rahu(4) + Mars(9) in maha + daily (period-day cross)
+  if (has4.maha && has9.daily) {
     findings.push({ type: 'accident', level: 'high', label: 'High Accident Risk', detail: 'High accident risk today. Stay alert, drive carefully, avoid risky physical activities.' });
-  // Condition 2: Mars day + Rahu period
-  } else if (daily === 9 && maha === 4) {
+  }
+  // Condition 2: Mars(9) + Rahu(4) in maha + daily
+  else if (has9.maha && has4.daily) {
     findings.push({ type: 'accident', level: 'high', label: 'High Accident Risk', detail: 'High accident risk today. Slow down — impulsive moves lead to physical damage.' });
-  // Condition 3: Rahu day + Mars antar
-  } else if (daily === 4 && antar === 9) {
+  }
+  // Condition 3: Rahu(4) in antar + Mars(9) in daily
+  else if (has4.antar && has9.daily) {
     findings.push({ type: 'accident', level: 'high', label: 'Accident Risk', detail: 'High accident risk today. Physical caution essential — avoid rushing.' });
-  // Condition 4: Mars day + Rahu antar
-  } else if (daily === 9 && antar === 4) {
+  }
+  // Condition 4: Mars(9) in antar + Rahu(4) in daily
+  else if (has9.antar && has4.daily) {
     findings.push({ type: 'accident', level: 'high', label: 'Accident Risk', detail: 'High accident risk today. Sudden situations can cause physical harm — stay alert.' });
-  // Condition 5: Rahu day + Mars month
-  } else if (daily === 4 && monthly === 9) {
+  }
+  // Condition 5: Rahu(4) monthly + Mars(9) daily + must be confirmed by BOTH maha AND natal
+  else if (has4.monthly && has9.daily && has4.maha && has9.natal) {
     findings.push({ type: 'accident', level: 'medium', label: 'Physical Caution', detail: 'Accident risk today. Extra care with driving, physical tasks, and machinery.' });
-  // Condition 6: Mars day + Rahu month
-  } else if (daily === 9 && monthly === 4) {
+  }
+  // Condition 6: Mars(9) monthly + Rahu(4) daily + must be confirmed by BOTH maha AND natal
+  else if (has9.monthly && has4.daily && has9.maha && has4.natal) {
     findings.push({ type: 'accident', level: 'medium', label: 'Physical Caution', detail: 'Accident risk today. Verify before acting — impulsive decisions cause physical damage.' });
-  // Condition 7: Rahu hour + Mars day
-  } else if (hourly !== null && hourly === 4 && daily === 9) {
+  }
+  // Condition 7: Rahu(4) hour + Mars(9) day + confirmed by maha OR antar (not just natal)
+  else if (has4.hourly && has9.daily && (has4.maha || has4.antar || has9.maha || has9.antar)) {
     findings.push({ type: 'accident', level: 'high', label: 'Accident Risk This Hour', detail: 'High accident risk this hour. Avoid speeding, sharp tools, and anything requiring precision right now.' });
-  // Condition 8: Mars hour + Rahu day
-  } else if (hourly !== null && hourly === 9 && daily === 4) {
+  }
+  // Condition 8: Mars(9) hour + Rahu(4) day + confirmed by maha OR antar
+  else if (has9.hourly && has4.daily && (has4.maha || has4.antar || has9.maha || has9.antar)) {
     findings.push({ type: 'accident', level: 'high', label: 'Accident Risk This Hour', detail: 'High accident risk this hour. Slow down — impulsive moves cause physical damage right now.' });
-  // Condition 9: Double Rahu (Rahu hour + Rahu day)
-  } else if (hourly !== null && hourly === 4 && daily === 4) {
+  }
+  // Condition 9: Double Rahu hour+day + Mars confirmed in maha AND natal
+  else if (has4.hourly && has4.daily && has9.maha && has9.natal) {
     findings.push({ type: 'accident', level: 'high', label: 'Double Rahu — High Risk', detail: 'Very high accident risk this hour. Do not rush. Double-check everything before you act.' });
   }
 
-  // ── 2. FINANCIAL RISK ─────────────────────────────────────────────────────
+// ── 2. FINANCIAL RISK ─────────────────────────────────────────────────────
   if (daily === 4 || monthly === 4) {
     const layer = daily === 4 ? 'today' : 'this month';
     findings.push({ type: 'financial', level: daily === 4 ? 'high' : 'medium', label: 'Financial Caution', detail: `Rahu energy active ${layer}. Avoid financial commitments — verify every opportunity twice. What looks like a sure thing may not be.` });

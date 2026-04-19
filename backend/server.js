@@ -230,16 +230,19 @@ app.post('/api/today', (req, res) => {
     // ── Accident risk detection ──────────────────────────────────────────────
     function getAccidentRisk(hourNum, daily, maha, antar, monthly) {
       const risks = [];
-      // Same 9 conditions as chart analysis — maha+antar+monthly+daily+hourly
-      if (hourNum === 4 && maha === 9) risks.push({ level: 'high', reason: 'High accident risk this hour. Stay alert, drive carefully, avoid risky physical activities.' });
-      else if (hourNum === 9 && maha === 4) risks.push({ level: 'high', reason: 'High accident risk this hour. Slow down — impulsive moves lead to physical damage.' });
-      else if (hourNum === 4 && antar === 9) risks.push({ level: 'high', reason: 'High accident risk this hour. Physical caution essential — avoid rushing.' });
-      else if (hourNum === 9 && antar === 4) risks.push({ level: 'high', reason: 'High accident risk this hour. Sudden situations can cause physical harm — stay alert.' });
-      else if (hourNum === 4 && monthly === 9) risks.push({ level: 'medium', reason: 'Accident risk this hour. Extra care with driving, physical tasks, and machinery.' });
-      else if (hourNum === 9 && monthly === 4) risks.push({ level: 'medium', reason: 'Accident risk this hour. Verify before acting — impulsive decisions cause physical damage.' });
-      else if (hourNum === 4 && daily === 9) risks.push({ level: 'high', reason: 'High accident risk this hour. Avoid speeding, sharp tools, and anything requiring precision.' });
-      else if (hourNum === 9 && daily === 4) risks.push({ level: 'high', reason: 'High accident risk this hour. Slow down — impulsive moves cause physical damage right now.' });
-      else if (hourNum === 4 && daily === 4) risks.push({ level: 'high', reason: 'Very high accident risk this hour. Do not rush. Double-check everything before you act.' });
+      // 6-layer check — hourly risk only when multiple layers confirm 4+9 combination
+      const natalN = Object.keys(ctx.freqMap || {}).map(Number);
+      const h4 = { maha: ctx.maha===4, antar: ctx.antar===4, monthly: ctx.monthly===4, daily: daily===4, natal: natalN.includes(4), hour: hourNum===4 };
+      const h9 = { maha: ctx.maha===9, antar: ctx.antar===9, monthly: ctx.monthly===9, daily: daily===9, natal: natalN.includes(9), hour: hourNum===9 };
+      // Condition 7: Rahu hour + Mars day + confirmed by natal/maha/antar
+      if (h4.hour && h9.daily && (h4.maha || h4.antar || h9.maha || h9.antar || h4.natal || h9.natal))
+        risks.push({ level: 'high', reason: 'High accident risk this hour. Avoid speeding, sharp tools, and anything requiring precision right now.' });
+      // Condition 8: Mars hour + Rahu day + confirmed by natal/maha/antar
+      else if (h9.hour && h4.daily && (h4.maha || h4.antar || h9.maha || h9.antar || h4.natal || h9.natal))
+        risks.push({ level: 'high', reason: 'High accident risk this hour. Slow down — impulsive moves cause physical damage right now.' });
+      // Condition 9: Double Rahu hour+day with natal confirmation
+      else if (h4.hour && h4.daily && (h4.natal || h9.natal))
+        risks.push({ level: 'high', reason: 'Very high accident risk this hour. Do not rush. Double-check everything before you act.' });
       return risks;
     }
 
@@ -268,12 +271,14 @@ app.post('/api/today', (req, res) => {
         || RISK_COMBOS.some(([a,b]) => ctx.daily===a && ctx.antar===b)
         || (ctx.daily === 4 && ctx.monthly === 9)
         || (ctx.daily === 9 && ctx.monthly === 4);
+      // Daily risk — only when 4+9 cross confirmed in maha/antar + daily
+      const dn = Object.keys(ctx.freqMap || {}).map(Number);
       if (ctx.daily === 4 && ctx.maha === 9) return { level: 'high', reason: 'High accident risk today. Stay alert, drive carefully, avoid risky physical activities.' };
       else if (ctx.daily === 9 && ctx.maha === 4) return { level: 'high', reason: 'High accident risk today. Slow down — impulsive moves lead to physical damage.' };
       else if (ctx.daily === 4 && ctx.antar === 9) return { level: 'high', reason: 'High accident risk today. Physical caution essential — avoid rushing.' };
       else if (ctx.daily === 9 && ctx.antar === 4) return { level: 'high', reason: 'High accident risk today. Sudden situations can cause physical harm — stay alert.' };
-      else if (ctx.daily === 4 && ctx.monthly === 9) return { level: 'medium', reason: 'Accident risk today. Extra care with driving, physical tasks, and machinery.' };
-      else if (ctx.daily === 9 && ctx.monthly === 4) return { level: 'medium', reason: 'Accident risk today. Verify before acting — impulsive decisions cause physical damage.' };
+      else if (ctx.daily === 4 && ctx.monthly === 9 && (dn.includes(4) || dn.includes(9))) return { level: 'medium', reason: 'Accident risk today. Extra care with driving, physical tasks, and machinery.' };
+      else if (ctx.daily === 9 && ctx.monthly === 4 && (dn.includes(4) || dn.includes(9))) return { level: 'medium', reason: 'Accident risk today. Verify before acting — impulsive decisions cause physical damage.' };
       if (hasDailyRisk) return { level: 'medium', reason: 'Elevated physical caution recommended today' };
       return null;
     })();
