@@ -33,6 +33,7 @@ import {
 } from './prediction_engine.js';
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
+import { buildSystemPrompt, classifyQuestion, extractOtherDob } from './ask_engine.js';
 
 const app = express();
 app.use(cors());
@@ -898,6 +899,65 @@ app.post('/api/insights/life', (req, res) => {
     const ctx = buildChartContext(dob);
     res.json(generateLifePrediction(ctx));
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── /api/ask ─────────────────────────────────────────────────────────────────
+app.post('/api/ask', async (req, res) => {
+  try {
+    const { dob, messages, client_date } = req.body;
+    if (!dob || !messages || !messages.length) {
+      return res.status(400).json({ error: 'dob and messages required' });
+    }
+
+    const targetDate = client_date || new Date().toISOString();
+    const lastMessage = messages[messages.length - 1].content;
+
+    // Classify question
+    const questionType = classifyQuestion(lastMessage);
+
+    // Extract other person DOB if mentioned
+    const otherDob = extractOtherDob(messages);
+
+    // Build system prompt with full chart + relevant knowledge
+    const systemPrompt = buildSystemPrompt(dob, targetDate, questionType, otherDob);
+
+    // Call Anthropic API
+    const anthropicMessages = messages.map(m => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 400,
+        system: systemPrompt,
+        messages: anthropicMessages,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      return res.status(500).json({ error: 'AI error', detail: err });
+    }
+
+    const data = await response.json();
+    const answer = data.content?.[0]?.text || '';
+
+    res.json({
+      answer,
+      question_type: questionType,
+      other_dob_detected: otherDob,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;

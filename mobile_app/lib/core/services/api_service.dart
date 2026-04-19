@@ -100,6 +100,17 @@ class ApiService {
         if (relation != null) 'relation': relation,
       });
 
+  static Future<Map<String, dynamic>> ask({
+    required String dob,
+    required List<Map<String, dynamic>> messages,
+    String? clientDate,
+  }) =>
+      _post('/api/ask', {
+        'dob': dob,
+        'messages': messages,
+        'client_date': clientDate ?? clientDate,
+      });
+
   static Future<Map<String, dynamic>> checkName(String name, String dob) =>
       _post('/api/name', {'name': name, 'dob': dob});
 

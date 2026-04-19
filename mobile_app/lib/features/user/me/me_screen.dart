@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../consult/consult_screen.dart';
+import '../../ask/ask_screen.dart';
 import '../../../core/providers/today_provider.dart';
 import '../../auth/providers/user_provider.dart';
 
@@ -45,6 +46,8 @@ class MeScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 _MeContent(data: deep, isDark: isDark, gold: gold),
                 const SizedBox(height: 24),
+                _AskAnythingCard(isDark: isDark, gold: gold),
+                const SizedBox(height: 12),
                 AskAstrologerCard(isDark: isDark, gold: gold),
                 const SizedBox(height: 32),
                 _SignOutButton(isDark: isDark),
@@ -395,5 +398,54 @@ class _SignOutButton extends StatelessWidget {
       child: Padding(padding: const EdgeInsets.all(16),
           child: Text('Sign out', style: GoogleFonts.dmSans(fontSize: 13, color: secondary))),
     ));
+  }
+}
+
+// ─── Ask Anything card ────────────────────────────────────────────────────────
+class _AskAnythingCard extends StatelessWidget {
+  final bool isDark;
+  final Color gold;
+  const _AskAnythingCard({required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const AskScreen())),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [gold.withOpacity(0.08), gold.withOpacity(0.03)],
+            begin: Alignment.topLeft, end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: gold.withOpacity(0.2), width: 0.5),
+        ),
+        child: Row(children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: gold.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.chat_bubble_outline, size: 20, color: gold),
+          ),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Ask Anything',
+                style: GoogleFonts.cormorantGaramond(
+                    fontSize: 17, fontWeight: FontWeight.w600, color: primary)),
+            const SizedBox(height: 3),
+            Text('Hindi, English, Hinglish — koi bhi sawaal',
+                style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
+          ])),
+          Icon(Icons.chevron_right, size: 18, color: gold.withOpacity(0.6)),
+        ]),
+      ),
+    );
   }
 }
