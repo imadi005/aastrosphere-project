@@ -24,25 +24,35 @@ const PNAMES = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'K
 export function analyzeDayChart({ basic, destiny, maha, antar, monthly, daily, hourly, natalNums }) {
   const findings = [];
 
-  // ── 1. ACCIDENT & PHYSICAL RISK ───────────────────────────────────────────
-  // High risk: 4+9 in any critical layer
-  if (daily === 4 && maha === 9) findings.push({ type: 'accident', level: 'high', label: 'High Physical Risk', detail: 'Rahu day in Mars period. Highest accident window — avoid reckless physical action, speeding, sharp tools.' });
-  if (daily === 9 && maha === 4) findings.push({ type: 'accident', level: 'high', label: 'High Physical Risk', detail: 'Mars day in Rahu period. Impulsive moves cause accidents — slow down before acting.' });
-  if (daily === 4 && antar === 9) findings.push({ type: 'accident', level: 'high', label: 'Physical Caution', detail: 'Rahu day in Mars chapter. Physical risk elevated this day.' });
-  if (daily === 9 && antar === 4) findings.push({ type: 'accident', level: 'high', label: 'Physical Caution', detail: 'Mars day in Rahu chapter. Sudden situations risk physical harm.' });
-  if (daily === 4 && monthly === 9) findings.push({ type: 'accident', level: 'medium', label: 'Physical Caution', detail: 'Rahu day in Mars month. Extra care with physical activities, driving, machinery.' });
-  if (daily === 9 && monthly === 4) findings.push({ type: 'accident', level: 'medium', label: 'Physical Caution', detail: 'Mars day in Rahu month. Impulsive decisions risk physical damage.' });
-  if (daily === 4 && daily === basic) findings.push({ type: 'accident', level: 'medium', label: 'Physical Caution', detail: 'Rahu day amplified by Rahu natal. Instability doubled today.' });
-  if (daily === 9 && basic === 9) findings.push({ type: 'accident', level: 'medium', label: 'Energy Overflow Risk', detail: 'Double Mars — energy is at maximum. Physical recklessness risk is elevated.' });
-  if (daily === 4 && basic === 4) findings.push({ type: 'accident', level: 'high', label: 'Double Rahu Day', detail: 'Rahu in both natal and day. Maximum instability. Do not commit to anything financial or physical without verification.' });
-  if (maha === 9 && antar === 4) findings.push({ type: 'accident', level: 'medium', label: 'Ongoing Physical Caution', detail: 'Mars period + Rahu chapter running simultaneously. This is a generally accident-prone phase.' });
-  if (maha === 4 && antar === 9) findings.push({ type: 'accident', level: 'medium', label: 'Ongoing Physical Caution', detail: 'Rahu period + Mars chapter. Unexpected situations and impulsive energy are both elevated.' });
-  // Hourly accidents
-  if (hourly !== null) {
-    if (hourly === 4 && daily === 9) findings.push({ type: 'accident', level: 'high', label: 'Accident Hour', detail: `Rahu hour (${PNAMES[4]}) meets Mars day. This specific hour carries the highest accident risk.` });
-    if (hourly === 9 && daily === 4) findings.push({ type: 'accident', level: 'high', label: 'Accident Hour', detail: `Mars hour meets Rahu day. Impulsive moves this hour can cause physical damage.` });
-    if (hourly === 4 && hourly === daily) findings.push({ type: 'accident', level: 'high', label: 'Double Rahu Hour', detail: 'The hour and day both carry Rahu energy. Maximum instability window.' });
-    if (hourly === 4 && maha === 8) findings.push({ type: 'accident', level: 'medium', label: 'Caution Hour', detail: 'Rahu hour in Saturn period. Move slowly, verify before acting.' });
+  // ── 1. ACCIDENT & PHYSICAL RISK ─────────────────────────────────────────────
+  // 9 conditions: maha + antar + monthly + daily + hourly combos
+  // Condition 1: Rahu day + Mars period
+  if (daily === 4 && maha === 9) {
+    findings.push({ type: 'accident', level: 'high', label: 'High Accident Risk', detail: 'High accident risk today. Stay alert, drive carefully, avoid risky physical activities.' });
+  // Condition 2: Mars day + Rahu period
+  } else if (daily === 9 && maha === 4) {
+    findings.push({ type: 'accident', level: 'high', label: 'High Accident Risk', detail: 'High accident risk today. Slow down — impulsive moves lead to physical damage.' });
+  // Condition 3: Rahu day + Mars antar
+  } else if (daily === 4 && antar === 9) {
+    findings.push({ type: 'accident', level: 'high', label: 'Accident Risk', detail: 'High accident risk today. Physical caution essential — avoid rushing.' });
+  // Condition 4: Mars day + Rahu antar
+  } else if (daily === 9 && antar === 4) {
+    findings.push({ type: 'accident', level: 'high', label: 'Accident Risk', detail: 'High accident risk today. Sudden situations can cause physical harm — stay alert.' });
+  // Condition 5: Rahu day + Mars month
+  } else if (daily === 4 && monthly === 9) {
+    findings.push({ type: 'accident', level: 'medium', label: 'Physical Caution', detail: 'Accident risk today. Extra care with driving, physical tasks, and machinery.' });
+  // Condition 6: Mars day + Rahu month
+  } else if (daily === 9 && monthly === 4) {
+    findings.push({ type: 'accident', level: 'medium', label: 'Physical Caution', detail: 'Accident risk today. Verify before acting — impulsive decisions cause physical damage.' });
+  // Condition 7: Rahu hour + Mars day
+  } else if (hourly !== null && hourly === 4 && daily === 9) {
+    findings.push({ type: 'accident', level: 'high', label: 'Accident Risk This Hour', detail: 'High accident risk this hour. Avoid speeding, sharp tools, and anything requiring precision right now.' });
+  // Condition 8: Mars hour + Rahu day
+  } else if (hourly !== null && hourly === 9 && daily === 4) {
+    findings.push({ type: 'accident', level: 'high', label: 'Accident Risk This Hour', detail: 'High accident risk this hour. Slow down — impulsive moves cause physical damage right now.' });
+  // Condition 9: Double Rahu (Rahu hour + Rahu day)
+  } else if (hourly !== null && hourly === 4 && daily === 4) {
+    findings.push({ type: 'accident', level: 'high', label: 'Double Rahu — High Risk', detail: 'Very high accident risk this hour. Do not rush. Double-check everything before you act.' });
   }
 
   // ── 2. FINANCIAL RISK ─────────────────────────────────────────────────────
