@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_markdown: ^0.7.3+1
 
   # UI
   google_fonts: ^6.2.1
@@ -56,3 +57,4 @@ flutter:
 
   assets:
     - assets/images/
+    - shorebird.yaml
