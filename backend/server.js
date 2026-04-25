@@ -34,6 +34,7 @@ import {
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
 import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext } from './ask_engine.js';
+import { buildScanContext } from './event_scanner.js';
 
 const app = express();
 app.use(cors());
@@ -899,9 +900,16 @@ app.post('/api/ask', async (req, res) => {
       historicalContext = await buildHistoricalContext(dob, dateTime.date, dateTime.hour);
     }
 
+    // Detect period scan intent (e.g. "2023 mein accident kab tha")
+    let scanContext = '';
+    if (!dateTime?.date) {
+      scanContext = await buildScanContext(dob, lastMessage, targetDate) || '';
+    }
+
     // Build system prompt with full chart + relevant knowledge
     let systemPrompt = buildSystemPrompt(dob, targetDate, questionType, otherDob);
     if (historicalContext) systemPrompt += historicalContext;
+    if (scanContext) systemPrompt += scanContext;
 
     // Build conversation — add memory context if history is long
     let anthropicMessages = messages.map(m => ({
