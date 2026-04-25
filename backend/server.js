@@ -33,7 +33,7 @@ import {
 } from './prediction_engine.js';
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
-import { buildSystemPrompt, classifyQuestion, extractOtherDob } from './ask_engine.js';
+import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext } from './ask_engine.js';
 
 const app = express();
 app.use(cors());
@@ -892,8 +892,16 @@ app.post('/api/ask', async (req, res) => {
     // Extract other person DOB if mentioned
     const otherDob = extractOtherDob(messages);
 
+    // Detect historical date/time in question
+    const dateTime = extractDateTimeFromQuestion(lastMessage);
+    let historicalContext = '';
+    if (dateTime?.date) {
+      historicalContext = await buildHistoricalContext(dob, dateTime.date, dateTime.hour);
+    }
+
     // Build system prompt with full chart + relevant knowledge
-    const systemPrompt = buildSystemPrompt(dob, targetDate, questionType, otherDob);
+    let systemPrompt = buildSystemPrompt(dob, targetDate, questionType, otherDob);
+    if (historicalContext) systemPrompt += historicalContext;
 
     // Build conversation — add memory context if history is long
     let anthropicMessages = messages.map(m => ({

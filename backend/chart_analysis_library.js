@@ -91,6 +91,27 @@ export function analyzeDayChart({ basic, destiny, maha, antar, monthly, daily, h
     findings.push({ type: 'accident', level: 'high', label: 'Double Rahu — High Risk', detail: 'Very high accident risk this hour. Do not rush. Double-check everything before you act.' });
   }
 
+  // ── Additional Mars-dominant combinations (from real accident data) ────────
+  // Triple Mars: monthly=9 + daily=9 + hourly=9 + Rahu in natal/destiny
+  if (!findings.some(f => f.type==='accident')) {
+    if (has9.monthly && has9.daily && hourly !== null && has9.hourly && (has4.natal || has4.destiny)) {
+      findings.push({ type: 'accident', level: 'high', label: 'Triple Mars Active', detail: 'High accident risk. Mars energy is running across three layers simultaneously — physical recklessness is at its peak. Slow down.' });
+    }
+    // Double Mars (daily+hourly) + Rahu in destiny or natal
+    else if (has9.daily && hourly !== null && has9.hourly && (has4.destiny || has4.maha || has4.antar)) {
+      findings.push({ type: 'accident', level: 'high', label: 'Mars Hour + Mars Day', detail: 'High accident risk this hour. Aggressive energy meets instability — avoid speeding, sharp tools, and impulsive physical action.' });
+    }
+    // Double Mars (monthly+daily) + Rahu natal + no hourly data
+    else if (has9.monthly && has9.daily && has4.natal && hourly === null) {
+      findings.push({ type: 'accident', level: 'medium', label: 'Double Mars Day', detail: 'Elevated accident risk today. Physical energy is running very high across multiple layers — take extra care.' });
+    }
+    // Rahu destiny + double Mars (any 2 of monthly/daily/hourly)
+    else if (has4.destiny && has4.natal && [has9.monthly, has9.daily, has9.hourly].filter(Boolean).length >= 2) {
+      findings.push({ type: 'accident', level: 'medium', label: 'Rahu + Double Mars', detail: 'Accident-prone combination today. Your Rahu destiny amplifies the Mars energy — physical caution strongly recommended.' });
+    }
+  }
+
+
 // ── 2. FINANCIAL RISK ─────────────────────────────────────────────────────
   if (daily === 4 || monthly === 4) {
     const layer = daily === 4 ? 'today' : 'this month';

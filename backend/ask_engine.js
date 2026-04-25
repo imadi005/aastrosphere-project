@@ -11,6 +11,7 @@ import {
 import { buildChartContext, getDeepNumberProfile, getDashaExperience } from './prediction_engine.js';
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, VEDIC_RELATIONS, getRelType } from './compatibility_library.js';
 import { MAHA_CONTEXT, ANTAR_CONTEXT, MONTHLY_CONTEXT } from './daily_prediction_library.js';
+import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
 
 function red(n){while(n>9){n=String(n).split('').reduce((a,b)=>a+parseInt(b),0);}return n;}
 const WLORDS = [1,2,9,5,3,6,8];
@@ -354,4 +355,107 @@ export function extractOtherDob(messages) {
     return `${year}-${month}-${day}`;
   }
   return null;
+}
+
+// ─── Extract specific date + time from question ───────────────────────────────
+export function extractDateTimeFromQuestion(text) {
+  // Match dates in various formats: 21/03/2023, 21-03-2023, 21 March 2023, March 21 2023
+  const datePatterns = [
+    /\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})\b/,
+    /\b(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})\b/,
+    /\b(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{4})\b/i,
+    /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{1,2})[,\s]+(\d{4})\b/i,
+  ];
+
+  const MONTHS = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
+
+  let date = null;
+  for (const pattern of datePatterns) {
+    const m = text.match(pattern);
+    if (m) {
+      try {
+        let day, month, year;
+        if (/^\d{4}/.test(m[0])) {
+          year = parseInt(m[1]); month = parseInt(m[2]); day = parseInt(m[3]);
+        } else if (/[a-z]/i.test(m[2] || '')) {
+          day = parseInt(m[1]); month = MONTHS[(m[2]||'').slice(0,3).toLowerCase()]; year = parseInt(m[3]);
+        } else if (/[a-z]/i.test(m[1] || '')) {
+          month = MONTHS[(m[1]||'').slice(0,3).toLowerCase()]; day = parseInt(m[2]); year = parseInt(m[3]);
+        } else {
+          day = parseInt(m[1]); month = parseInt(m[2]); year = parseInt(m[3]);
+        }
+        if (day && month && year && year > 1900 && year < 2100) {
+          date = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+          break;
+        }
+      } catch(_) {}
+    }
+  }
+
+  // Extract time: 9 AM, 9:00 AM, 9 baje, 21:00
+  let hour = null;
+  const timePatterns = [
+    /\b(\d{1,2}):(\d{2})\s*(am|pm)?/i,
+    /\b(\d{1,2})\s*(am|pm)\b/i,
+    /\b(\d{1,2})\s*baje\b/i,
+    /\b(\d{1,2})\s*o'?clock\b/i,
+  ];
+  for (const tp of timePatterns) {
+    const tm = text.match(tp);
+    if (tm) {
+      let h = parseInt(tm[1]);
+      const ampm = (tm[2] || tm[3] || '').toLowerCase();
+      if (ampm === 'pm' && h < 12) h += 12;
+      if (ampm === 'am' && h === 12) h = 0;
+      hour = h;
+      break;
+    }
+  }
+
+  return date || hour !== null ? { date, hour } : null;
+}
+
+// ─── Build historical date context for system prompt ──────────────────────────
+export async function buildHistoricalContext(dob, targetDate, targetHour = null) {
+  function red(n){while(n>9){n=String(n).split('').reduce((a,b)=>a+parseInt(b),0);}return n;}
+  const WLORDS = [1,2,9,5,3,6,8];
+  const PNAME = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'Ketu',8:'Saturn',9:'Mars'};
+
+  try {
+    const basic = basicNumber(new Date(dob).getDate());
+    const destiny = destinyNumber(dob);
+    const maha = currentMahadasha(dob, targetDate);
+    const antar = currentAntardasha(dob, targetDate);
+    const monthly = currentMonthlyDasha(dob, new Date(targetDate).toISOString());
+    const wd = new Date(targetDate).getDay();
+    const daily = red(monthly.number + WLORDS[wd]);
+    const h12 = targetHour !== null ? (targetHour > 12 ? targetHour - 12 : targetHour === 0 ? 12 : targetHour) : null;
+    const hourly = h12 !== null ? red(daily + h12) : null;
+    const natalNums = Object.keys(buildFrequencyMap(dob)).map(Number);
+
+    const findings = analyzeDayChart({ basic, destiny, maha: maha.number, antar: antar.number, monthly: monthly.number, daily, hourly, natalNums });
+    const score = getDayScore({ basic, destiny, maha: maha.number, antar: antar.number, monthly: monthly.number, daily, natalNums });
+
+    const accidents = findings.filter(f => f.type === 'accident');
+    const opportunities = findings.filter(f => f.type === 'opportunity');
+    const allFindings = findings.map(f => `[${f.type}/${f.level}] ${f.label}: ${f.detail}`).join('\n');
+
+    return `
+HISTORICAL DATE ANALYSIS (${targetDate}${targetHour !== null ? ` at ${targetHour}:00` : ''}):
+Chart on that date:
+- Maha: ${maha.number} (${PNAME[maha.number]})
+- Antar: ${antar.number} (${PNAME[antar.number]})
+- Monthly: ${monthly.number} (${PNAME[monthly.number]})
+- Daily: ${daily} (${PNAME[daily]})
+${hourly !== null ? `- Hourly: ${hourly} (${PNAME[hourly]})` : ''}
+Day Score: ${score}/100
+
+Findings on that date:
+${allFindings || 'No significant findings'}
+
+Accident risk on that date: ${accidents.length > 0 ? accidents.map(a => `${a.level.toUpperCase()} — ${a.detail}`).join('; ') : 'No accident conditions triggered by the chart'}
+`;
+  } catch(e) {
+    return `\nHistorical analysis for ${targetDate}: Unable to calculate — ${e.message}`;
+  }
 }
