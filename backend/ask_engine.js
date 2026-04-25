@@ -357,6 +357,21 @@ export function extractOtherDob(messages) {
   return null;
 }
 
+// ─── Extract year from question ──────────────────────────────────────────────
+export function extractYearFromQuestion(text) {
+  // Match 4-digit year 20xx that appears standalone (not part of full date)
+  const t = text;
+  // Skip if full date present
+  if (/\d{1,2}[\/-]\d{1,2}[\/-]20\d{2}/.test(t)) return null;
+  if (/20\d{2}[\/-]\d{1,2}[\/-]\d{1,2}/.test(t)) return null;
+  // Skip if month name + year
+  if (/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+20\d{2}/i.test(t)) return null;
+  // Match year
+  const match = t.match(/\b(20\d{2})\b/);
+  if (!match) return null;
+  return parseInt(match[1]);
+}
+
 // ─── Extract specific date + time from question ───────────────────────────────
 export function extractDateTimeFromQuestion(text) {
   // Match dates in various formats: 21/03/2023, 21-03-2023, 21 March 2023, March 21 2023
