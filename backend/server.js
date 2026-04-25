@@ -938,7 +938,7 @@ app.post('/api/ask', async (req, res) => {
         .join(' | ');
       // Keep only recent 10 + inject summary
       anthropicMessages = [
-        { role: 'user', content: \`[Previous conversation summary: \${memorySummary}]\` },
+        { role: 'user', content: `[Previous conversation summary: ${memorySummary}]` },
         { role: 'assistant', content: 'Understood, I remember our previous conversations.' },
         ...recentMessages,
       ];
