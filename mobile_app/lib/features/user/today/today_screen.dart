@@ -17,6 +17,7 @@ class TodayScreen extends ConsumerStatefulWidget {
 
 class _TodayScreenState extends ConsumerState<TodayScreen> {
   bool _notificationsScheduled = false;
+  String _lastScheduledDate = '';
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +27,11 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
 
-    // Schedule notifications when data loads (once per day)
+    // Schedule notifications when data loads (once per day, resets at midnight)
+    final todayDate = DateTime.now().toIso8601String().substring(0, 10);
     todayAsync.whenData((data) {
-      if (!_notificationsScheduled) {
+      if (_lastScheduledDate != todayDate) {
+        _lastScheduledDate = todayDate;
         _notificationsScheduled = true;
         _scheduleNotifications(data);
       }
@@ -118,14 +121,6 @@ class _TodayView extends StatelessWidget {
               rating: rating, dailyNum: dailyNum,
               isDark: isDark, gold: gold,
               layers: data['layers'] as Map<String, dynamic>?,
-            ),
-            const SizedBox(height: 16),
-
-            // ── 4. Best & Caution hours summary ─────────────────
-            _HourSummaryCard(
-              bestHours: bestHours,
-              cautionHours: cautionHours,
-              isDark: isDark, gold: gold,
             ),
             const SizedBox(height: 16),
 

@@ -206,15 +206,7 @@ I'm your personal astro guide. Ask me anything about:
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: false,
-      leading: Container(
-        margin: const EdgeInsets.only(left: 8),
-        child: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, 
-            color: isDark ? Colors.white : Colors.black87),
-          onPressed: () => Navigator.pop(context),
-          splashRadius: 24,
-        ),
-      ),
+      automaticallyImplyLeading: false,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

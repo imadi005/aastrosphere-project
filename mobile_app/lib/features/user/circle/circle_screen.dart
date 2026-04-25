@@ -112,7 +112,7 @@ class _FriendsList extends StatelessWidget {
         const SizedBox(height: 16),
         ...friends.map((f) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: _FriendCard(friend: f, isDark: isDark, gold: gold),
+          child: _FriendCard(key: ValueKey(f.id), friend: f, isDark: isDark, gold: gold),
         )),
       ],
     );

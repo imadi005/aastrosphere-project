@@ -68,7 +68,7 @@ class NotificationService {
 
     // Schedule for 7:00 AM local time today (or tomorrow if past 7)
     final now = DateTime.now();
-    var scheduledTime = DateTime(now.year, now.month, now.day, 7, 0, 0);
+    var scheduledTime = DateTime(now.year, now.month, now.day, 10, 0, 0);
     if (now.isAfter(scheduledTime)) {
       scheduledTime = scheduledTime.add(const Duration(days: 1));
     }

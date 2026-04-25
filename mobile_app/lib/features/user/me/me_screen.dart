@@ -46,8 +46,6 @@ class MeScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 _MeContent(data: deep, isDark: isDark, gold: gold),
                 const SizedBox(height: 24),
-                _AskAnythingCard(isDark: isDark, gold: gold),
-                const SizedBox(height: 12),
                 AskAstrologerCard(isDark: isDark, gold: gold),
                 const SizedBox(height: 32),
                 _SignOutButton(isDark: isDark),

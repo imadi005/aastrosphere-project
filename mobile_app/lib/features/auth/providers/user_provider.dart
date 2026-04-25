@@ -40,14 +40,14 @@ class UserProfile {
 final _auth = FirebaseAuth.instance;
 final _db = FirebaseFirestore.instance;
 
-final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
+final userProfileProvider = StreamProvider<UserProfile?>((ref) {
   final user = _auth.currentUser;
-  if (user == null) return null;
+  if (user == null) return Stream.value(null);
 
-  final doc = await _db.collection('users').doc(user.uid).get();
-  if (!doc.exists || doc.data() == null) return null;
-
-  return UserProfile.fromMap(user.uid, doc.data()!);
+  return _db.collection('users').doc(user.uid).snapshots().map((doc) {
+    if (!doc.exists || doc.data() == null) return null;
+    return UserProfile.fromMap(user.uid, doc.data()!);
+  });
 });
 
 final saveUserProfileProvider = Provider((ref) => _saveProfile);
