@@ -30,7 +30,9 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   final FocusNode _focusNode = FocusNode();
   
   bool _loading = false;
+  bool _historyLoading = true;
   String? _userDob;
+  String? _uid;
   bool _isTyping = false;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -49,6 +51,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
     _fadeController.forward();
     
     _ctrl.addListener(_onTyping);
+    // _historyLoading will be set false in _loadHistory
   }
   
   void _onTyping() {
@@ -81,6 +84,7 @@ I'm your personal astro guide. Ask me anything about:
   Future<void> _loadUserDob() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
+    _uid = uid;
     
     try {
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
@@ -88,8 +92,60 @@ I'm your personal astro guide. Ask me anything about:
       if (dob != null && mounted) {
         setState(() => _userDob = dob.toIso8601String());
       }
+      // Load chat history
+      await _loadHistory(uid);
     } catch (e) {
-      debugPrint('Error loading DOB: $e');
+      debugPrint('Error loading: \$e');
+      if (mounted) setState(() => _historyLoading = false);
+    }
+  }
+
+  Future<void> _loadHistory(String uid) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users').doc(uid)
+          .collection('chat_history').doc('messages').get();
+      
+      if (doc.exists && doc.data() != null) {
+        final history = (doc.data()!['messages'] as List? ?? []);
+        final loaded = history.map((m) => ChatMessage(
+          role: m['role'] as String,
+          content: m['content'] as String,
+        )).toList();
+        
+        if (mounted && loaded.isNotEmpty) {
+          setState(() {
+            // Keep welcome message at top, append history
+            _messages.addAll(loaded);
+            _historyLoading = false;
+          });
+          // Scroll to bottom after loading
+          WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('History load error: \$e');
+    }
+    if (mounted) setState(() => _historyLoading = false);
+  }
+
+  Future<void> _saveHistory() async {
+    if (_uid == null) return;
+    try {
+      // Save last 50 messages (skip welcome message)
+      final toSave = _messages
+          .skip(1)
+          .take(50)
+          .map((m) => {'role': m.role, 'content': m.content})
+          .toList();
+      
+      await FirebaseFirestore.instance
+          .collection('users').doc(_uid!)
+          .collection('chat_history').doc('messages')
+          .set({'messages': toSave, 'updated_at': FieldValue.serverTimestamp()});
+    } catch (e) {
+      debugPrint('History save error: \$e');
     }
   }
 
@@ -110,8 +166,12 @@ I'm your personal astro guide. Ask me anything about:
     _focusNode.unfocus();
 
     try {
-      final apiMessages = _messages
-          .skip(1)
+      // Send last 20 messages for context (memory window)
+      final allHistory = _messages.skip(1).toList();
+      final recentMessages = allHistory.length > 20 
+          ? allHistory.sublist(allHistory.length - 20)
+          : allHistory;
+      final apiMessages = recentMessages
           .map((m) => {'role': m.role, 'content': m.content})
           .toList();
 
@@ -129,6 +189,7 @@ I'm your personal astro guide. Ask me anything about:
           _loading = false;
         });
         _scrollToBottom();
+        _saveHistory(); // persist to Firestore
       }
     } catch (e) {
       if (mounted) {
@@ -161,6 +222,13 @@ I'm your personal astro guide. Ask me anything about:
       _messages.clear();
       _addWelcomeMessage();
     });
+    // Clear from Firestore too
+    if (_uid != null) {
+      FirebaseFirestore.instance
+          .collection('users').doc(_uid!)
+          .collection('chat_history').doc('messages')
+          .delete().catchError((_) {});
+    }
   }
 
   @override
@@ -189,7 +257,7 @@ I'm your personal astro guide. Ask me anything about:
           child: Column(
             children: [
               Expanded(
-                child: _messages.isEmpty && !_loading
+                child: _historyLoading || (_messages.isEmpty && !_loading)
                     ? _buildEmptyState(gold, secondary)
                     : _buildChatList(isDark, gold, border),
               ),

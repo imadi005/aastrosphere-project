@@ -921,11 +921,28 @@ app.post('/api/ask', async (req, res) => {
     // Build system prompt with full chart + relevant knowledge
     const systemPrompt = buildSystemPrompt(dob, targetDate, questionType, otherDob);
 
-    // Call Anthropic API
-    const anthropicMessages = messages.map(m => ({
+    // Build conversation — add memory context if history is long
+    let anthropicMessages = messages.map(m => ({
       role: m.role,
       content: m.content,
     }));
+
+    // If history > 10 messages, inject a brief memory summary as first user message
+    if (anthropicMessages.length > 10) {
+      const olderMessages = anthropicMessages.slice(0, -10);
+      const recentMessages = anthropicMessages.slice(-10);
+      // Summarize older context into a system note
+      const memorySummary = olderMessages
+        .filter(m => m.role === 'user')
+        .map(m => m.content.slice(0, 80))
+        .join(' | ');
+      // Keep only recent 10 + inject summary
+      anthropicMessages = [
+        { role: 'user', content: \`[Previous conversation summary: \${memorySummary}]\` },
+        { role: 'assistant', content: 'Understood, I remember our previous conversations.' },
+        ...recentMessages,
+      ];
+    }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

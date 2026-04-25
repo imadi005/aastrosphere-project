@@ -334,7 +334,9 @@ RESPONSE RULES:
 4. Give luckiest upcoming day from timeline
 5. Give ONE remedy or action — specific, not generic
 6. Keep total response under 120 words
-7. If other person mentioned but no DOB — give partial answer, ask DOB in last line naturally`;
+7. If other person mentioned but no DOB — give partial answer, ask DOB in last line naturally
+8. You have full memory of past conversations. Reference them naturally when relevant — "jaise aapne pehle poocha tha..." or "last time we discussed..."
+9. NEVER ask for information already given in conversation history. Check history before asking anything.`;
 }
 
 // ─── Extract other person DOB from conversation ───────────────────────────────
