@@ -122,7 +122,7 @@ class _FriendsList extends StatelessWidget {
 // ─── Friend card (expandable) ─────────────────────────────────────────────────
 class _FriendCard extends StatefulWidget {
   final Friend friend; final bool isDark; final Color gold;
-  const _FriendCard({required this.friend, required this.isDark, required this.gold});
+  const _FriendCard({super.key, required this.friend, required this.isDark, required this.gold});
 
   @override
   State<_FriendCard> createState() => _FriendCardState();
