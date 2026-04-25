@@ -5,7 +5,7 @@
 
 import {
   NUMBER_ENERGY, COMBINATION_MEANINGS, DASHA_COMBO_PREDICTIONS,
-  DAILY_QUOTES, DAILY_GUIDANCE, HOUR_QUALITIES, COMBO_DAILY_INSIGHTS,
+  DAILY_GUIDANCE, HOUR_QUALITIES, COMBO_DAILY_INSIGHTS,
   PERIOD_PREDICTIONS, LIFE_PREDICTIONS, CHART_MODIFIERS, PREDICTION_LOGIC,
 } from './prediction_library.js';
 
@@ -15,6 +15,7 @@ import {
 } from './deep_library.js';
 
 import { classifyHourDeep } from './hour_library.js';
+import { DAILY_QUOTES } from './quotes_library.js';
 import {
   buildFullDailyInsight, getPersonalizedGuidance, assessFullDayRating,
   DAILY_LAYER, MAHA_CONTEXT, ANTAR_CONTEXT, MONTHLY_CONTEXT,
