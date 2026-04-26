@@ -397,9 +397,9 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
             Text(_fmtDate(activeDob), style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
           ])),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text('Basic \${NumerologyEngine.basicNumber(activeDob.day)}',
+            Text('Basic ${NumerologyEngine.basicNumber(activeDob.day)}',
                 style: GoogleFonts.dmSans(fontSize: 10, color: gold)),
-            Text('Destiny \${NumerologyEngine.destinyNumber(activeDob)}',
+            Text('Destiny ${NumerologyEngine.destinyNumber(activeDob)}',
                 style: GoogleFonts.dmSans(fontSize: 10, color: gold.withOpacity(0.7))),
           ]),
         ]),
@@ -422,7 +422,7 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
                   color: active ? gold : (isDark ? AppColors.bgCardDark : AppColors.bgCardLight),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: active ? gold : border, width: 0.5)),
-                child: Text('\$y yr', style: GoogleFonts.dmSans(fontSize: 11, color: active ? Colors.black : secondary, fontWeight: active ? FontWeight.w700 : FontWeight.w400))));
+                child: Text('$y yr', style: GoogleFonts.dmSans(fontSize: 11, color: active ? Colors.black : secondary, fontWeight: active ? FontWeight.w700 : FontWeight.w400))));
           }).toList()))),
       ]),
       const SizedBox(height: 14),
@@ -437,9 +437,9 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
             ? Row(mainAxisSize: MainAxisSize.min, children: [
                 SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black)),
                 const SizedBox(width: 10),
-                Text('Building \$_years-year reading...', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black)),
+                Text('Building $_years-year reading...', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black)),
               ])
-            : Text('Generate \$_years-Year Life Reading', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.black))),
+            : Text('Generate $_years-Year Life Reading', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.black))),
         ),
       ),
 
