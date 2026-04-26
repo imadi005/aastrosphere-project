@@ -7,6 +7,7 @@ import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../auth/providers/user_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // User screens
 import '../user/today/today_screen.dart';
@@ -116,10 +117,12 @@ class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObser
 }
 
 // ─── Astrologer Shell ─────────────────────────────────────────────────────────
+final _astroMeViewProvider = StateProvider<bool>((ref) => false); // false=client, true=me
+
 class _AstrologerShell extends ConsumerWidget {
   const _AstrologerShell();
 
-  static const _screens = [
+  static const _clientScreens = [
     AstroChartScreen(),
     TimelineScreen(),
     AstroDailyScreen(),
@@ -127,7 +130,7 @@ class _AstrologerShell extends ConsumerWidget {
     MoreScreen(),
   ];
 
-  static const _items = [
+  static const _clientItems = [
     BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view), label: 'Chart'),
     BottomNavigationBarItem(icon: Icon(Icons.timeline_outlined), activeIcon: Icon(Icons.timeline), label: 'Timeline'),
     BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Pattern'),
@@ -135,32 +138,106 @@ class _AstrologerShell extends ConsumerWidget {
     BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), activeIcon: Icon(Icons.chat_bubble), label: 'Consult'),
   ];
 
+  static const _meScreens = [
+    TodayScreen(),
+    ChartScreen(),
+    InsightsScreen(),
+    AskScreen(),
+    MeScreen(),
+  ];
+
+  static const _meItems = [
+    BottomNavigationBarItem(icon: Icon(Icons.wb_sunny_outlined), activeIcon: Icon(Icons.wb_sunny), label: 'Today'),
+    BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view), label: 'Chart'),
+    BottomNavigationBarItem(icon: Icon(Icons.auto_awesome_outlined), activeIcon: Icon(Icons.auto_awesome), label: 'Insights'),
+    BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), activeIcon: Icon(Icons.chat_bubble), label: 'Ask'),
+    BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Me'),
+  ];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final index = ref.watch(_astroIndexProvider);
     final isDark = ref.watch(themeProvider) == ThemeMode.dark;
+    final isMeView = ref.watch(_astroMeViewProvider);
+    final gold = isDark ? AppColors.goldLight : AppColors.gold;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return Scaffold(
-      appBar: _AppBar(
-        isAstrologer: true,
-        isDark: isDark,
-        onThemeToggle: () => ref.read(themeProvider.notifier).toggle(),
-        onRoleToggle: () => ref.read(roleProvider.notifier).toggle(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(52),
+        child: AppBar(
+          toolbarHeight: 52,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Center(child: Text('A', style: GoogleFonts.cormorantGaramond(
+                fontSize: 24, fontWeight: FontWeight.w400, color: gold))),
+          ),
+          title: Text('Aastrosphere', style: GoogleFonts.cormorantGaramond(
+              fontSize: 17, fontWeight: FontWeight.w400, color: gold, letterSpacing: 0.5)),
+          actions: [
+            // Me / Client toggle
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: border, width: 0.5)),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                _ModeChip(label: 'Client', active: !isMeView, gold: gold, isDark: isDark,
+                    onTap: () {
+                      ref.read(_astroMeViewProvider.notifier).state = false;
+                      ref.read(_astroIndexProvider.notifier).state = 0;
+                    }),
+                _ModeChip(label: 'Me', active: isMeView, gold: gold, isDark: isDark,
+                    onTap: () {
+                      ref.read(_astroMeViewProvider.notifier).state = true;
+                      ref.read(_astroIndexProvider.notifier).state = 0;
+                    }),
+              ]),
+            ),
+            const SizedBox(width: 6),
+            GestureDetector(
+              onTap: () => _showSignOutDialog(context, ref),
+              child: Padding(padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(Icons.logout_outlined, size: 18, color: secondary))),
+            const SizedBox(width: 8),
+            ThemeToggleButton(isDark: isDark, onToggle: () => ref.read(themeProvider.notifier).toggle()),
+            const SizedBox(width: 12),
+          ],
+        ),
       ),
-      body: IndexedStack(index: index, children: _screens),
+      body: isMeView
+          ? IndexedStack(index: index, children: _meScreens)
+          : IndexedStack(index: index, children: _clientScreens),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _AttributionFooter(isDark: isDark),
           _BottomNav(
             currentIndex: index,
-            items: _items,
+            items: isMeView ? _meItems : _clientItems,
             onTap: (i) => ref.read(_astroIndexProvider.notifier).state = i,
           ),
         ],
       ),
     );
   }
+}
+
+class _ModeChip extends StatelessWidget {
+  final String label; final bool active; final Color gold; final bool isDark; final VoidCallback onTap;
+  const _ModeChip({required this.label, required this.active, required this.gold,
+      required this.isDark, required this.onTap});
+  @override Widget build(BuildContext context) => GestureDetector(onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: active ? gold.withOpacity(0.15) : Colors.transparent,
+        borderRadius: BorderRadius.circular(7)),
+      child: Text(label, style: GoogleFonts.dmSans(fontSize: 11,
+          fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+          color: active ? gold : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)))));
 }
 
 // ─── Shared App Bar ───────────────────────────────────────────────────────────
@@ -217,10 +294,42 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
         }),
         const SizedBox(width: 8),
         ThemeToggleButton(isDark: isDark, onToggle: onThemeToggle),
-        const SizedBox(width: 16),
+        const SizedBox(width: 4),
+        Consumer(builder: (context, ref, _) {
+          return GestureDetector(
+            onTap: () => _showSignOutDialog(context, ref),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Icon(Icons.logout_outlined, size: 18,
+                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+            ),
+          );
+        }),
+        const SizedBox(width: 8),
       ],
     );
   }
+}
+
+void _showSignOutDialog(BuildContext context, WidgetRef ref) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  showDialog(context: context, builder: (ctx) => AlertDialog(
+    backgroundColor: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+    title: Text('Sign Out', style: GoogleFonts.cormorantGaramond(fontSize: 18, color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+    content: Text('Are you sure you want to sign out?', style: GoogleFonts.dmSans(fontSize: 13, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
+    actions: [
+      TextButton(onPressed: () => Navigator.pop(ctx),
+          child: Text('Cancel', style: GoogleFonts.dmSans(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight))),
+      TextButton(
+        onPressed: () async {
+          Navigator.pop(ctx);
+          await FirebaseAuth.instance.signOut();
+          await ref.read(roleProvider.notifier).setRole(AppRole.user);
+        },
+        child: Text('Sign Out', style: GoogleFonts.dmSans(color: isDark ? AppColors.dangerDark : AppColors.danger, fontWeight: FontWeight.w600)),
+      ),
+    ],
+  ));
 }
 
 // ─── Bottom Nav ───────────────────────────────────────────────────────────────

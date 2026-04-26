@@ -102,7 +102,7 @@ class ReportEngine {
     final natalNums = NumerologyEngine.chartDigits(dob).toSet();
 
     // Build full maha timeline
-    final mahaList = NumerologyEngine.mahadashaTimeline(dob, pastYears: 0, futureYears: years + 2);
+    final mahaList = NumerologyEngine.mahadashaTimeline(dob, pastYears: 30, futureYears: years + 2);
 
     int? prevMaha;
 
@@ -345,12 +345,26 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
         }).toList(),
       });
 
+      // Fetch astrologer name fresh from both collections
+      String astroName = astrologer?.name ?? '';
+      String astroPhone = astrologer?.phone ?? '';
+      if (astroName.isEmpty) {
+        try {
+          final astroDoc = await FirebaseFirestore.instance.collection('astrologers').doc(uid).get();
+          if (astroDoc.exists) {
+            astroName = astroDoc.data()?['name'] ?? '';
+            astroPhone = astroDoc.data()?['phone'] ?? '';
+          }
+        } catch (_) {}
+      }
+      if (astroName.isEmpty) astroName = 'Astrologer';
+
       // Generate PDF
       final pdfPath = await PdfReportBuilder.build(
         clientName: clientName,
         dob: dob,
-        astrologerName: astrologer?.name ?? 'Astrologer',
-        astrologerPhone: astrologer?.phone ?? '',
+        astrologerName: astroName,
+        astrologerPhone: astroPhone,
         years: _years,
         sections: _sections!,
       );

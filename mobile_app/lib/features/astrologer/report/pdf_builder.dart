@@ -110,7 +110,7 @@ class PdfReportBuilder {
   }) async {
     pw.ImageProvider? logo;
     try {
-      final bytes = await rootBundle.load('assets/images/zodiac_circle_gold.png');
+      final bytes = await rootBundle.load('assets/images/app_icon.png');
       logo = pw.MemoryImage(bytes.buffer.asUint8List());
     } catch (_) {}
 
