@@ -265,38 +265,210 @@ class _DashaCardState extends State<_DashaCard> {
     return yrs == 1 ? '1 yr' : '$yrs yrs';
   }
 
-  // Build grid for this period
+  // Get maha number active at a given date
+  int _mahaAt(DateTime date) {
+    final basic = NumerologyEngine.basicNumber(widget.dob.day);
+    final cycle = NumerologyEngine.buildDashaCycle(basic);
+    DateTime cur = DateTime(widget.dob.year, widget.dob.month, widget.dob.day);
+    int idx = 0;
+    while (idx < 200) {
+      final dasha = cycle[idx % 9];
+      final dur = NumerologyEngine.dashaDurations[dasha]!;
+      final end = DateTime(cur.year + dur, cur.month, cur.day);
+      if (!date.isBefore(cur) && date.isBefore(end)) return dasha;
+      cur = end; idx++;
+    }
+    return basic;
+  }
+
+  // Get antar number active at a given date
+  int _antarAt(DateTime date) {
+    final basic = NumerologyEngine.basicNumber(widget.dob.day);
+    final month = widget.dob.month;
+    final day = widget.dob.day;
+    final bdayThisYear = DateTime(date.year, month, day);
+    final antarYear = date.isBefore(bdayThisYear) ? date.year - 1 : date.year;
+    final weekday = DateTime(antarYear, month, day).weekday % 7;
+    final weekdayVal = NumerologyEngine.weekdayValues[weekday]!;
+    final yearLast2 = antarYear % 100;
+    final raw = basic + month + yearLast2 + weekdayVal;
+    return NumerologyEngine.reduceToSingle(raw);
+  }
+
+  // Build grid for this period — uses mid-point of the period
   List<List<GridCell>> _buildPeriodGrid() {
     final d = widget.item;
+    // Use midpoint of the period so we get accurate maha/antar for that time
+    final mid = d.start.add(Duration(days: d.end.difference(d.start).inDays ~/ 2));
     switch (widget.tabType) {
       case 'maha':
-        return NumerologyEngine.buildGrid(widget.dob, mahaOverride: d.number, antarOverride: 0, monthlyOverride: 0);
+        return NumerologyEngine.buildGrid(widget.dob,
+            mahaOverride: d.number, antarOverride: _antarAt(mid), monthlyOverride: null);
       case 'antar':
-        final maha = NumerologyEngine.currentMahadasha(widget.dob).number;
-        return NumerologyEngine.buildGrid(widget.dob, mahaOverride: maha, antarOverride: d.number, monthlyOverride: 0);
+        return NumerologyEngine.buildGrid(widget.dob,
+            mahaOverride: _mahaAt(mid), antarOverride: d.number, monthlyOverride: null);
       case 'monthly':
       default:
-        final maha = NumerologyEngine.currentMahadasha(widget.dob).number;
-        final antar = NumerologyEngine.currentAntardasha(widget.dob).number;
-        return NumerologyEngine.buildGrid(widget.dob, mahaOverride: maha, antarOverride: antar, monthlyOverride: d.number);
+        return NumerologyEngine.buildGrid(widget.dob,
+            mahaOverride: _mahaAt(mid), antarOverride: _antarAt(mid), monthlyOverride: d.number);
     }
   }
 
-  // Simple period insight based on number combination
-  String _insight() {
-    final num = widget.item.number;
-    const insights = {
-      1: 'Sun period — authority, leadership, and career come forward. A time to step up and be seen.',
-      2: 'Moon period — emotions run high. Great for creative work and relationships. Guard mental health.',
-      3: 'Jupiter period — wisdom, growth, and good fortune. Teaching, learning, and family matters bloom.',
-      4: 'Rahu period — unexpected changes and disruptions. Stay grounded, avoid shortcuts.',
-      5: 'Mercury period — business, communication, and money flow. Sharp mind, fast decisions.',
-      6: 'Venus period — love, comfort, and beauty. Strong period for relationships and finances.',
-      7: 'Ketu period — spiritual growth, detachment, and intuition. Inner work more than outer action.',
-      8: 'Saturn period — hard work, discipline, and slow but lasting results. No shortcuts here.',
-      9: 'Mars period — high energy, action, and courage. Beware aggression and impulsive decisions.',
+  // Compute maha + antar active at midpoint of this period
+  Map<String, int> _periodNumbers() {
+    final d = widget.item;
+    final mid = d.start.add(Duration(days: d.end.difference(d.start).inDays ~/ 2));
+    final int maha, antar, monthly;
+    switch (widget.tabType) {
+      case 'maha':
+        maha = d.number; antar = _antarAt(mid); monthly = 0;
+        break;
+      case 'antar':
+        maha = _mahaAt(mid); antar = d.number; monthly = 0;
+        break;
+      case 'monthly':
+      default:
+        maha = _mahaAt(mid); antar = _antarAt(mid); monthly = d.number;
+    }
+    return {'maha': maha, 'antar': antar, 'monthly': monthly};
+  }
+
+  // Build real insights from actual combinations
+  List<_InsightLine> _insights() {
+    final nums = _periodNumbers();
+    final int maha = nums['maha']!, antar = nums['antar']!, monthly = nums['monthly']!;
+    final basic = NumerologyEngine.basicNumber(widget.dob.day);
+    final destiny = NumerologyEngine.destinyNumber(widget.dob);
+    final natalNums = NumerologyEngine.chartDigits(widget.dob).toSet();
+    final allNums = {...natalNums, maha, antar, if (monthly > 0) monthly};
+    final lines = <_InsightLine>[];
+
+    // ── Period title ─────────────────────────────────────────────────────────
+    const planetDesc = {
+      1: 'Career, authority, government connections, and ego come forward.',
+      2: 'Emotions, relationships, creativity, and mood sensitivity are heightened.',
+      3: 'Wisdom, family, teaching, counselling, and spiritual growth.',
+      4: 'Disruption, sudden changes, travel, foreign connections, and confusion.',
+      5: 'Business, communication, cash flow, trade, and quick decisions.',
+      6: 'Love, comfort, luxury, relationships, and financial ease.',
+      7: 'Detachment, spirituality, travel, intuition, and inner work.',
+      8: 'Discipline, delays, hard work, justice, and slow but real results.',
+      9: 'High energy, action, courage, aggression, and physical intensity.',
     };
-    return insights[num] ?? '';
+    final periodNum = widget.item.number;
+    if (planetDesc[periodNum] != null) {
+      lines.add(_InsightLine(text: '${NumerologyEngine.planetNames[periodNum]} period — ${planetDesc[periodNum]}', type: 'period'));
+    }
+
+    // ── Combination insights (maha × antar) ──────────────────────────────────
+    const combos = {
+      '1_2': 'Sun meets Moon — career and personal life both demand attention. High visibility period. Emotional health needs care.',
+      '1_4': 'Sun meets Rahu — ambitious but unstable. Big opportunities, big disruptions. Watch impulsive decisions.',
+      '1_6': 'Sun meets Venus — career and finances both strong. Good for promotions, relationships, and money.',
+      '1_7': 'Sun meets Ketu — luck is active. Career breakthroughs possible. Some detachment from material things.',
+      '1_8': 'Sun meets Saturn — hard work required. Authority challenged. Defamation risk if ego is unchecked.',
+      '1_9': 'Sun meets Mars — powerful energy. Leadership peaks. Anger and accidents need caution.',
+      '2_4': 'Moon meets Rahu — emotional instability. Deception risk. Guard finances and trust carefully.',
+      '2_7': 'Moon meets Ketu — deeply spiritual period. Intuition sharp. Emotional sensitivity very high.',
+      '2_8': 'Moon meets Saturn — depression risk. Emotional heaviness. Discipline helps navigate this period.',
+      '2_9': 'Moon meets Mars — emotional aggression. Arguments in relationships. Channel energy into creative work.',
+      '3_4': 'Jupiter meets Rahu — wisdom tested by confusion. Good for research and spiritual work. Avoid shortcuts.',
+      '3_9': 'Jupiter meets Mars — strong action with wisdom. Good for leadership, teaching, and expansion.',
+      '4_9': 'Rahu meets Mars — HIGH ACCIDENT RISK. This is the most physically dangerous combination. Drive carefully, avoid rushing, stay grounded.',
+      '4_8': 'Rahu meets Saturn — delays, frustration, and obstacles. Results come very slowly. Do not lose patience.',
+      '4_2': 'Rahu meets Moon — emotionally unstable, prone to being deceived. Keep finances guarded.',
+      '5_4': 'Mercury meets Rahu — financial impulsiveness. Easy money thinking leads to losses. Budget strictly.',
+      '5_6': 'Mercury meets Venus — excellent for business, trade, and relationships. Cash flow and romance both active.',
+      '5_7': 'Mercury meets Ketu — easy money and luck combination. Financial gains with less effort.',
+      '6_4': 'Venus meets Rahu — relationship complications. Attraction without stability. Guard against deception in love.',
+      '7_4': 'Ketu meets Rahu — highly unstable spiritually and materially. Inner confusion. Avoid major decisions.',
+      '7_8': 'Ketu meets Saturn — bad luck delayed results. Financial and personal setbacks likely. Stay patient.',
+      '8_9': 'Saturn meets Mars — relentless hard work, heavy load. Protect health — heart and blood pressure risk.',
+      '9_4': 'Mars meets Rahu — HIGH ACCIDENT RISK. Impulsive actions cause physical harm. Slow down in all areas.',
+      '9_8': 'Mars meets Saturn — immense determination, heavy load. Physical health must be protected.',
+    };
+
+    final key1 = '${maha}_$antar';
+    final key2 = '${antar}_$maha';
+    final combo = combos[key1] ?? combos[key2];
+    if (combo != null) {
+      final isHigh = combo.contains('HIGH ACCIDENT');
+      lines.add(_InsightLine(text: combo, type: isHigh ? 'danger' : 'combo'));
+    }
+
+    // ── Yoga detection ───────────────────────────────────────────────────────
+    // Raj Yoga
+    if (allNums.contains(1) && allNums.contains(2) && !natalNums.contains(3) && !natalNums.contains(6)) {
+      lines.add(_InsightLine(text: 'Raj Yoga active — authority and career advancement strongly supported. High rise possible.', type: 'positive'));
+    }
+    // Sun-Ketu Raj Yoga
+    if (natalNums.contains(1) && natalNums.contains(7) && !natalNums.contains(8)) {
+      lines.add(_InsightLine(text: 'Continuous Luck active — things tend to work out, often unexpectedly.', type: 'positive'));
+    }
+    // Easy Money
+    if (allNums.contains(5) && allNums.contains(7)) {
+      lines.add(_InsightLine(text: 'Easy Money combination — financial gains arrive with less effort than usual.', type: 'positive'));
+    }
+    // 319
+    if (allNums.contains(3) && allNums.contains(1) && allNums.contains(9)) {
+      lines.add(_InsightLine(text: '3-1-9 uplift combination — very positive period for growth, career, and confidence.', type: 'positive'));
+    }
+    // Bandhan
+    if (allNums.contains(9) && allNums.contains(4) && !allNums.contains(5)) {
+      lines.add(_InsightLine(text: 'Bandhan Yoga — feeling stuck or restricted. Avoid new loans or big commitments.', type: 'warning'));
+    }
+    // Financial Bandhan
+    if (allNums.contains(5) && allNums.contains(4) && !allNums.contains(9)) {
+      lines.add(_InsightLine(text: 'Financial Bandhan — debt risk is real. Impulsive spending can cause lasting damage.', type: 'warning'));
+    }
+    // Vipreet Raj
+    if (allNums.contains(2) && allNums.contains(8) && allNums.contains(4)) {
+      lines.add(_InsightLine(text: 'Vipreet Raj Yoga — setbacks that eventually lead to growth. Avoid addictions.', type: 'warning'));
+    }
+    // Spiritual
+    if (allNums.contains(3) && allNums.contains(7) && allNums.contains(9)) {
+      lines.add(_InsightLine(text: 'Spiritual Yoga (3-7-9) — deep inner wisdom accessible. Good for healing and spiritual work.', type: 'positive'));
+    }
+
+    // ── Accident risk ────────────────────────────────────────────────────────
+    if ((maha == 4 && antar == 9) || (maha == 9 && antar == 4)) {
+      if (!lines.any((l) => l.text.contains('ACCIDENT'))) {
+        lines.add(_InsightLine(text: 'HIGH ACCIDENT RISK — most dangerous dasha combination. Drive slowly, avoid rushing, double-check everything.', type: 'danger'));
+      }
+    } else if ((maha == 4 && natalNums.contains(9)) || (maha == 9 && natalNums.contains(4))) {
+      lines.add(_InsightLine(text: 'Accident caution — physical awareness needed. Avoid risky activities.', type: 'warning'));
+    }
+
+    // ── Health flags ─────────────────────────────────────────────────────────
+    if (maha == 2 || antar == 2) {
+      lines.add(_InsightLine(text: 'Mental health watch — risk of low mood, sadness, insomnia. Stay connected with trusted people.', type: 'warning'));
+    }
+    if ((maha == 8 || antar == 8) && (basic == 8 || destiny == 8)) {
+      lines.add(_InsightLine(text: 'Bone, joint, and dental health needs attention during this period.', type: 'warning'));
+    }
+    if ((maha == 9 || antar == 9) && (basic == 9 || destiny == 9)) {
+      lines.add(_InsightLine(text: 'Blood pressure and high fever risk. Physical health checkup recommended.', type: 'warning'));
+    }
+
+    // ── Finance ──────────────────────────────────────────────────────────────
+    if (allNums.contains(6) && allNums.contains(1)) {
+      lines.add(_InsightLine(text: 'Strong financial period — career money and prosperity both supported.', type: 'positive'));
+    }
+    if ((maha == 4 || antar == 4)) {
+      if (!lines.any((l) => l.text.contains('spending') || l.text.contains('Bandhan'))) {
+        lines.add(_InsightLine(text: 'Watch spending — Rahu active brings impulsive financial decisions.', type: 'warning'));
+      }
+    }
+
+    // ── Relationship ─────────────────────────────────────────────────────────
+    if ([3, 2, 7, 6, 9].contains(antar) && !lines.any((l) => l.text.contains('marriage'))) {
+      lines.add(_InsightLine(text: 'Favorable period for deepening relationships or marriage.', type: 'positive'));
+    }
+    if (maha == 4) {
+      lines.add(_InsightLine(text: 'Long Rahu period — distance can grow in close relationships. Communicate more.', type: 'warning'));
+    }
+
+    return lines;
   }
 
   @override
@@ -350,7 +522,7 @@ class _DashaCardState extends State<_DashaCard> {
               child: _open ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Divider(height: 1, color: border),
                 Padding(padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-                  child: Text(_insight(), style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6))),
+                  child: _InsightCards(insights: _insights(), isDark: isDark, gold: gold)),
                 Padding(padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
                   child: _PeriodGrid(grid: _buildPeriodGrid(), isDark: isDark, gold: gold, color: color, tabType: widget.tabType, dashaNum: d.number)),
               ]) : const SizedBox.shrink()),
@@ -484,4 +656,79 @@ class _NowBadge extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
     decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(4)),
     child: Text('NOW', style: GoogleFonts.dmSans(fontSize: 8, fontWeight: FontWeight.w700, color: color, letterSpacing: 0.5)));
+}
+
+// ─── Insight data model ───────────────────────────────────────────────────────
+class _InsightLine {
+  final String text;
+  final String type; // 'period' | 'combo' | 'positive' | 'warning' | 'danger'
+  const _InsightLine({required this.text, required this.type});
+}
+
+// ─── Insight cards widget ─────────────────────────────────────────────────────
+class _InsightCards extends StatelessWidget {
+  final List<_InsightLine> insights;
+  final bool isDark;
+  final Color gold;
+  const _InsightCards({required this.insights, required this.isDark, required this.gold});
+
+  Color _color(_InsightLine line) {
+    final green = isDark ? AppColors.successDark : AppColors.success;
+    final orange = isDark ? AppColors.warningDark : AppColors.warning;
+    final red = isDark ? AppColors.dangerDark : AppColors.danger;
+    switch (line.type) {
+      case 'danger':   return red;
+      case 'warning':  return orange;
+      case 'positive': return green;
+      case 'combo':    return const Color(0xFF6366F1);
+      case 'period':   return gold;
+      default:         return isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    }
+  }
+
+  IconData _icon(_InsightLine line) {
+    switch (line.type) {
+      case 'danger':   return Icons.warning_rounded;
+      case 'warning':  return Icons.warning_amber_outlined;
+      case 'positive': return Icons.star_outline;
+      case 'combo':    return Icons.link;
+      case 'period':   return Icons.radio_button_unchecked;
+      default:         return Icons.circle_outlined;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (insights.isEmpty) return const SizedBox.shrink();
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: insights.map((line) {
+        final c = _color(line);
+        final isAccent = line.type == 'danger' || line.type == 'warning';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+          decoration: BoxDecoration(
+            color: c.withOpacity(isAccent ? 0.08 : 0.05),
+            borderRadius: BorderRadius.circular(9),
+            border: Border.all(color: c.withOpacity(isAccent ? 0.3 : 0.15), width: 0.5),
+          ),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 1),
+              child: Icon(_icon(line), size: 13, color: c),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                line.text,
+                style: GoogleFonts.dmSans(fontSize: 12, color: isAccent ? c : primary, height: 1.55),
+              ),
+            ),
+          ]),
+        );
+      }).toList(),
+    );
+  }
 }

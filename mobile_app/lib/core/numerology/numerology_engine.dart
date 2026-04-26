@@ -89,7 +89,7 @@ class NumerologyEngine {
   /// Get current Mahadasha
   static DashaResult currentMahadasha(DateTime dob) {
     final basic = basicNumber(dob.day);
-    final cycle = _buildDashaCycle(basic);
+    final cycle = buildDashaCycle(basic);
     final today = DateTime.now();
 
     DateTime current = DateTime(dob.year, dob.month, dob.day);
@@ -117,7 +117,7 @@ class NumerologyEngine {
   /// Get Mahadasha timeline (past + future)
   static List<DashaResult> mahadashaTimeline(DateTime dob, {int pastYears = 20, int futureYears = 50}) {
     final basic = basicNumber(dob.day);
-    final cycle = _buildDashaCycle(basic);
+    final cycle = buildDashaCycle(basic);
     final today = DateTime.now();
     final results = <DashaResult>[];
 
@@ -242,7 +242,7 @@ class NumerologyEngine {
       final antarEnd = DateTime(yr + 1, month, day);
 
       // Monthly cycle for this antar year, starting from antarNum
-      final cycle = _buildDashaCycle(antarNum);
+      final cycle = buildDashaCycle(antarNum);
       DateTime current = antarStart;
       int index = 0;
 
@@ -293,7 +293,7 @@ class NumerologyEngine {
     final antarNum = reduceToSingle(raw);
 
     // Monthly cycle starts from antarNum (NOT basic)
-    final cycle = _buildDashaCycle(antarNum);
+    final cycle = buildDashaCycle(antarNum);
     DateTime current = antarStart;
     int index = 0;
 
@@ -406,7 +406,7 @@ class NumerologyEngine {
   }
 
   // Build ordered dasha cycle starting from basic number
-  static List<int> _buildDashaCycle(int basic) {
+  static List<int> buildDashaCycle(int basic) {
     const all = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     final startIndex = all.indexOf(basic);
     return [...all.sublist(startIndex), ...all.sublist(0, startIndex)];
