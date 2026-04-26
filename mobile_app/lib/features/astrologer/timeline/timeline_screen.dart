@@ -248,10 +248,7 @@ class _DashaCardState extends State<_DashaCard> {
     if (widget.item.isCurrent) _open = true;
   }
 
-  void _toggle() {
-    setState(() { _open = !_open; });
-    if (_open) _anim.forward(); else _anim.reverse();
-  }
+  void _toggle() => setState(() => _open = !_open);
 
   String _fmtDate(DateTime d) {
     const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
