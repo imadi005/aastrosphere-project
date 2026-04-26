@@ -177,7 +177,7 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
   const annualNums = Object.keys(annualFreq).map(Number);
 
   const yogas     = detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny, maha.number, antar.number, monthly.number, dailyDasha(dob, targetDate));
-  const modifiers = getChartModifiers(annualNums, annualFreq, basic, destiny);
+  const modifiers = getChartModifiers(annualNums, annualFreq, basic, destiny, natalNums);
 
   return {
     basic, destiny,
@@ -335,13 +335,13 @@ function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destin
 }
 
 // ─── Get chart modifiers ─────────────────────────────────────────────────────
-function getChartModifiers(nums, freq, basic, destiny) {
+function getChartModifiers(nums, freq, basic, destiny, natalNums = []) {
   const mods = [];
   if (nums.includes(3) && nums.includes(1) && nums.includes(9)) mods.push('has_319');
   if (nums.includes(6) && nums.includes(7) && nums.includes(5)) mods.push('has_675');
   if (nums.includes(2) && nums.includes(8) && nums.includes(4)) mods.push('has_284');
   if (nums.includes(1) && nums.includes(7) && nums.includes(8)) mods.push('has_178');
-  if (nums.includes(1) && nums.includes(2)) mods.push('has_raj_yoga');
+  if (nums.includes(1) && nums.includes(2) && !natalNums.includes(3) && !natalNums.includes(6)) mods.push('has_raj_yoga');
   if (nums.includes(5) && nums.includes(7)) mods.push('has_easy_money');
   if (nums.includes(9) && nums.includes(4) && !nums.includes(5)) mods.push('has_bandhan');
   if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) mods.push('has_financial_bandhan');

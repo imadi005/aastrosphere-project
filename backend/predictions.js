@@ -388,14 +388,22 @@ export const LUCKY_INFO_FULL = {
 // ─── Core analysis function ───────────────────────────────────
 export function analyzeGrid(dob, mahaNum, antarNum) {
   const freqMap = buildFrequencyMap(dob, mahaNum, antarNum);
+  const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
   const detected = [];
 
   // Check all pairs
   const nums = Object.keys(freqMap).map(Number);
+  const natalNums = Object.keys(natalFreq).map(Number);
 
   // Raj Yoga detection
+  // Condition: 1 & 2 present in annual chart
+  // AND left-path of 1 must be CLEAR in natal:
+  //   3 (left of 1 in grid) absent  AND  6 (below 3, above 2) absent
   if (nums.includes(1) && nums.includes(2)) {
-    detected.push({ yoga: 'Raj Yoga', description: YOGAS.raj_yoga.benefits.join(', ') });
+    const leftPathClear = !natalNums.includes(3) && !natalNums.includes(6);
+    if (leftPathClear) {
+      detected.push({ yoga: 'Raj Yoga', description: YOGAS.raj_yoga.benefits.join(', ') });
+    }
   }
 
   // Easy Money
