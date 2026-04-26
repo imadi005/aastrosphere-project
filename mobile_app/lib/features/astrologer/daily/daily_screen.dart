@@ -551,10 +551,10 @@ class _RiskYearCardState extends State<_RiskYearCard> {
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
           color: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: widget.isNow ? gold.withOpacity(0.5) : cardBorder.withOpacity(0.3), width: widget.isNow ? 1 : 0.5)),
         child: Column(children: [
           Padding(padding: const EdgeInsets.all(14), child: Row(children: [
@@ -585,20 +585,29 @@ class _RiskYearCardState extends State<_RiskYearCard> {
             Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 16, color: secondary),
           ])),
 
-          if (_expanded) Container(
-            margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-            child: Column(children: widget.risks.map((r) => Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _riskColor(r['type'] as String, isDark).withOpacity(0.07),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: _riskColor(r['type'] as String, isDark).withOpacity(0.2), width: 0.5)),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Icon(_riskIcon(r['type'] as String), size: 14, color: _riskColor(r['type'] as String, isDark)),
-                const SizedBox(width: 8),
-                Expanded(child: Text(r['msg'] as String? ?? '', style: GoogleFonts.dmSans(fontSize: 12, color: primary, height: 1.5))),
-              ]))).toList())),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200), curve: Curves.easeOut,
+            child: _expanded ? Container(
+              margin: const EdgeInsets.fromLTRB(14, 0, 14, 16),
+              child: Column(children: [
+                Divider(height: 12, color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                ...widget.risks.map((r) {
+                  final rc = _riskColor(r['type'] as String, isDark);
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: rc.withOpacity(0.07),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: rc.withOpacity(0.2), width: 0.5)),
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Icon(_riskIcon(r['type'] as String), size: 16, color: rc),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(r['msg'] as String? ?? '',
+                          style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.6))),
+                    ]));
+                }),
+              ])) : const SizedBox.shrink()),
         ]),
       ),
     );
