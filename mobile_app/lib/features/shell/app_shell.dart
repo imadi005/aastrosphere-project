@@ -20,6 +20,7 @@ import '../user/me/me_screen.dart';
 import '../astrologer/chart/astro_chart_screen.dart';
 import '../astrologer/timeline/timeline_screen.dart';
 import '../astrologer/daily/daily_screen.dart';
+import '../astrologer/report/astro_report_screen.dart';
 import '../astrologer/more/more_screen.dart';
 
 final _userIndexProvider = StateProvider<int>((ref) => 0);
@@ -122,14 +123,16 @@ class _AstrologerShell extends ConsumerWidget {
     AstroChartScreen(),
     TimelineScreen(),
     AstroDailyScreen(),
+    AstroReportScreen(),
     MoreScreen(),
   ];
 
   static const _items = [
     BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view), label: 'Chart'),
     BottomNavigationBarItem(icon: Icon(Icons.timeline_outlined), activeIcon: Icon(Icons.timeline), label: 'Timeline'),
-    BottomNavigationBarItem(icon: Icon(Icons.today_outlined), activeIcon: Icon(Icons.today), label: 'Daily'),
-    BottomNavigationBarItem(icon: Icon(Icons.apps_outlined), activeIcon: Icon(Icons.apps), label: 'More'),
+    BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Pattern'),
+    BottomNavigationBarItem(icon: Icon(Icons.description_outlined), activeIcon: Icon(Icons.description), label: 'Reports'),
+    BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), activeIcon: Icon(Icons.chat_bubble), label: 'Consult'),
   ];
 
   @override
