@@ -354,7 +354,7 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/aastrosphere_report_$clientName.pdf');
       await file.writeAsBytes(pdfBytes);
-      await Share.shareXFiles([XFile(file.path)], text: 'Aastrosphere Report — $clientName');
+      await OpenFilex.open(file.path);
 
       if (mounted) setState(() { _saving = false; });
     } catch (e) {
