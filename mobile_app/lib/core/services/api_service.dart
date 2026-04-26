@@ -144,9 +144,3 @@ class ApiService {
   static Future<Map<String, dynamic>> getNumberMeaning(int number) =>
       _post('/api/predict/number', {'number': number});
 }
-
-  static Future<Map<String, dynamic>> getLifeProfile(String dob) =>
-      _post('/api/astro/life-profile', {'dob': dob});
-
-  static Future<Map<String, dynamic>> getPeriodRisks(String dob) =>
-      _post('/api/astro/period-risks', {'dob': dob});
