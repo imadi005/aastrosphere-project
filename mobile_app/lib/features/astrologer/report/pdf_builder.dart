@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../../core/numerology/numerology_engine.dart';
 import 'astro_report_screen.dart';
@@ -114,16 +115,16 @@ class PdfReportBuilder {
       logo = pw.MemoryImage(bytes.buffer.asUint8List());
     } catch (_) {}
 
-    // Load Unicode-compatible fonts (required — Helvetica has no Unicode support)
-    final regularFont = pw.Font.ttf(
-        await rootBundle.load('assets/fonts/Roboto-Regular.ttf'));
-    final boldFont = pw.Font.ttf(
-        await rootBundle.load('assets/fonts/Roboto-Bold.ttf'));
+    // Load Unicode-compatible fonts via PdfGoogleFonts (proper TTF, not variable)
+    final regularFont = await PdfGoogleFonts.nunitoRegular();
+    final boldFont = await PdfGoogleFonts.nunitoBold();
+    final semiBoldFont = await PdfGoogleFonts.nunitoSemiBold();
 
     final doc = pw.Document(
       theme: pw.ThemeData.withFont(
         base: regularFont,
         bold: boldFont,
+        icons: pw.Font.material(),
       ),
     );
     final dobStr = '${dob.day}/${dob.month}/${dob.year}';
