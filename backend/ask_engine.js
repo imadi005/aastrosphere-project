@@ -474,3 +474,75 @@ Accident risk on that date: ${accidents.length > 0 ? accidents.map(a => `${a.lev
     return `\nHistorical analysis for ${targetDate}: Unable to calculate — ${e.message}`;
   }
 }
+
+// ─── Build full year accident analysis ───────────────────────────────────────
+export async function buildYearAccidentAnalysis(dob, year) {
+  function red(n){while(n>9){n=String(n).split('').reduce((a,b)=>a+parseInt(b),0);}return n;}
+  const WLORDS = [1,2,9,5,3,6,8];
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  try {
+    const basic = basicNumber(new Date(dob).getDate());
+    const destiny = destinyNumber(dob);
+    const natalNums = Object.keys(buildFrequencyMap(dob)).map(Number);
+
+    const start = new Date(year + '-01-01');
+    const end = new Date(year + '-12-31');
+    let cursor = new Date(start);
+
+    const highDays = [];
+    const medDays = [];
+
+    while (cursor <= end) {
+      const dateStr = cursor.toISOString().slice(0,10);
+      const maha = currentMahadasha(dob, dateStr);
+      const antar = currentAntardasha(dob, dateStr);
+      const monthly = currentMonthlyDasha(dob, cursor.toISOString());
+      const wd = cursor.getDay();
+      const daily = red(monthly.number + WLORDS[wd]);
+
+      let highHours = [];
+      for (let h = 0; h < 24; h++) {
+        const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+        const hourly = red(daily + h12);
+        const hf = analyzeDayChart({ basic, destiny, maha: maha.number, antar: antar.number, monthly: monthly.number, daily, hourly, natalNums });
+        if (hf.some(f => f.type === 'accident' && f.level === 'high')) highHours.push(h + ':00');
+      }
+
+      if (highHours.length > 0) {
+        highDays.push({ date: dateStr, label: cursor.getDate() + ' ' + MONTHS[cursor.getMonth()], highHours });
+      } else {
+        const df = analyzeDayChart({ basic, destiny, maha: currentMahadasha(dob,dateStr).number, antar: currentAntardasha(dob,dateStr).number, monthly: monthly.number, daily, hourly: null, natalNums });
+        if (df.some(f => f.type === 'accident' && f.level === 'medium')) {
+          medDays.push(cursor.getDate() + ' ' + MONTHS[cursor.getMonth()]);
+        }
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    const byMonth = {};
+    highDays.forEach(d => {
+      const m = d.date.slice(5,7);
+      if (!byMonth[m]) byMonth[m] = [];
+      byMonth[m].push(d.label + ' (' + d.highHours.slice(0,2).join(', ') + ')');
+    });
+
+    let summary = '\nACCIDENT RISK ANALYSIS FOR ' + year + ':\n';
+    summary += 'High-risk days: ' + highDays.length + '\n';
+    summary += 'Medium-risk days: ' + medDays.length + '\n\n';
+
+    if (highDays.length > 0) {
+      summary += 'HIGH RISK DAYS (with dangerous hours):\n';
+      Object.entries(byMonth).forEach(([m, days]) => {
+        summary += MONTHS[parseInt(m)-1] + ': ' + days.join(', ') + '\n';
+      });
+    }
+    if (medDays.length > 0) {
+      summary += '\nMEDIUM RISK DAYS: ' + medDays.slice(0,15).join(', ') + '\n';
+    }
+    summary += '\nNote: High-risk hours are when Mars and Rahu energy aligns across multiple layers simultaneously.';
+    return summary;
+  } catch(e) {
+    return 'Year analysis error: ' + e.message;
+  }
+}
