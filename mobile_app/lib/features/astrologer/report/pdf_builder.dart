@@ -114,7 +114,18 @@ class PdfReportBuilder {
       logo = pw.MemoryImage(bytes.buffer.asUint8List());
     } catch (_) {}
 
-    final doc = pw.Document();
+    // Load Unicode-compatible fonts (required — Helvetica has no Unicode support)
+    final regularFont = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/Roboto-Regular.ttf'));
+    final boldFont = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/Roboto-Bold.ttf'));
+
+    final doc = pw.Document(
+      theme: pw.ThemeData.withFont(
+        base: regularFont,
+        bold: boldFont,
+      ),
+    );
     final dobStr = '${dob.day}/${dob.month}/${dob.year}';
     final basic   = NumerologyEngine.basicNumber(dob.day);
     final destiny = NumerologyEngine.destinyNumber(dob);
