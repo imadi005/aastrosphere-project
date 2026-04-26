@@ -141,6 +141,9 @@ class ApiService {
   static Future<Map<String, dynamic>> getYearInsight(String dob, int maha, int antar, int monthly) =>
       _post('/api/report/year-insight', {'dob': dob, 'maha_num': maha, 'antar_num': antar, 'monthly_num': monthly});
 
+  static Future<Map<String, dynamic>> getYearlyInsight(String dob, String targetDate) =>
+      _post('/api/insights/yearly', {'dob': dob, 'client_date': targetDate});
+
   static Future<Map<String, dynamic>> prashna(int number) =>
       _post('/api/predict/prashna', {'number': number});
 

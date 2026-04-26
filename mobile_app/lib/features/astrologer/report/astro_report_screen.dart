@@ -32,6 +32,7 @@ class YearSection {
   final List<String> cautionDays; // notable caution periods
   final bool isCurrent;
   String remedies;          // editable by astrologer
+  Map<String, dynamic>? richData;  // from backend /api/insights/yearly
 
   YearSection({
     required this.year, required this.label,
@@ -41,7 +42,7 @@ class YearSection {
     required this.monthlyNum, required this.monthlyPlanet,
     required this.insights, required this.warnings,
     required this.yogas, required this.cautionDays,
-    required this.isCurrent, this.remedies = '',
+    required this.isCurrent, this.remedies = '', this.richData,
   });
 }
 
@@ -304,9 +305,19 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
     setState(() { _generating = true; _error = null; _sections = null; _remedyCtrls.clear(); });
     try {
       final sections = await Future.microtask(() => ReportEngine.generate(dob, _years));
+      final mm = dob.month.toString().padLeft(2,'0');
+      final dd = dob.day.toString().padLeft(2,'0');
+      final dobStr = '\${dob.year}-\$mm-\$dd';
+      for (int i = 0; i < sections.length; i++) {
+        try {
+          final targetDate = '\${sections[i].year}-04-15T00:00:00Z';
+          final rich = await ApiService.getYearlyInsight(dobStr, targetDate);
+          sections[i].richData = rich;
+        } catch (_) {}
+      }
       if (mounted) setState(() { _sections = sections; _generating = false; });
     } catch (e) {
-      if (mounted) setState(() { _error = 'Generation failed: $e'; _generating = false; });
+      if (mounted) setState(() { _error = 'Generation failed: \$e'; _generating = false; });
     }
   }
 
