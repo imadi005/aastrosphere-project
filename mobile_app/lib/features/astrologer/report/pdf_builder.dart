@@ -148,9 +148,9 @@ class PdfReportBuilder {
       pageFormat: PdfPageFormat.a4,
       margin: pw.EdgeInsets.zero,
       build: (ctx) => pw.Stack(children: [
-        pw.Container(color: _dark),
+        pw.Container(color: PdfColors.white),
         if (logo != null) pw.Positioned(top: 150, left: 50,
-          child: pw.Opacity(opacity: 0.05, child: pw.Image(logo, width: 480, height: 480))),
+          child: pw.Opacity(opacity: 0.04, child: pw.Image(logo, width: 480, height: 480))),
         pw.Positioned(top: 0, left: 0, right: 0, child: pw.Container(height: 4, color: _goldBd)),
         pw.Padding(padding: const pw.EdgeInsets.fromLTRB(56, 60, 56, 48),
           child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
@@ -158,7 +158,7 @@ class PdfReportBuilder {
                 fontSize: 9, color: _goldBd, letterSpacing: 3, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 22),
             pw.Text(_s(clientName), style: pw.TextStyle(
-                fontSize: 38, color: _white, fontWeight: pw.FontWeight.bold, lineSpacing: 1.1)),
+                fontSize: 38, color: _dark, fontWeight: pw.FontWeight.bold, lineSpacing: 1.1)),
             pw.SizedBox(height: 16),
             pw.Container(width: 80, height: 1, color: _goldBd),
             pw.SizedBox(height: 26),
@@ -172,20 +172,20 @@ class PdfReportBuilder {
             pw.Spacer(),
             pw.Container(padding: const pw.EdgeInsets.all(18),
               decoration: pw.BoxDecoration(
-                color: const PdfColor(0.18, 0.18, 0.18),
-                border: pw.Border.all(color: const PdfColor(0.30, 0.30, 0.30), width: 0.5),
+                color: _goldBg,
+                border: pw.Border.all(color: _goldBd, width: 0.5),
                 borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8))),
               child: pw.Row(children: [
                 if (logo != null) pw.Opacity(opacity: 0.85, child: pw.Image(logo, width: 30, height: 30)),
                 if (logo != null) pw.SizedBox(width: 12),
                 pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
                   pw.Text('AASTROSPHERE', style: pw.TextStyle(
-                      fontSize: 12, color: _goldBd, fontWeight: pw.FontWeight.bold, letterSpacing: 1.5)),
+                      fontSize: 12, color: _gold, fontWeight: pw.FontWeight.bold, letterSpacing: 1.5)),
                   pw.SizedBox(height: 3),
                   pw.Text('Prepared by $astroLabel${astrologerPhone.isNotEmpty ? "  |  $astrologerPhone" : ""}',
-                      style: pw.TextStyle(fontSize: 8, color: const PdfColor(0.60, 0.60, 0.60))),
+                      style: pw.TextStyle(fontSize: 8, color: _muted)),
                   pw.Text('Generated on $dateStr',
-                      style: pw.TextStyle(fontSize: 8, color: const PdfColor(0.60, 0.60, 0.60))),
+                      style: pw.TextStyle(fontSize: 8, color: _muted)),
                 ]),
               ])),
           ])),
@@ -206,12 +206,9 @@ class PdfReportBuilder {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             hdr(ctx),
-            pw.SizedBox(height: 6),
-            pw.Expanded(child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: content,
-            )),
-            pw.SizedBox(height: 6),
+            pw.SizedBox(height: 8),
+            ...content,
+            pw.Spacer(),
             ftr(ctx),
           ],
         ),
@@ -247,7 +244,7 @@ class PdfReportBuilder {
         prevMaha = s.mahaNum;
       }
 
-      // Year header page (chart + period analysis)
+      // Year header page (chart + period analysis + detailed predictions)
       addPage([
         // Year label
         pw.Row(children: [
@@ -272,7 +269,7 @@ class PdfReportBuilder {
           pw.Column(children: [
             _buildGrid(s.mahaNum, s.antarNum, s.monthlyNum, natal: natal, size: 40.0),
             pw.SizedBox(height: 5),
-            pw.Wrap(spacing: 8, runSpacing: 3, children: [
+            pw.Wrap(spacing: 6, runSpacing: 3, children: [
               _legendDot(_gold, 'Maha ${s.mahaNum}'),
               _legendDot(_info, 'Antar ${s.antarNum}'),
               _legendDot(_good, 'Mo ${s.monthlyNum}'),
@@ -291,18 +288,46 @@ class PdfReportBuilder {
                     style: pw.TextStyle(fontSize: 7, color: _info, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 4),
                 pw.Text(_s(_dashaBehavior[s.antarNum] ?? ''),
-                    style: pw.TextStyle(fontSize: 8, color: _body, lineSpacing: 1.4)),
+                    style: pw.TextStyle(fontSize: 8, color: _body, lineSpacing: 1.5)),
+                pw.SizedBox(height: 5),
+                pw.Text('WHAT IT BRINGS:', style: pw.TextStyle(fontSize: 7, color: _good, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 3),
+                pw.Text(_s(_dashaPositive[s.antarNum] ?? ''), style: pw.TextStyle(fontSize: 8, color: _good, lineSpacing: 1.4)),
               ])),
             pw.SizedBox(height: 8),
             if (s.insights.isNotEmpty) ...s.insights.map((t) => _lineItem(_s(t), _info, _infoBg)),
-            if (s.yogas.isNotEmpty) pw.Wrap(spacing: 5, runSpacing: 4,
-                children: s.yogas.map((y) => _smallTag(_s(y), _good, _goodBg)).toList()),
+            if (s.yogas.isNotEmpty) ...[
+              pw.Wrap(spacing: 5, runSpacing: 4,
+                  children: s.yogas.map((y) => _smallTag(_s(y), _good, _goodBg)).toList()),
+              pw.SizedBox(height: 6),
+            ],
             if (s.warnings.isNotEmpty) ...s.warnings.map((w) {
               final h = w.contains('HIGH ACCIDENT') || w.contains('HIGH RISK');
               return _lineItem(_s(w), h ? _danger : _warn, h ? _dangerBg : _warnBg);
             }),
           ])),
         ]),
+        pw.SizedBox(height: 14),
+
+        // Combined period insight paragraph
+        pw.Container(
+          padding: const pw.EdgeInsets.all(12),
+          decoration: pw.BoxDecoration(color: _card2,
+              border: pw.Border.all(color: _subtle, width: 0.4),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6))),
+          child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+            pw.Text('YEAR OVERVIEW -- ${_s(s.label)}',
+                style: pw.TextStyle(fontSize: 8, color: _gold, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5)),
+            pw.SizedBox(height: 6),
+            pw.Text(
+              'During ${_s(s.label)}, the Mahadasha of ${_p(s.mahaNum)} (${s.mahaNum}) combines with Antardasha of ${_p(s.antarNum)} (${s.antarNum}). '
+              '${_s(_dashaBehavior[s.mahaNum] ?? "")} '
+              'The Antardasha layer adds: ${_s(_dashaBehavior[s.antarNum] ?? "")} '
+              '${s.insights.isNotEmpty ? "Key energy: ${_s(s.insights.first)}" : ""}'
+              '${s.warnings.isNotEmpty ? " CAUTION: ${_s(s.warnings.first)}" : ""}',
+              style: pw.TextStyle(fontSize: 8, color: _body, lineSpacing: 1.6),
+            ),
+          ])),
       ]);
 
       // Month table page
@@ -372,8 +397,8 @@ class PdfReportBuilder {
     ]);
 
   static pw.Widget _coverRow(String l, String v) => pw.Row(children: [
-    pw.Text('$l  ', style: pw.TextStyle(fontSize: 11, color: const PdfColor(0.55,0.55,0.55))),
-    pw.Text(_s(v), style: pw.TextStyle(fontSize: 11, color: _white, fontWeight: pw.FontWeight.bold)),
+    pw.Text('$l  ', style: pw.TextStyle(fontSize: 11, color: _muted)),
+    pw.Text(_s(v), style: pw.TextStyle(fontSize: 11, color: _dark, fontWeight: pw.FontWeight.bold)),
   ]);
 
   // ── Natal overview ────────────────────────────────────────────────────────────
