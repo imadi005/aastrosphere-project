@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:open_filex/open_filex.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/api_service.dart';
 import 'pdf_builder.dart';
 import '../../../core/numerology/numerology_engine.dart';
 import '../providers/astro_client_provider.dart';
