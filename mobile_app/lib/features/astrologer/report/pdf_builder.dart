@@ -124,7 +124,7 @@ class PdfReportBuilder {
       theme: pw.ThemeData.withFont(
         base: regularFont,
         bold: boldFont,
-        icons: pw.Font.material(),
+
       ),
     );
     final dobStr = '${dob.day}/${dob.month}/${dob.year}';
