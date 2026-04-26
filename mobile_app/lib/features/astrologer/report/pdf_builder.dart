@@ -207,6 +207,7 @@ class PdfReportBuilder {
 
     // ── INTRO PAGE (Natal overview + chart) ───────────────────────────────────
     doc.addPage(pw.MultiPage(
+      maxPages: 999,
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(44, 50, 44, 50),
       header: (ctx) => _header(clientName, dateStr, logo),
@@ -234,6 +235,7 @@ class PdfReportBuilder {
       // chunk: ${sections[chunkStart].year}
 
       doc.addPage(pw.MultiPage(
+        maxPages: 999,
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(44, 50, 44, 50),
         header: (ctx) => _header(clientName, dateStr, logo),
