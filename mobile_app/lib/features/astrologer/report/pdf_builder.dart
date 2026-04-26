@@ -195,6 +195,7 @@ class PdfReportBuilder {
 
     // ── CONTENT PAGES ─────────────────────────────────────────────────────────
     doc.addPage(pw.MultiPage(
+      maxPages: 500,
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(44, 50, 44, 50),
       header: (ctx) => _header(clientName, dateStr, logo),
