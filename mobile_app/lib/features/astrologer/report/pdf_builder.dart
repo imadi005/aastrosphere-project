@@ -193,76 +193,141 @@ class PdfReportBuilder {
       ]),
     ));
 
-    // Helper to create a page group
-    pw.Page _makePage(pw.Widget Function() builder) => pw.Page(
-      pageFormat: PdfPageFormat.a4,
-      margin: const pw.EdgeInsets.fromLTRB(44, 50, 44, 50),
-      build: (ctx) => pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-        _header(clientName, dateStr, logo),
-        pw.SizedBox(height: 8),
-        pw.Expanded(child: builder()),
-        pw.SizedBox(height: 8),
-        _footer(astroLabel, astrologerPhone, ctx),
-      ]));
+    // ── Build header/footer as widgets (no MultiPage) ─────────────────────────
+    pw.Widget hdr(pw.Context ctx) => _header(clientName, dateStr, logo);
+    pw.Widget ftr(pw.Context ctx) => _footer(astroLabel, astrologerPhone, ctx);
 
-    // ── INTRO PAGE (Natal overview + chart) ───────────────────────────────────
-    doc.addPage(pw.MultiPage(
-      maxPages: 999,
-      pageFormat: PdfPageFormat.a4,
-      margin: const pw.EdgeInsets.fromLTRB(44, 50, 44, 50),
-      header: (ctx) => _header(clientName, dateStr, logo),
-      footer: (ctx) => _footer(astroLabel, astrologerPhone, ctx),
-      build: (ctx) {
-        final widgets = <pw.Widget>[];
-        widgets.add(_secTitle('NATAL OVERVIEW'));
-        widgets.add(pw.SizedBox(height: 10));
-        widgets.add(_natalOverview(basic, destiny, natal, dob));
-        widgets.add(pw.SizedBox(height: 20));
-        widgets.add(_secTitle('NATAL CHART'));
-        widgets.add(pw.SizedBox(height: 10));
-        widgets.add(_natalGridSection(basic, destiny, natal));
-        widgets.add(pw.SizedBox(height: 24));
-
-        return widgets;
-      },
-    ));
-
-    // ── YEAR SECTIONS — one MultiPage per 5 years to avoid TooManyPages ──────
-    final chunkSize = 5;
-    for (int chunkStart = 0; chunkStart < sections.length; chunkStart += chunkSize) {
-      final chunk = sections.skip(chunkStart).take(chunkSize).toList();
-      final chunkEnd = (chunkStart + chunkSize).clamp(0, sections.length);
-      // chunk: ${sections[chunkStart].year}
-
-      doc.addPage(pw.MultiPage(
-        maxPages: 999,
+    // Helper: wrap content in a page with header+footer
+    void addPage(List<pw.Widget> content) {
+      doc.addPage(pw.Page(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(44, 50, 44, 50),
-        header: (ctx) => _header(clientName, dateStr, logo),
-        footer: (ctx) => _footer(astroLabel, astrologerPhone, ctx),
-        build: (ctx) {
-          final widgets = <pw.Widget>[];
-          if (chunkStart == 0) {
-            widgets.add(_secTitle("${years}-YEAR DETAILED READING"));
-            widgets.add(pw.SizedBox(height: 12));
-          }
-          int? prevMaha;
-          for (final s in chunk) {
-            if (prevMaha != s.mahaNum) {
-              if (prevMaha != null) widgets.add(pw.SizedBox(height: 12));
-              widgets.add(_mahaBanner(s.mahaNum, s.mahaPlanet, natal));
-              widgets.add(pw.SizedBox(height: 8));
-              prevMaha = s.mahaNum;
-            }
-            widgets.add(_fullYearCard(s, natal, dob));
-            widgets.add(pw.SizedBox(height: 12));
-          }
-          return widgets;
-        },
+        build: (ctx) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            hdr(ctx),
+            pw.SizedBox(height: 6),
+            pw.Expanded(child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: content,
+            )),
+            pw.SizedBox(height: 6),
+            ftr(ctx),
+          ],
+        ),
       ));
     }
 
-    final dir = await getTemporaryDirectory();
+    // ── NATAL PAGE ────────────────────────────────────────────────────────────
+    addPage([
+      _secTitle('NATAL OVERVIEW'),
+      pw.SizedBox(height: 10),
+      _natalOverview(basic, destiny, natal, dob),
+    ]);
+
+    addPage([
+      _secTitle('NATAL CHART'),
+      pw.SizedBox(height: 10),
+      _natalGridSection(basic, destiny, natal),
+    ]);
+
+    // ── YEAR PAGES — each year = 2-3 pages ────────────────────────────────────
+    int? prevMaha;
+    for (final s in sections) {
+      // Maha banner page if changed
+      if (prevMaha != s.mahaNum) {
+        addPage([
+          _mahaBanner(s.mahaNum, s.mahaPlanet, natal),
+          pw.SizedBox(height: 16),
+          pw.Text(
+            'This Mahadasha runs from ${s.mahaNum == prevMaha ? "" : ""}${_p(s.mahaNum)} period.',
+            style: pw.TextStyle(fontSize: 9, color: _body),
+          ),
+        ]);
+        prevMaha = s.mahaNum;
+      }
+
+      // Year header page (chart + period analysis)
+      addPage([
+        // Year label
+        pw.Row(children: [
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            decoration: pw.BoxDecoration(color: _gold,
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4))),
+            child: pw.Text(_s(s.label), style: pw.TextStyle(fontSize: 12,
+                color: _white, fontWeight: pw.FontWeight.bold))),
+          pw.SizedBox(width: 8),
+          if (s.isCurrent) _badge('CURRENT', _good),
+          if (s.warnings.any((w) => w.contains('HIGH ACCIDENT')))
+            pw.Row(children: [pw.SizedBox(width: 6), _badge('HIGH RISK', _danger)]),
+          pw.Spacer(),
+          pw.Text('Maha ${s.mahaNum} ${_p(s.mahaNum)}  |  Antar ${s.antarNum} ${_p(s.antarNum)}',
+              style: pw.TextStyle(fontSize: 8, color: _muted)),
+        ]),
+        pw.SizedBox(height: 12),
+
+        // Chart + period side by side
+        pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+          pw.Column(children: [
+            _buildGrid(s.mahaNum, s.antarNum, s.monthlyNum, natal: natal, size: 40.0),
+            pw.SizedBox(height: 5),
+            pw.Wrap(spacing: 8, runSpacing: 3, children: [
+              _legendDot(_gold, 'Maha ${s.mahaNum}'),
+              _legendDot(_info, 'Antar ${s.antarNum}'),
+              _legendDot(_good, 'Mo ${s.monthlyNum}'),
+            ]),
+          ]),
+          pw.SizedBox(width: 14),
+          pw.Expanded(child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+            // Antardasha description
+            pw.Container(
+              padding: const pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(color: _infoBg,
+                  border: pw.Border.all(color: _info, width: 0.3),
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5))),
+              child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+                pw.Text('ANTARDASHA ${s.antarNum} -- ${_p(s.antarNum).toUpperCase()}',
+                    style: pw.TextStyle(fontSize: 7, color: _info, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 4),
+                pw.Text(_s(_dashaBehavior[s.antarNum] ?? ''),
+                    style: pw.TextStyle(fontSize: 8, color: _body, lineSpacing: 1.4)),
+              ])),
+            pw.SizedBox(height: 8),
+            if (s.insights.isNotEmpty) ...s.insights.map((t) => _lineItem(_s(t), _info, _infoBg)),
+            if (s.yogas.isNotEmpty) pw.Wrap(spacing: 5, runSpacing: 4,
+                children: s.yogas.map((y) => _smallTag(_s(y), _good, _goodBg)).toList()),
+            if (s.warnings.isNotEmpty) ...s.warnings.map((w) {
+              final h = w.contains('HIGH ACCIDENT') || w.contains('HIGH RISK');
+              return _lineItem(_s(w), h ? _danger : _warn, h ? _dangerBg : _warnBg);
+            }),
+          ])),
+        ]),
+      ]);
+
+      // Month table page
+      addPage([
+        pw.Text('${_s(s.label)}  --  Month by Month',
+            style: pw.TextStyle(fontSize: 10, color: _gold, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 8),
+        _monthTable(s, natal, dob),
+        pw.SizedBox(height: 12),
+        // Remedies only if risk
+        if (s.warnings.isNotEmpty) pw.Container(
+          padding: const pw.EdgeInsets.all(10),
+          decoration: pw.BoxDecoration(color: _goldBg,
+              border: pw.Border.all(color: _goldBd, width: 0.4),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5))),
+          child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+            pw.Text('REMEDIES', style: pw.TextStyle(fontSize: 7, color: _gold,
+                fontWeight: pw.FontWeight.bold, letterSpacing: 0.8)),
+            pw.SizedBox(height: 5),
+            pw.Text(_s(s.remedies), style: pw.TextStyle(fontSize: 8, color: _body, lineSpacing: 1.6)),
+          ])),
+      ]);
+    }
+
+        final dir = await getTemporaryDirectory();
     final safe = clientName.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_');
     final path = '${dir.path}/Aastrosphere_${safe}_Report.pdf';
     await File(path).writeAsBytes(await doc.save());
