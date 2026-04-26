@@ -7,13 +7,11 @@ import 'package:aastrosphere/features/auth/screens/signup_screen.dart';
 import 'package:aastrosphere/features/home/screens/home_screen.dart';
 import 'package:aastrosphere/features/auth/screens/astrologer_signup_screen.dart';
 import 'package:pinput/pinput.dart';
-// --- NAYE IMPORTS ---
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aastrosphere/features/auth/repository/auth_repository.dart';
-// --------------------
+import 'package:aastrosphere/core/providers/role_provider.dart';
 
-// --- WIDGET UPDATE HUA HAI ---
-class OTPScreen extends ConsumerStatefulWidget { // <-- ConsumerStatefulWidget
+class OTPScreen extends ConsumerStatefulWidget {
   final String role;
   final String verificationId;
   final String phoneNumber;
@@ -26,10 +24,10 @@ class OTPScreen extends ConsumerStatefulWidget { // <-- ConsumerStatefulWidget
   });
 
   @override
-  ConsumerState<OTPScreen> createState() => _OTPScreenState(); // <-- ConsumerState
+  ConsumerState<OTPScreen> createState() => _OTPScreenState();
 }
 
-class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
+class _OTPScreenState extends ConsumerState<OTPScreen> {
   final TextEditingController _otpController = TextEditingController();
   bool _isLoading = false;
   String? _errorText;
@@ -40,7 +38,6 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
     super.dispose();
   }
 
-  // --- YEH FUNCTION POORA UPDATE HUA HAI ---
   void _verifyOTP(String otp) async {
     if (_isLoading) return;
     if (otp.length != 6) {
@@ -55,10 +52,10 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
         smsCode: otp,
       );
 
-      final UserCredential userCredential = await ref.read(firebaseAuthProvider).signInWithCredential(credential);
+      final UserCredential userCredential =
+          await ref.read(firebaseAuthProvider).signInWithCredential(credential);
       final String uid = userCredential.user!.uid;
 
-      // OTP verify ho gaya. Ab Firestore DB check karo (jaisa aapne kaha tha)
       final authRepo = ref.read(authRepositoryProvider);
       final roles = await authRepo.getUserRoles(uid);
 
@@ -66,35 +63,31 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
       final bool astrologerExists = roles['Astrologer'] != null;
       final String wantedRole = widget.role;
 
-      // --- YEH HAI AAPKA DUAL-ROLE LOGIC ---
-      
-      // Case 1: Dono role exist karte hain, seedha Home jao
+      // Case 1: Both roles exist → respect wantedRole
       if (userExists && astrologerExists) {
-        _navigateToHome();
-      
-      // Case 2: Sirf User exist karta hai
+        await _setRoleAndGoHome(wantedRole == 'Astrologer' ? AppRole.astrologer : AppRole.user);
+
+      // Case 2: Only User exists
       } else if (userExists) {
         if (wantedRole == 'User') {
-          _navigateToHome(); // Login as User
+          await _setRoleAndGoHome(AppRole.user);
         } else {
-          // Astrologer banna chahta hai
           _showDualRoleDialog('User', 'Astrologer', () {
             _navigateToAstrologerSignUp();
-          });
-        }
-      
-      // Case 3: Sirf Astrologer exist karta hai
-      } else if (astrologerExists) {
-        if (wantedRole == 'Astrologer') {
-          _navigateToHome(); // Login as Astrologer
-        } else {
-          // User banna chahta hai
-          _showDualRoleDialog('Astrologer', 'User', () {
-            _navigateToUserSignUp();
-          });
+          }, existingAppRole: AppRole.user);
         }
 
-      // Case 4: Kahin exist nahi karta (Truly New User)
+      // Case 3: Only Astrologer exists
+      } else if (astrologerExists) {
+        if (wantedRole == 'Astrologer') {
+          await _setRoleAndGoHome(AppRole.astrologer);
+        } else {
+          _showDualRoleDialog('Astrologer', 'User', () {
+            _navigateToUserSignUp();
+          }, existingAppRole: AppRole.astrologer);
+        }
+
+      // Case 4: New user
       } else {
         if (wantedRole == 'User') {
           _navigateToUserSignUp();
@@ -102,7 +95,6 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
           _navigateToAstrologerSignUp();
         }
       }
-      // ----------------------------------------
 
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -118,8 +110,13 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
       });
     }
   }
-  
-  // --- NAYE HELPER FUNCTIONS ---
+
+  /// Set role in provider (persists to SharedPreferences) then navigate home
+  Future<void> _setRoleAndGoHome(AppRole role) async {
+    await ref.read(roleProvider.notifier).setRole(role);
+    _navigateToHome();
+  }
+
   void _navigateToHome() {
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
@@ -151,44 +148,45 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
     );
   }
 
-  // YEH HAI AAPKA VALIDATION POPUP
-  void _showDualRoleDialog(String existingRole, String newRole, VoidCallback onYes) {
+  void _showDualRoleDialog(
+    String existingRole,
+    String newRole,
+    VoidCallback onYes, {
+    required AppRole existingAppRole,
+  }) {
     setState(() { _isLoading = false; });
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.bgCardLight,
-        title: Text(
-          'Role Confirmation',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        title: Text('Role Confirmation', style: Theme.of(context).textTheme.headlineSmall),
         content: Text(
-          'You are already registered as a $existingRole. Do you want to proceed and register as an $newRole as well?',
-          style: TextStyle(color: AppColors.textSecondaryLight),
+          'You are already registered as a $existingRole. Do you want to proceed and register as a $newRole as well?',
+          style: const TextStyle(color: AppColors.textSecondaryLight),
         ),
         actions: [
           TextButton(
-            child: Text('Cancel', style: TextStyle(color: AppColors.textSecondaryLight)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondaryLight)),
             onPressed: () {
               Navigator.of(context).pop();
-              _navigateToHome(); // Cancel karke Home bhej do (existing role mein)
+              // Go home with the existing role
+              _setRoleAndGoHome(existingAppRole);
             },
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold),
-            child: Text('Yes, Register', style: TextStyle(color: AppColors.bgLight, fontWeight: FontWeight.bold)),
+            child: Text('Yes, Register',
+                style: const TextStyle(color: AppColors.bgLight, fontWeight: FontWeight.bold)),
             onPressed: () {
               Navigator.of(context).pop();
-              onYes(); // Naye sign up screen pe bhejo
+              onYes();
             },
           ),
         ],
       ),
     );
   }
-  // -----------------------------
-
 
   @override
   Widget build(BuildContext context) {
@@ -205,10 +203,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
 
     return Scaffold(
       backgroundColor: AppColors.bgLight,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: Stack(
         children: [
           Center(child: SpinningWheel()),
@@ -225,10 +220,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Verify Your Phone',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
+                    Text('Verify Your Phone', style: Theme.of(context).textTheme.headlineMedium),
                     const SizedBox(height: 12),
                     Text(
                       'Enter the 6-digit code sent to\n${widget.phoneNumber}',
@@ -238,7 +230,6 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
                     Pinput(
                       controller: _otpController,
                       length: 6,
@@ -250,43 +241,25 @@ class _OTPScreenState extends ConsumerState<OTPScreen> { // <-- ConsumerState
                       ),
                       onCompleted: (pin) => _verifyOTP(pin),
                     ),
-
                     const SizedBox(height: 16),
                     if (_errorText != null)
-                      Text(
-                        _errorText!,
-                        style: TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
-                    
+                      Text(_errorText!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
                     const SizedBox(height: 24),
-
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.gold,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        onPressed: _isLoading 
-                            ? null 
-                            : () => _verifyOTP(_otpController.text),
+                        onPressed: _isLoading ? null : () => _verifyOTP(_otpController.text),
                         child: _isLoading
-                            ? const SizedBox(
-                                height: 28,
-                                width: 28,
-                                child: CircularProgressIndicator(color: AppColors.bgLight),
-                              )
-                            : Text(
-                                'Verify & Continue',
+                            ? const SizedBox(height: 28, width: 28,
+                                child: CircularProgressIndicator(color: AppColors.bgLight))
+                            : Text('Verify & Continue',
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: AppColors.bgLight,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                                  color: AppColors.bgLight, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
