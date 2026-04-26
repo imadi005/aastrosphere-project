@@ -1,15 +1,13 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:open_filex/open_filex.dart';
 import '../../../core/theme/app_theme.dart';
+import 'pdf_builder.dart';
 import '../../../core/numerology/numerology_engine.dart';
 import '../providers/astro_client_provider.dart';
 import '../../auth/providers/user_provider.dart';
@@ -195,7 +193,7 @@ class ReportEngine {
                      (mon.number == 9 && antarNum == 4) ||
                      (mon.number == 4 && maha.number == 9) ||
                      (mon.number == 9 && maha.number == 4);
-        if (risk) cautionDays.add('${months[m-1]} $targetDate.year — monthly ${mon.number} × active dashas — caution needed.');
+        if (risk) cautionDays.add('${months[m-1]} ${targetDate.year} — monthly ${mon.number} (${_planetNames[mon.number]}) active. Extra caution advised.');
       }
 
       // Auto remedies based on active dashas
@@ -348,13 +346,15 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
       });
 
       // Generate PDF
-      final pdfBytes = await _buildPdf(clientName, dob, astrologer);
-
-      // Share/save PDF
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/aastrosphere_report_$clientName.pdf');
-      await file.writeAsBytes(pdfBytes);
-      await OpenFilex.open(file.path);
+      final pdfPath = await PdfReportBuilder.build(
+        clientName: clientName,
+        dob: dob,
+        astrologerName: astrologer?.name ?? 'Astrologer',
+        astrologerPhone: astrologer?.phone ?? '',
+        years: _years,
+        sections: _sections!,
+      );
+      await OpenFilex.open(pdfPath);
 
       if (mounted) setState(() { _saving = false; });
     } catch (e) {
@@ -362,341 +362,7 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
     }
   }
 
-  Future<Uint8List> _buildPdf(String clientName, DateTime dob, UserProfile? astrologer) async {
-    final doc = pw.Document();
-    final gold = PdfColor.fromHex('#B8962E');
-    final darkBg = PdfColor.fromHex('#1A1A1A');
-    final lightGold = PdfColor.fromHex('#D4A942');
-    final textLight = PdfColor.fromHex('#F5F0E8');
-    final textGray = PdfColor.fromHex('#888888');
-    final danger = PdfColor.fromHex('#DC2626');
-    final warn = PdfColor.fromHex('#D97706');
-    final success = PdfColor.fromHex('#16A34A');
-    final indigo = PdfColor.fromHex('#6366F1');
-    final subtle = PdfColor.fromHex('#2A2A2A');
 
-    final dobStr = '${dob.day}/${dob.month}/${dob.year}';
-    final basic = NumerologyEngine.basicNumber(dob.day);
-    final destiny = NumerologyEngine.destinyNumber(dob);
-    final sections = _sections!;
-    final today = DateTime.now();
-    final dateStr = '${today.day}/${today.month}/${today.year}';
-    final astroName = astrologer?.name ?? 'Astrologer';
-    final astroPhone = astrologer?.phone ?? '';
-
-    // Build pages — cover + sections
-    doc.addPage(pw.MultiPage(
-      pageFormat: PdfPageFormat.a4,
-      margin: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 36),
-      header: (ctx) => pw.Container(
-        padding: const pw.EdgeInsets.only(bottom: 8),
-        decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5))),
-        child: pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-          pw.Text('AASTROSPHERE', style: pw.TextStyle(fontSize: 9, color: gold, letterSpacing: 2, fontWeight: pw.FontWeight.bold)),
-          pw.Text('Report: $clientName  ·  $dateStr', style: pw.TextStyle(fontSize: 8, color: textGray)),
-        ]),
-      ),
-      footer: (ctx) => pw.Container(
-        padding: const pw.EdgeInsets.only(top: 8),
-        decoration: const pw.BoxDecoration(border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300, width: 0.5))),
-        child: pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-          pw.Text('$astroName  ·  $astroPhone', style: pw.TextStyle(fontSize: 8, color: textGray)),
-          pw.Text('Page ${ctx.pageNumber} of ${ctx.pagesCount}', style: pw.TextStyle(fontSize: 8, color: textGray)),
-          pw.Text('© Aastrosphere', style: pw.TextStyle(fontSize: 8, color: textGray)),
-        ]),
-      ),
-      build: (ctx) {
-        final widgets = <pw.Widget>[];
-
-        // ── COVER SECTION ────────────────────────────────────────────────
-        widgets.add(pw.Container(
-          padding: const pw.EdgeInsets.all(24),
-          decoration: pw.BoxDecoration(color: PdfColors.grey900, borderRadius: const pw.BorderRadius.all(pw.Radius.circular(12))),
-          child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-            pw.Text('LIFE READING', style: pw.TextStyle(fontSize: 10, color: gold, letterSpacing: 2, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 6),
-            pw.Text(clientName, style: pw.TextStyle(fontSize: 26, color: PdfColors.white, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 4),
-            pw.Text('DOB: $dobStr  ·  Basic: $basic  ·  Destiny: $destiny  ·  Report: $_years years',
-                style: pw.TextStyle(fontSize: 10, color: textGray)),
-            pw.SizedBox(height: 10),
-            pw.Text('Prepared by $astroName on $dateStr', style: pw.TextStyle(fontSize: 9, color: textGray)),
-          ]),
-        ));
-        widgets.add(pw.SizedBox(height: 20));
-
-        // ── LIFE PATTERN SUMMARY ─────────────────────────────────────────
-        widgets.add(_pdfSectionHeader('LIFE PATTERN', gold));
-        widgets.add(pw.SizedBox(height: 8));
-        final natalNums = NumerologyEngine.chartDigits(DateTime(dob.year, dob.month, dob.day)).toSet();
-        final lifePoints = <String>[];
-        lifePoints.add('Basic number $basic (${ReportEngine._planetNames[basic]}) — core personality and driving energy.');
-        lifePoints.add('Destiny number $destiny (${ReportEngine._planetNames[destiny]}) — life direction and purpose.');
-        if (natalNums.contains(1) && natalNums.contains(2) && !natalNums.contains(3) && !natalNums.contains(6)) {
-          lifePoints.add('Raj Yoga in natal chart — authority positions are natural territory.');
-        }
-        if (natalNums.contains(5) && natalNums.contains(7)) {
-          lifePoints.add('Easy Money yoga in natal — financial gains come with less struggle.');
-        }
-        if (natalNums.contains(4) && natalNums.contains(9)) {
-          lifePoints.add('4-9 in natal — accident-prone tendency, needs conscious management throughout life.');
-        }
-        for (final p in lifePoints) {
-          widgets.add(pw.Container(
-            margin: const pw.EdgeInsets.only(bottom: 5),
-            padding: const pw.EdgeInsets.all(8),
-            decoration: pw.BoxDecoration(color: PdfColors.grey100, borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5))),
-            child: pw.Text(p, style: pw.TextStyle(fontSize: 10, lineSpacing: 1.4)),
-          ));
-        }
-        widgets.add(pw.SizedBox(height: 20));
-
-        // ── YEAR SECTIONS ────────────────────────────────────────────────
-        widgets.add(_pdfSectionHeader('YEAR-BY-YEAR READING', gold));
-        widgets.add(pw.SizedBox(height: 8));
-
-        String? lastMaha;
-        for (int i = 0; i < sections.length; i++) {
-          final s = sections[i];
-
-          // Maha change divider
-          final mahaStr = '${s.mahaNum} ${s.mahaPlanet}';
-          if (lastMaha != mahaStr) {
-            if (lastMaha != null) widgets.add(pw.SizedBox(height: 8));
-            widgets.add(pw.Container(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: pw.BoxDecoration(color: gold, borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6))),
-              child: pw.Row(children: [
-                pw.Text('MAHADASHA ${s.mahaNum} — ${s.mahaPlanet.toUpperCase()}',
-                    style: pw.TextStyle(fontSize: 9, color: PdfColors.black, fontWeight: pw.FontWeight.bold, letterSpacing: 1)),
-              ]),
-            ));
-            widgets.add(pw.SizedBox(height: 6));
-            lastMaha = mahaStr;
-          }
-
-          // Year card
-          widgets.add(pw.Container(
-            margin: const pw.EdgeInsets.only(bottom: 10),
-            padding: const pw.EdgeInsets.all(12),
-            decoration: pw.BoxDecoration(
-              color: s.isCurrent ? const PdfColor(0.05, 0.05, 0.05, 0.9) : PdfColors.white,
-              border: pw.Border.all(color: s.isCurrent ? gold : PdfColors.grey300, width: s.isCurrent ? 1 : 0.5),
-              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
-            ),
-            child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-              // Year header
-              pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-                pw.Row(children: [
-                  pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: pw.BoxDecoration(color: gold, borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4))),
-                    child: pw.Text(s.label, style: pw.TextStyle(fontSize: 9, color: PdfColors.black, fontWeight: pw.FontWeight.bold)),
-                  ),
-                  if (s.isCurrent) ...[
-                    pw.SizedBox(width: 6),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      decoration: pw.BoxDecoration(color: success, borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4))),
-                      child: pw.Text('CURRENT', style: pw.TextStyle(fontSize: 7, color: PdfColors.white, fontWeight: pw.FontWeight.bold)),
-                    ),
-                  ],
-                ]),
-                pw.Text('Maha ${s.mahaNum} · Antar ${s.antarNum} · Monthly ${s.monthlyNum}',
-                    style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
-              ]),
-              pw.SizedBox(height: 8),
-
-              // Insights
-              if (s.insights.isNotEmpty) ...[
-                for (final ins in s.insights)
-                  pw.Container(
-                    margin: const pw.EdgeInsets.only(bottom: 4),
-                    padding: const pw.EdgeInsets.all(7),
-                    decoration: pw.BoxDecoration(color: const PdfColor(0.39, 0.40, 0.94, 0.08), borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4))),
-                    child: pw.Text(ins, style: pw.TextStyle(fontSize: 10, lineSpacing: 1.4)),
-                  ),
-              ],
-
-              // Yogas
-              if (s.yogas.isNotEmpty) ...[
-                pw.SizedBox(height: 4),
-                pw.Wrap(spacing: 6, runSpacing: 4, children: s.yogas.map((y) => pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: pw.BoxDecoration(color: const PdfColor(0.09, 0.64, 0.20, 0.12), borderRadius: const pw.BorderRadius.all(pw.Radius.circular(12))),
-                  child: pw.Text('★ $y', style: pw.TextStyle(fontSize: 8, color: success)),
-                )).toList()),
-              ],
-
-              // Warnings
-              if (s.warnings.isNotEmpty) ...[
-                pw.SizedBox(height: 6),
-                for (final w in s.warnings)
-                  pw.Container(
-                    margin: const pw.EdgeInsets.only(bottom: 4),
-                    padding: const pw.EdgeInsets.all(7),
-                    decoration: pw.BoxDecoration(
-                      color: w.contains('HIGH ACCIDENT') ? const PdfColor(0.86, 0.15, 0.15, 0.08) : const PdfColor(0.85, 0.47, 0.04, 0.08),
-                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4))),
-                    child: pw.Text('⚠ $w', style: pw.TextStyle(fontSize: 10, color: w.contains('HIGH ACCIDENT') ? danger : warn, lineSpacing: 1.4)),
-                  ),
-              ],
-
-              // Caution months
-              if (s.cautionDays.isNotEmpty) ...[
-                pw.SizedBox(height: 4),
-                pw.Text('CAUTION MONTHS:', style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600, fontWeight: pw.FontWeight.bold)),
-                pw.SizedBox(height: 3),
-                for (final c in s.cautionDays)
-                  pw.Text('• $c', style: pw.TextStyle(fontSize: 9, color: warn)),
-              ],
-
-              // Remedies
-              if (s.remedies.isNotEmpty) ...[
-                pw.SizedBox(height: 8),
-                pw.Container(
-                  padding: const pw.EdgeInsets.all(8),
-                  decoration: pw.BoxDecoration(
-                    color: const PdfColor(0.72, 0.59, 0.18, 0.06),
-                    border: pw.Border.all(color: gold, width: 0.5),
-                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5))),
-                  child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                    pw.Text('REMEDIES', style: pw.TextStyle(fontSize: 8, color: gold, fontWeight: pw.FontWeight.bold, letterSpacing: 0.5)),
-                    pw.SizedBox(height: 4),
-                    pw.Text(s.remedies, style: pw.TextStyle(fontSize: 10, lineSpacing: 1.5)),
-                  ]),
-                ),
-              ],
-            ]),
-          ));
-        }
-        return widgets;
-      },
-    ));
-    return doc.save();
-  }
-
-  pw.Widget _pdfSectionHeader(String title, PdfColor gold) => pw.Container(
-    padding: const pw.EdgeInsets.symmetric(vertical: 3),
-    decoration: pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: gold, width: 1))),
-    child: pw.Text(title, style: pw.TextStyle(fontSize: 10, color: gold, fontWeight: pw.FontWeight.bold, letterSpacing: 1.5)),
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = widget.isDark; final gold = widget.gold;
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final useClient = ref.watch(astroUseClientDobProvider);
-    final clientDob = ref.watch(astroClientDobProvider);
-    final clientName = ref.watch(astroClientNameProvider);
-    final userAsync = ref.watch(userProfileProvider);
-    final activeDob = useClient ? clientDob : userAsync.valueOrNull?.dob;
-    final astrologer = userAsync.valueOrNull;
-
-    if (activeDob == null) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.description_outlined, size: 40, color: gold.withOpacity(0.35)),
-      const SizedBox(height: 14),
-      Text('No DOB selected', style: GoogleFonts.cormorantGaramond(fontSize: 18, color: gold)),
-      const SizedBox(height: 6),
-      Text('Enter a client DOB in the Chart tab', style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
-    ]));
-
-    return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 40), children: [
-      // Client info card
-      Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: gold.withOpacity(0.06), borderRadius: BorderRadius.circular(12), border: Border.all(color: gold.withOpacity(0.2), width: 0.5)),
-        child: Row(children: [
-          Container(width: 38, height: 38, decoration: BoxDecoration(color: gold.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-            child: Center(child: Text(clientName.isNotEmpty ? clientName[0].toUpperCase() : '?',
-                style: GoogleFonts.cormorantGaramond(fontSize: 20, color: gold)))),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(clientName.isNotEmpty ? clientName : 'Client',
-                style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
-            Text(_fmtDate(activeDob), style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
-          ])),
-          Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text('Basic ${NumerologyEngine.basicNumber(activeDob.day)}',
-                style: GoogleFonts.dmSans(fontSize: 10, color: gold)),
-            Text('Destiny ${NumerologyEngine.destinyNumber(activeDob)}',
-                style: GoogleFonts.dmSans(fontSize: 10, color: gold.withOpacity(0.7))),
-          ]),
-        ]),
-      ),
-      const SizedBox(height: 14),
-
-      // Year selector
-      Row(children: [
-        Text('Generate for:', style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
-        const SizedBox(width: 10),
-        Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal,
-          child: Row(children: _GenerateTabState._yearOptions.map((y) {
-            final active = _years == y;
-            return GestureDetector(
-              onTap: () => setState(() { _years = y; _sections = null; }),
-              child: Container(
-                margin: const EdgeInsets.only(right: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                decoration: BoxDecoration(
-                  color: active ? gold : (isDark ? AppColors.bgCardDark : AppColors.bgCardLight),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: active ? gold : border, width: 0.5)),
-                child: Text('$y yr', style: GoogleFonts.dmSans(fontSize: 11, color: active ? Colors.black : secondary, fontWeight: active ? FontWeight.w700 : FontWeight.w400))),
-            );
-          }).toList()))),
-      ]),
-      const SizedBox(height: 14),
-
-      // Generate button
-      GestureDetector(
-        onTap: _generating ? null : () => _generate(activeDob),
-        child: Container(
-          width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(color: _generating ? gold.withOpacity(0.4) : gold, borderRadius: BorderRadius.circular(12)),
-          child: Center(child: _generating
-            ? Row(mainAxisSize: MainAxisSize.min, children: [
-                SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black)),
-                const SizedBox(width: 10),
-                Text('Building $_years-year reading...', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black)),
-              ])
-            : Text('Generate $_years-Year Life Reading', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.black))),
-        ),
-      ),
-
-      if (_error != null) ...[
-        const SizedBox(height: 8),
-        Text(_error!, style: GoogleFonts.dmSans(fontSize: 11, color: isDark ? AppColors.dangerDark : AppColors.danger)),
-      ],
-
-      // Report sections
-      if (_sections != null) ...[
-        const SizedBox(height: 20),
-        ..._buildReportUI(activeDob, astrologer),
-        const SizedBox(height: 16),
-        // Save + PDF button
-        GestureDetector(
-          onTap: _saving ? null : () => _saveAndExport(activeDob, astrologer),
-          child: Container(
-            width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(color: _saving ? (isDark ? AppColors.successDark : AppColors.success).withOpacity(0.5) : (isDark ? AppColors.successDark : AppColors.success), borderRadius: BorderRadius.circular(12)),
-            child: Center(child: _saving
-              ? Row(mainAxisSize: MainAxisSize.min, children: [
-                  SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-                  const SizedBox(width: 10),
-                  Text('Saving & generating PDF...', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
-                ])
-              : Row(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Icons.picture_as_pdf_outlined, size: 18, color: Colors.white),
-                  const SizedBox(width: 8),
-                  Text('Save & Export PDF', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
-                ])),
-          ),
-        ),
-      ],
-    ]);
-  }
 
   List<Widget> _buildReportUI(DateTime dob, UserProfile? astrologer) {
     final isDark = widget.isDark; final gold = widget.gold;

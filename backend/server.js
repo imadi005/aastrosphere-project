@@ -1140,6 +1140,59 @@ app.post('/api/predict/future-risks', (req, res) => {
   }
 });
 
+
+// ─── /api/report/year-insight ─────────────────────────────────
+// Returns rich prediction for a specific maha+antar combination
+app.post('/api/report/year-insight', (req, res) => {
+  try {
+    const { dob, maha_num, antar_num, monthly_num } = req.body;
+    if (!dob || !maha_num) return res.status(400).json({ error: 'dob and maha_num required' });
+
+    const mahaInt = Number(maha_num);
+    const antarInt = Number(antar_num || 0);
+    const monthlyInt = Number(monthly_num || 0);
+
+    const freqMap = buildFrequencyMap(dob, mahaInt, antarInt, monthlyInt);
+    const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
+    const natalNums = Object.keys(natalFreq).map(Number);
+    const allNums = Object.keys(freqMap).map(Number);
+
+    // Get dasha experience text
+    const dashaExp = getDashaExperience(mahaInt, antarInt);
+
+    // Get yogas for this combination
+    const annualFreq = buildFrequencyMap(dob, mahaInt, antarInt, monthlyInt);
+    const annualNums = Object.keys(annualFreq).map(Number);
+
+    // Detect yogas manually for this period
+    const basic = basicNumber(new Date(dob).getDate());
+    const destiny = destinyNumber(dob);
+    const ctx = { basic, destiny, maha: mahaInt, antar: antarInt, allNums, natalNums };
+
+    // Warnings
+    const warnings = getHonestWarnings([], annualFreq, mahaInt, antarInt);
+
+    // Maha planet description
+    const mahaPlanetDesc = PLANET_DESC[mahaInt];
+    const antarPlanetDesc = PLANET_DESC[antarInt];
+
+    // Number traits
+    const mahaTraits = NUMBER_TRAITS[mahaInt];
+
+    res.json({
+      dasha_experience: dashaExp,
+      maha_planet: mahaPlanetDesc,
+      antar_planet: antarPlanetDesc,
+      maha_traits: mahaTraits,
+      warnings: warnings.map(w => ({ short: w.short, detail: w.detail })),
+      all_nums: allNums,
+      natal_nums: natalNums,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`Aastrosphere API running on port ${PORT}`));
 
 // ─── /api/astro/life-profile — All tabs data in one call ──────────────────────
