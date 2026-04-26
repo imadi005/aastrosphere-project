@@ -361,7 +361,121 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
       if (mounted) setState(() { _saving = false; _error = 'Save failed: $e'; });
     }
   }
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark; final gold = widget.gold;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final useClient = ref.watch(astroUseClientDobProvider);
+    final clientDob = ref.watch(astroClientDobProvider);
+    final clientName = ref.watch(astroClientNameProvider);
+    final userAsync = ref.watch(userProfileProvider);
+    final activeDob = useClient ? clientDob : userAsync.valueOrNull?.dob;
+    final astrologer = userAsync.valueOrNull;
 
+    if (activeDob == null) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Icon(Icons.description_outlined, size: 40, color: gold.withOpacity(0.35)),
+      const SizedBox(height: 14),
+      Text('No DOB selected', style: GoogleFonts.cormorantGaramond(fontSize: 18, color: gold)),
+      const SizedBox(height: 6),
+      Text('Enter a client DOB in the Chart tab', style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
+    ]));
+
+    return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 40), children: [
+      // Client info card
+      Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(color: gold.withOpacity(0.06), borderRadius: BorderRadius.circular(12), border: Border.all(color: gold.withOpacity(0.2), width: 0.5)),
+        child: Row(children: [
+          Container(width: 38, height: 38, decoration: BoxDecoration(color: gold.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+            child: Center(child: Text(clientName.isNotEmpty ? clientName[0].toUpperCase() : '?',
+                style: GoogleFonts.cormorantGaramond(fontSize: 20, color: gold)))),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(clientName.isNotEmpty ? clientName : 'Client',
+                style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+            Text(_fmtDate(activeDob), style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
+          ])),
+          Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            Text('Basic \${NumerologyEngine.basicNumber(activeDob.day)}',
+                style: GoogleFonts.dmSans(fontSize: 10, color: gold)),
+            Text('Destiny \${NumerologyEngine.destinyNumber(activeDob)}',
+                style: GoogleFonts.dmSans(fontSize: 10, color: gold.withOpacity(0.7))),
+          ]),
+        ]),
+      ),
+      const SizedBox(height: 14),
+
+      // Year selector
+      Row(children: [
+        Text('Generate for:', style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
+        const SizedBox(width: 10),
+        Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal,
+          child: Row(children: _GenerateTabState._yearOptions.map((y) {
+            final active = _years == y;
+            return GestureDetector(
+              onTap: () => setState(() { _years = y; _sections = null; }),
+              child: Container(
+                margin: const EdgeInsets.only(right: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: active ? gold : (isDark ? AppColors.bgCardDark : AppColors.bgCardLight),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: active ? gold : border, width: 0.5)),
+                child: Text('\$y yr', style: GoogleFonts.dmSans(fontSize: 11, color: active ? Colors.black : secondary, fontWeight: active ? FontWeight.w700 : FontWeight.w400))));
+          }).toList()))),
+      ]),
+      const SizedBox(height: 14),
+
+      // Generate button
+      GestureDetector(
+        onTap: _generating ? null : () => _generate(activeDob),
+        child: Container(
+          width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(color: _generating ? gold.withOpacity(0.4) : gold, borderRadius: BorderRadius.circular(12)),
+          child: Center(child: _generating
+            ? Row(mainAxisSize: MainAxisSize.min, children: [
+                SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black)),
+                const SizedBox(width: 10),
+                Text('Building \$_years-year reading...', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black)),
+              ])
+            : Text('Generate \$_years-Year Life Reading', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.black))),
+        ),
+      ),
+
+      if (_error != null) ...[
+        const SizedBox(height: 8),
+        Text(_error!, style: GoogleFonts.dmSans(fontSize: 11, color: isDark ? AppColors.dangerDark : AppColors.danger)),
+      ],
+
+      // Report sections
+      if (_sections != null) ...[
+        const SizedBox(height: 20),
+        ..._buildReportUI(activeDob, astrologer),
+        const SizedBox(height: 16),
+        GestureDetector(
+          onTap: _saving ? null : () => _saveAndExport(activeDob, astrologer),
+          child: Container(
+            width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              color: _saving ? (isDark ? AppColors.successDark : AppColors.success).withOpacity(0.5) : (isDark ? AppColors.successDark : AppColors.success),
+              borderRadius: BorderRadius.circular(12)),
+            child: Center(child: _saving
+              ? Row(mainAxisSize: MainAxisSize.min, children: [
+                  SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                  const SizedBox(width: 10),
+                  Text('Generating PDF...', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
+                ])
+              : Row(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.picture_as_pdf_outlined, size: 18, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text('Save & Export PDF', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+                ])),
+          ),
+        ),
+      ],
+    ]);
+  }
 
 
   List<Widget> _buildReportUI(DateTime dob, UserProfile? astrologer) {
