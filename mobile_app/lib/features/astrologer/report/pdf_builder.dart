@@ -193,48 +193,72 @@ class PdfReportBuilder {
       ]),
     ));
 
-    // ── CONTENT PAGES ─────────────────────────────────────────────────────────
+    // Helper to create a page group
+    pw.Page _makePage(pw.Widget Function() builder) => pw.Page(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(44, 50, 44, 50),
+      build: (ctx) => pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+        _header(clientName, dateStr, logo),
+        pw.SizedBox(height: 8),
+        pw.Expanded(child: builder()),
+        pw.SizedBox(height: 8),
+        _footer(astroLabel, astrologerPhone, ctx),
+      ]));
+
+    // ── INTRO PAGE (Natal overview + chart) ───────────────────────────────────
     doc.addPage(pw.MultiPage(
-      maxPages: 500,
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(44, 50, 44, 50),
       header: (ctx) => _header(clientName, dateStr, logo),
       footer: (ctx) => _footer(astroLabel, astrologerPhone, ctx),
       build: (ctx) {
         final widgets = <pw.Widget>[];
-
-        // ── NATAL OVERVIEW ────────────────────────────────────────────────────
         widgets.add(_secTitle('NATAL OVERVIEW'));
         widgets.add(pw.SizedBox(height: 10));
         widgets.add(_natalOverview(basic, destiny, natal, dob));
         widgets.add(pw.SizedBox(height: 20));
-
-        // ── NATAL GRID ───────────────────────────────────────────────────────
         widgets.add(_secTitle('NATAL CHART'));
         widgets.add(pw.SizedBox(height: 10));
         widgets.add(_natalGridSection(basic, destiny, natal));
         widgets.add(pw.SizedBox(height: 24));
 
-        // ── YEAR-MONTH BREAKDOWN ─────────────────────────────────────────────
-        widgets.add(_secTitle('${years.toString()}-YEAR DETAILED READING'));
-        widgets.add(pw.SizedBox(height: 12));
-
-        int? prevMaha;
-        for (final s in sections) {
-          // Mahadasha change banner
-          if (prevMaha != s.mahaNum) {
-            if (prevMaha != null) widgets.add(pw.SizedBox(height: 12));
-            widgets.add(_mahaBanner(s.mahaNum, s.mahaPlanet, natal));
-            widgets.add(pw.SizedBox(height: 8));
-            prevMaha = s.mahaNum;
-          }
-          // Full year card with month breakdown
-          widgets.add(_fullYearCard(s, natal, dob));
-          widgets.add(pw.SizedBox(height: 12));
-        }
         return widgets;
       },
     ));
+
+    // ── YEAR SECTIONS — one MultiPage per 5 years to avoid TooManyPages ──────
+    final chunkSize = 5;
+    for (int chunkStart = 0; chunkStart < sections.length; chunkStart += chunkSize) {
+      final chunk = sections.skip(chunkStart).take(chunkSize).toList();
+      final chunkEnd = (chunkStart + chunkSize).clamp(0, sections.length);
+      // chunk: ${sections[chunkStart].year}
+
+      doc.addPage(pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.fromLTRB(44, 50, 44, 50),
+        header: (ctx) => _header(clientName, dateStr, logo),
+        footer: (ctx) => _footer(astroLabel, astrologerPhone, ctx),
+        build: (ctx) {
+          final widgets = <pw.Widget>[];
+          if (chunkStart == 0) {
+            widgets.add(_secTitle("${years}-YEAR DETAILED READING"));
+            widgets.add(pw.SizedBox(height: 12));
+          }
+          int? prevMaha;
+          for (final s in chunk) {
+            if (prevMaha != s.mahaNum) {
+              if (prevMaha != null) widgets.add(pw.SizedBox(height: 12));
+              widgets.add(_mahaBanner(s.mahaNum, s.mahaPlanet, natal));
+              widgets.add(pw.SizedBox(height: 8));
+              prevMaha = s.mahaNum;
+            }
+            widgets.add(_fullYearCard(s, natal, dob));
+            widgets.add(pw.SizedBox(height: 12));
+          }
+          return widgets;
+        },
+      ));
+    }
 
     final dir = await getTemporaryDirectory();
     final safe = clientName.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_');
