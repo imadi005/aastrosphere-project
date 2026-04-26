@@ -413,7 +413,7 @@ class PdfReportBuilder {
           final bg = isMaha ? PdfColor(0.72,0.59,0.18,0.14)
                    : isAntar ? PdfColor(0.72,0.59,0.18,0.07)
                    : isMonthly ? PdfColor(0.72,0.59,0.18,0.04)
-                   : PdfColors.transparent;
+                   : PdfColor(0,0,0,0);
           return pw.Expanded(child: pw.Container(
             height: 28,
             color: bg,
