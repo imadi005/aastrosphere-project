@@ -360,7 +360,10 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
       if (astroName.isEmpty) astroName = 'Astrologer';
 
       // Generate PDF
-      final pdfPath = await PdfReportBuilder.build(
+      debugPrint('PDF: starting build...');
+      String pdfPath;
+      try {
+        pdfPath = await PdfReportBuilder.build(
         clientName: clientName,
         dob: dob,
         astrologerName: astroName,
@@ -368,6 +371,13 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
         years: _years,
         sections: _sections!,
       );
+        debugPrint('PDF: built at \$pdfPath');
+      } catch (pdfErr, stack) {
+        debugPrint('PDF ERROR: \$pdfErr');
+        debugPrint('\$stack');
+        if (mounted) setState(() { _saving = false; _error = 'PDF failed: \$pdfErr'; });
+        return;
+      }
       await OpenFilex.open(pdfPath);
 
       if (mounted) setState(() { _saving = false; });
