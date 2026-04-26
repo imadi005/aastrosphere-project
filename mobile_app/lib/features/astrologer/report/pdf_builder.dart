@@ -115,10 +115,18 @@ class PdfReportBuilder {
       logo = pw.MemoryImage(bytes.buffer.asUint8List());
     } catch (_) {}
 
-    // Load Unicode-compatible fonts via PdfGoogleFonts (proper TTF, not variable)
-    final regularFont = await PdfGoogleFonts.nunitoRegular();
-    final boldFont = await PdfGoogleFonts.nunitoBold();
-    final semiBoldFont = await PdfGoogleFonts.nunitoSemiBold();
+    // Load Unicode-compatible fonts via PdfGoogleFonts
+    // Falls back to built-in font if network unavailable
+    pw.Font regularFont;
+    pw.Font boldFont;
+    try {
+      regularFont = await PdfGoogleFonts.openSansRegular();
+      boldFont = await PdfGoogleFonts.openSansBold();
+    } catch (fontErr) {
+      // Fallback: use Courier which is built-in and has basic support
+      regularFont = pw.Font.courier();
+      boldFont = pw.Font.courierBold();
+    }
 
     final doc = pw.Document(
       theme: pw.ThemeData.withFont(

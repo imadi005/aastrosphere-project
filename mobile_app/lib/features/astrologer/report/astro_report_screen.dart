@@ -373,9 +373,9 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
       );
         debugPrint('PDF: built at \$pdfPath');
       } catch (pdfErr, stack) {
-        debugPrint('PDF ERROR: \$pdfErr');
+        debugPrint('PDF ERROR: ' + pdfErr.toString());
         debugPrint('\$stack');
-        if (mounted) setState(() { _saving = false; _error = 'PDF failed: \$pdfErr'; });
+        if (mounted) setState(() { _saving = false; _error = 'PDF failed: ' + pdfErr.toString(); });
         return;
       }
       await OpenFilex.open(pdfPath);
