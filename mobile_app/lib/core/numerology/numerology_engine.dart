@@ -211,6 +211,46 @@ class NumerologyEngine {
   }
 
   /// Get current Monthly Dasha
+
+  /// Monthly dasha timeline — past/future months
+  static List<DashaResult> monthlyTimeline(DateTime dob, {int pastMonths = 3, int futureMonths = 12}) {
+    final basic = basicNumber(dob.day);
+    final today = DateTime.now();
+    final bdayThisYear = DateTime(today.year, dob.month, dob.day);
+    final startPoint = today.isBefore(bdayThisYear)
+        ? DateTime(today.year - 1, dob.month, dob.day)
+        : bdayThisYear;
+
+    final cycle = _buildDashaCycle(basic);
+    DateTime current = startPoint;
+    int index = 0;
+    final results = <DashaResult>[];
+
+    final cutoff = today.add(Duration(days: futureMonths * 30));
+    final pastCutoff = today.subtract(Duration(days: pastMonths * 30));
+
+    while (current.isBefore(cutoff) && index < 500) {
+      final dasha = cycle[index % 9];
+      final durationDays = monthlyDurations[dasha]!;
+      final end = current.add(Duration(days: durationDays));
+
+      if (end.isAfter(pastCutoff)) {
+        final isCurrent = !today.isBefore(current) && today.isBefore(end);
+        results.add(DashaResult(
+          number: dasha,
+          planet: planetNames[dasha]!,
+          start: current,
+          end: end,
+          isCurrent: isCurrent,
+          isPast: end.isBefore(today),
+        ));
+      }
+      current = end;
+      index++;
+    }
+    return results;
+  }
+
   static DashaResult currentMonthlyDasha(DateTime dob) {
     final basic = basicNumber(dob.day);
     final today = DateTime.now();
