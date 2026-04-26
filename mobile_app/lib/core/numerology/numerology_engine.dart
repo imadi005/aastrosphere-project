@@ -212,62 +212,92 @@ class NumerologyEngine {
 
   /// Get current Monthly Dasha
 
-  /// Monthly dasha timeline — past/future months
+  /// Monthly dasha timeline — resets each birthday with new antarNum
   static List<DashaResult> monthlyTimeline(DateTime dob, {int pastMonths = 3, int futureMonths = 12}) {
-    final basic = basicNumber(dob.day);
-    final today = DateTime.now();
-    final bdayThisYear = DateTime(today.year, dob.month, dob.day);
-    final startPoint = today.isBefore(bdayThisYear)
-        ? DateTime(today.year - 1, dob.month, dob.day)
-        : bdayThisYear;
-
-    final cycle = _buildDashaCycle(basic);
-    DateTime current = startPoint;
-    int index = 0;
-    final results = <DashaResult>[];
-
-    final cutoff = today.add(Duration(days: futureMonths * 30));
-    final pastCutoff = today.subtract(Duration(days: pastMonths * 30));
-
-    while (current.isBefore(cutoff) && index < 500) {
-      final dasha = cycle[index % 9];
-      final durationDays = monthlyDurations[dasha]!;
-      final end = current.add(Duration(days: durationDays));
-
-      if (end.isAfter(pastCutoff)) {
-        final isCurrent = !today.isBefore(current) && today.isBefore(end);
-        results.add(DashaResult(
-          number: dasha,
-          planet: planetNames[dasha]!,
-          start: current,
-          end: end,
-          isCurrent: isCurrent,
-          isPast: end.isBefore(today),
-        ));
-      }
-      current = end;
-      index++;
-    }
-    return results;
-  }
-
-  static DashaResult currentMonthlyDasha(DateTime dob) {
     final basic = basicNumber(dob.day);
     final today = DateTime.now();
     final month = dob.month;
     final day = dob.day;
+    final results = <DashaResult>[];
 
-    // Find this year's birthday
+    final pastCutoff = today.subtract(Duration(days: pastMonths * 30));
+    final futureCutoff = today.add(Duration(days: futureMonths * 30));
+
+    // Scan birthday years that fall within our window
+    final startYear = today.year - (pastMonths ~/ 12) - 2;
+    final endYear = today.year + (futureMonths ~/ 12) + 2;
+
+    for (int yr = startYear; yr <= endYear; yr++) {
+      final antarStart = DateTime(yr, month, day);
+      if (antarStart.isAfter(futureCutoff)) break;
+
+      // Antar number for this birthday year
+      final weekday = antarStart.weekday % 7;
+      final weekdayVal = weekdayValues[weekday]!;
+      final yearLast2 = yr % 100;
+      final raw = basic + month + yearLast2 + weekdayVal;
+      final antarNum = reduceToSingle(raw);
+
+      // Next birthday = end of this antar year
+      final antarEnd = DateTime(yr + 1, month, day);
+
+      // Monthly cycle for this antar year, starting from antarNum
+      final cycle = _buildDashaCycle(antarNum);
+      DateTime current = antarStart;
+      int index = 0;
+
+      while (current.isBefore(antarEnd) && index < 200) {
+        final dasha = cycle[index % 9];
+        final durationDays = monthlyDurations[dasha]!;
+        DateTime end = current.add(Duration(days: durationDays));
+        // Clamp to end of antar year
+        if (end.isAfter(antarEnd)) end = antarEnd;
+
+        if (end.isAfter(pastCutoff) && current.isBefore(futureCutoff)) {
+          final isCurrent = !today.isBefore(current) && today.isBefore(end);
+          results.add(DashaResult(
+            number: dasha,
+            planet: planetNames[dasha]!,
+            start: current,
+            end: end,
+            isCurrent: isCurrent,
+            isPast: end.isBefore(today),
+          ));
+        }
+        current = end;
+        index++;
+        if (current.isAtSameMomentAs(antarEnd)) break;
+      }
+    }
+    return results;
+  }
+
+  static DashaResult currentMonthlyDasha(DateTime dob, {DateTime? targetDate}) {
+    final basic = basicNumber(dob.day);
+    final today = targetDate ?? DateTime.now();
+    final month = dob.month;
+    final day = dob.day;
+
+    // Last birthday = antar start date
     final bdayThisYear = DateTime(today.year, month, day);
-    final startPoint = today.isBefore(bdayThisYear)
+    final antarStart = today.isBefore(bdayThisYear)
         ? DateTime(today.year - 1, month, day)
         : bdayThisYear;
 
-    final cycle = _buildDashaCycle(basic);
-    DateTime current = startPoint;
+    // Antar number for that birthday year
+    final antarYear = antarStart.year;
+    final weekday = antarStart.weekday % 7; // Flutter: 1=Mon..7=Sun → %7 → 0=Sun
+    final weekdayVal = weekdayValues[weekday]!;
+    final yearLast2 = antarYear % 100;
+    final raw = basic + month + yearLast2 + weekdayVal;
+    final antarNum = reduceToSingle(raw);
+
+    // Monthly cycle starts from antarNum (NOT basic)
+    final cycle = _buildDashaCycle(antarNum);
+    DateTime current = antarStart;
     int index = 0;
 
-    while (index < 100) {
+    while (index < 200) {
       final dasha = cycle[index % 9];
       final durationDays = monthlyDurations[dasha]!;
       final end = current.add(Duration(days: durationDays));
@@ -284,7 +314,7 @@ class NumerologyEngine {
       current = end;
       index++;
     }
-    return DashaResult(number: basic, planet: planetNames[basic]!, start: today, end: today);
+    return DashaResult(number: antarNum, planet: planetNames[antarNum]!, start: today, end: today);
   }
 
   /// Daily dasha number for a specific date
