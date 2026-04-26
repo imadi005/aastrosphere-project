@@ -135,9 +135,18 @@ class ApiService {
   static Future<Map<String, dynamic>> getRelationshipPrediction(String dob) =>
       _post('/api/predict/relationship', {'dob': dob});
 
+  static Future<Map<String, dynamic>> getFutureRisks(String dob) =>
+      _post('/api/predict/future-risks', {'dob': dob});
+
   static Future<Map<String, dynamic>> prashna(int number) =>
       _post('/api/predict/prashna', {'number': number});
 
   static Future<Map<String, dynamic>> getNumberMeaning(int number) =>
       _post('/api/predict/number', {'number': number});
 }
+
+  static Future<Map<String, dynamic>> getLifeProfile(String dob) =>
+      _post('/api/astro/life-profile', {'dob': dob});
+
+  static Future<Map<String, dynamic>> getPeriodRisks(String dob) =>
+      _post('/api/astro/period-risks', {'dob': dob});

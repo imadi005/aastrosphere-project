@@ -35,6 +35,7 @@ import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
 import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis } from './ask_engine.js';
 import { buildScanContext } from './event_scanner.js';
+import { DEEP_NUMBER_PROFILES, DEEP_COMBINATIONS as DEEP_COMBINATION_LIBRARY } from './deep_library.js';
 
 const app = express();
 app.use(cors());
@@ -977,4 +978,380 @@ app.post('/api/ask', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+// ─── /api/predict/future-risks ───────────────────────────────
+// Scans next 50 years and returns risk windows by type
+app.post('/api/predict/future-risks', (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+
+    const d = new Date(dob);
+    const basic  = basicNumber(d.getDate());
+    const destiny = destinyNumber(dob);
+    const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
+    const natalNums = Object.keys(natalFreq).map(Number);
+    const today = new Date();
+    const endYear = today.getFullYear() + 50;
+
+    // Get maha timeline for 50 yrs
+    const mahaList = mahadashaTimeline(dob, 0, 50);
+
+    const riskWindows = [];
+
+    for (const maha of mahaList) {
+      const mahaStart = new Date(maha.start);
+      const mahaEnd   = new Date(maha.end);
+      if (mahaEnd < today) continue;
+      if (mahaStart.getFullYear() > endYear) break;
+
+      // For each year in this maha, get antar
+      const scanStart = mahaStart < today ? today.getFullYear() : mahaStart.getFullYear();
+      const scanEnd   = Math.min(mahaEnd.getFullYear(), endYear);
+
+      const yearsSeen = new Set();
+      for (let yr = scanStart; yr <= scanEnd; yr++) {
+        if (yearsSeen.has(yr)) continue;
+        yearsSeen.add(yr);
+
+        const birthdayThisYear = new Date(yr, d.getMonth(), d.getDate());
+        const birthdayPrevYear = new Date(yr - 1, d.getMonth(), d.getDate());
+        const antarYear  = today < birthdayThisYear ? yr - 1 : yr;
+        const weekday    = new Date(antarYear, d.getMonth(), d.getDate()).getDay();
+        const wdVal      = { 0:1,1:2,2:9,3:5,4:3,5:6,6:8 }[weekday] ?? 1;
+        const yearLast2  = antarYear % 100;
+        const raw        = basic + d.getMonth() + 1 + yearLast2 + wdVal;
+        const antar      = ((raw - 1) % 9) + 1; // reduce to 1-9
+
+        const annualNums = [...new Set([...natalNums, maha.number, antar])];
+        const risks = [];
+
+        // ── ACCIDENT RISK ──────────────────────────────────────
+        if (maha.number === 4 && antar === 9) {
+          risks.push({ type: 'accident', level: 'high',
+            title: 'Accident Risk',
+            msg: 'Very risky year for accidents. Drive slow. Avoid rushing.' });
+        } else if (maha.number === 9 && antar === 4) {
+          risks.push({ type: 'accident', level: 'high',
+            title: 'Accident Risk',
+            msg: 'Big accident risk this year. Stay calm. Think before acting.' });
+        } else if (maha.number === 4 && natalNums.includes(9)) {
+          risks.push({ type: 'accident', level: 'medium',
+            title: 'Accident Caution',
+            msg: 'Be careful on roads and with sharp tools this year.' });
+        } else if (maha.number === 9 && natalNums.includes(4)) {
+          risks.push({ type: 'accident', level: 'medium',
+            title: 'Accident Caution',
+            msg: 'Impulsive actions can cause physical harm. Slow down.' });
+        }
+
+        // ── HEALTH RISK ────────────────────────────────────────
+        if (maha.number === 2 || antar === 2) {
+          risks.push({ type: 'health', level: 'medium',
+            title: 'Mental Health Watch',
+            msg: 'Risk of sadness, bad sleep, low mood. Talk to someone you trust.' });
+        }
+        if (maha.number === 6 && antar === 6) {
+          risks.push({ type: 'health', level: 'medium',
+            title: 'Hormonal Health',
+            msg: 'Watch for hormonal or kidney-related issues. Drink more water.' });
+        }
+        if ((maha.number === 4 || antar === 4) && natalNums.includes(9)) {
+          risks.push({ type: 'health', level: 'medium',
+            title: 'Blood Pressure Watch',
+            msg: 'BP and blood sugar can spike this year. Regular checkups needed.' });
+        }
+        if (maha.number === 8 && basic === 8) {
+          risks.push({ type: 'health', level: 'medium',
+            title: 'Bone & Joint Watch',
+            msg: 'Joints and bones need care. Avoid overexertion.' });
+        }
+
+        // ── FINANCIAL RISK ─────────────────────────────────────
+        if (antar === 4 && (natalNums.includes(9) && !natalNums.includes(5))) {
+          risks.push({ type: 'finance', level: 'high',
+            title: 'Money Loss Risk',
+            msg: 'Big chance of impulsive spending or financial loss. Save first, spend later.' });
+        } else if (maha.number === 4 || antar === 4) {
+          risks.push({ type: 'finance', level: 'medium',
+            title: 'Overspending Risk',
+            msg: 'Money goes out fast this year. Make a budget and stick to it.' });
+        }
+        if (annualNums.includes(9) && annualNums.includes(4) && !annualNums.includes(5)) {
+          risks.push({ type: 'finance', level: 'high',
+            title: 'Bandhan Yoga',
+            msg: 'Feeling stuck financially. Do not take big loans this year.' });
+        }
+
+        // ── RELATIONSHIP RISK ──────────────────────────────────
+        if (maha.number === 4) {
+          risks.push({ type: 'relationship', level: 'medium',
+            title: 'Relationship Strain',
+            msg: 'This long period can bring distance in close relationships. Communicate more.' });
+        }
+        if (antar === 4 && natalNums.includes(7)) {
+          risks.push({ type: 'relationship', level: 'high',
+            title: 'Betrayal Risk',
+            msg: 'Be careful who you trust this year. Someone close may not be honest.' });
+        }
+        if (annualNums.filter(n => n === 7).length >= 2 || (natalFreq[7] >= 2 && antar === 7)) {
+          risks.push({ type: 'relationship', level: 'medium',
+            title: 'Separation Risk',
+            msg: 'Instability in relationships. Avoid making permanent decisions out of anger.' });
+        }
+
+        // ── CAREER RISK ────────────────────────────────────────
+        if (maha.number === 8 && (basic === 1 || destiny === 1)) {
+          risks.push({ type: 'career', level: 'medium',
+            title: 'Career Block Period',
+            msg: 'Hard work required. Results come slowly. Keep going — do not quit.' });
+        }
+        if (antar === 4 && (basic === 5 || destiny === 5)) {
+          risks.push({ type: 'career', level: 'medium',
+            title: 'Business Caution',
+            msg: 'Avoid starting new business this year. Old commitments need attention.' });
+        }
+
+        if (risks.length > 0) {
+          riskWindows.push({
+            year: yr,
+            maha: { number: maha.number, planet: maha.planet },
+            antar: { number: antar, planet: ['','Sun','Moon','Jupiter','Rahu','Mercury','Venus','Ketu','Saturn','Mars'][antar] ?? '' },
+            risks,
+          });
+        }
+      }
+    }
+
+    // Sort by year and deduplicate
+    riskWindows.sort((a, b) => a.year - b.year);
+
+    // Summary: count by type
+    const summary = { accident: 0, health: 0, finance: 0, relationship: 0, career: 0 };
+    for (const w of riskWindows) {
+      for (const r of w.risks) {
+        if (summary[r.type] !== undefined) summary[r.type]++;
+      }
+    }
+
+    res.json({ riskWindows, summary, basic, destiny, yearsScanned: endYear - today.getFullYear() });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`Aastrosphere API running on port ${PORT}`));
+
+// ─── /api/astro/life-profile — All tabs data in one call ──────────────────────
+app.post('/api/astro/life-profile', async (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+
+    const d = new Date(dob);
+    const basic = basicNumber(d.getDate());
+    const destiny = destinyNumber(dob);
+    const maha = currentMahadasha(dob);
+    const antar = currentAntardasha(dob);
+    const monthly = currentMonthlyDasha(dob);
+    const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
+    const annualFreq = buildFrequencyMap(dob, maha.number, antar.number, monthly.number);
+    const natalNums = Object.keys(natalFreq).map(Number);
+    const annualNums = Object.keys(annualFreq).map(Number);
+
+    // ── LIFE PATTERN (natal only) ──────────────────────────────────────────
+    const basicProfile = DEEP_NUMBER_PROFILES[basic] || {};
+    const destinyProfile = DEEP_NUMBER_PROFILES[destiny] || {};
+    const combKey = `${basic}_${destiny}`;
+    const combo = DEEP_COMBINATION_LIBRARY[combKey] || DEEP_COMBINATION_LIBRARY[`${destiny}_${basic}`] || null;
+
+    // ── HEALTH ────────────────────────────────────────────────────────────
+    const healthNums = [...new Set([basic, destiny, ...natalNums.filter(n => [4,7,8,9].includes(n))])];
+    const healthCards = healthNums.map(n => ({
+      number: n,
+      planet: PLANET_NAMES[n],
+      watch: HEALTH_MAP[n] ? HEALTH_MAP[n].common : [],
+      manage: HEALTH_MAP[n] ? HEALTH_MAP[n].others.slice(0,2) : [],
+    })).filter(h => h.watch.length > 0);
+
+    // ── CAREER ────────────────────────────────────────────────────────────
+    const professions = PROFESSION_MAP[destiny] || [];
+    const financeCtx = buildChartContext(dob);
+    const careerYogas = financeCtx.yogas.filter(y =>
+      ['raj_yoga', 'sun_ketu_raj', 'easy_money'].includes(y.id));
+
+    // ── RELATIONSHIP ──────────────────────────────────────────────────────
+    const relNums = annualNums;
+    const hasEasyMoney57 = relNums.includes(5) && relNums.includes(7);
+    const has17 = natalNums.includes(1) && natalNums.includes(7);
+    const romance = [];
+    if (has17) romance.push({ label: 'Romantic luck is natural for you', icon: 'heart' });
+    if (natalNums.includes(6)) romance.push({ label: 'Venus makes you attractive and charming', icon: 'star' });
+    if (hasEasyMoney57) romance.push({ label: 'Easy connections happening now', icon: 'link' });
+    if (basic === 2 || destiny === 2) romance.push({ label: 'Deep emotional bonds — you love fully', icon: 'heart' });
+
+    const relCautions = [];
+    if (maha.number === 9 && (basic === 2 || natalNums.includes(6)))
+      relCautions.push('Mars period — short temper in relationships. Think before you speak.');
+    if (natalNums.includes(4) && natalNums.includes(9))
+      relCautions.push('Rahu + Mars in chart — impulsive decisions can hurt relationships.');
+    if (maha.number === 8)
+      relCautions.push('Saturn period — relationships feel heavy. Stay patient.');
+
+    // ── CURRENT PERIOD ────────────────────────────────────────────────────
+    const mahaKey = `${maha.number}`;
+    const antarKey = `${maha.number}_${antar.number}`;
+    const dashaCombText = COMBINATIONS[antarKey] || COMBINATIONS[`${antar.number}_${maha.number}`] || null;
+
+    // Simple current summary
+    const currentSummary = {
+      maha: { number: maha.number, planet: PLANET_NAMES[maha.number], end: maha.end },
+      antar: { number: antar.number, planet: PLANET_NAMES[antar.number], end: antar.end },
+      monthly: { number: monthly.number, planet: PLANET_NAMES[monthly.number], end: monthly.end },
+      combo_text: dashaCombText,
+      yogas_active: financeCtx.yogas.map(y => y.name),
+      period_rating: annualNums.includes(1) && annualNums.includes(2) ? 'excellent' :
+                     annualNums.includes(8) && !annualNums.includes(1) ? 'challenging' :
+                     annualNums.includes(4) && annualNums.includes(9) ? 'caution' : 'moderate',
+    };
+
+    res.json({
+      basic, destiny,
+      basic_planet: PLANET_NAMES[basic],
+      destiny_planet: PLANET_NAMES[destiny],
+      basic_profile: basicProfile,
+      destiny_profile: destinyProfile,
+      combination: combo,
+      natal_nums: natalNums,
+      current: currentSummary,
+      health: healthCards,
+      professions,
+      career_yogas: careerYogas,
+      finance_overall: financeCtx.yogas.some(y => y.id === 'raj_yoga' || y.id === 'easy_money') ? 'positive' : 'neutral',
+      romance,
+      rel_cautions: relCautions,
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── /api/astro/period-risks — Future 50yr risk scanner ──────────────────────
+app.post('/api/astro/period-risks', (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+
+    const d = new Date(dob);
+    const basic = basicNumber(d.getDate());
+    const destiny = destinyNumber(dob);
+    const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
+    const natalNums = Object.keys(natalFreq).map(Number);
+    const today = new Date();
+    const endYear = today.getFullYear() + 50;
+
+    // Get Maha timeline for 50 years
+    const mahaList = mahadashaTimeline(dob, 0, 52);
+    const risks = [];
+
+    for (const maha of mahaList) {
+      const mahaStart = new Date(maha.start);
+      if (mahaStart.getFullYear() > endYear) break;
+
+      // For each year in this maha period, get antar
+      const mahaEndYear = Math.min(new Date(maha.end).getFullYear(), endYear);
+      const mahaStartYear = mahaStart.getFullYear();
+
+      // Sample mid-year of each antar within this maha
+      for (let yr = Math.max(today.getFullYear(), mahaStartYear); yr <= mahaEndYear; yr++) {
+        const sampleDate = new Date(yr, 5, 15).toISOString(); // June 15
+        const antar = currentAntardasha(dob, sampleDate);
+        const monthly = currentMonthlyDasha(dob, sampleDate);
+        const annualNums = Object.keys(buildFrequencyMap(dob, maha.number, antar.number, monthly.number)).map(Number);
+
+        const periodRisks = [];
+
+        // ── ACCIDENT RISK ─────────────────────────────────────────────
+        const marsCount = [maha.number, antar.number].filter(n => n === 9).length;
+        const rahuCount = [maha.number, antar.number].filter(n => n === 4).length;
+        const natalMars = natalNums.includes(9);
+        const natalRahu = natalNums.includes(4);
+
+        if (marsCount >= 1 && rahuCount >= 1) {
+          periodRisks.push({ type: 'accident', level: 'high', label: 'High Accident Risk', desc: 'Mars + Rahu together. Drive carefully. Avoid risky physical activities.' });
+        } else if (marsCount >= 2 || (marsCount >= 1 && natalMars)) {
+          periodRisks.push({ type: 'accident', level: 'high', label: 'Mars Overload', desc: 'Too much Mars energy. Physical accidents more likely. Slow down.' });
+        } else if ((rahuCount >= 1 && natalRahu) || (marsCount >= 1 && natalRahu)) {
+          periodRisks.push({ type: 'accident', level: 'medium', label: 'Physical Caution Period', desc: 'Rahu active. Be careful with machines, vehicles and sharp objects.' });
+        }
+
+        // ── HEALTH RISK ───────────────────────────────────────────────
+        if (maha.number === 8 && destiny === 8)
+          periodRisks.push({ type: 'health', level: 'high', label: 'Double Saturn Period', desc: 'Body under pressure. Bones, teeth and joints need attention.' });
+        else if (maha.number === 8 || antar.number === 8)
+          periodRisks.push({ type: 'health', level: 'medium', label: 'Saturn Period', desc: 'Fatigue and chronic issues may surface. Rest matters more now.' });
+        if (maha.number === 4 || antar.number === 4)
+          periodRisks.push({ type: 'health', level: 'medium', label: 'Rahu Period', desc: 'BP and diabetes risk up. Get regular checkups.' });
+        if (maha.number === 9 && (basic === 2 || natalNums.includes(6)))
+          periodRisks.push({ type: 'health', level: 'medium', label: 'Stress Period', desc: 'High emotional and physical stress. Blood pressure watch.' });
+
+        // ── FINANCE RISK ──────────────────────────────────────────────
+        if (maha.number === 4 && !annualNums.includes(1) && !annualNums.includes(5))
+          periodRisks.push({ type: 'finance', level: 'high', label: 'Financial Caution', desc: 'Rahu period with no protective numbers. Avoid big investments.' });
+        else if ((maha.number === 8 && antar.number === 4) || (maha.number === 4 && antar.number === 8))
+          periodRisks.push({ type: 'finance', level: 'high', label: 'Saturn + Rahu', desc: 'Debt risk. Do not take loans. Save first, spend later.' });
+        if (annualNums.includes(5) && annualNums.includes(4) && !annualNums.includes(9))
+          periodRisks.push({ type: 'finance', level: 'medium', label: 'Overspending Risk', desc: 'Financial bandhan active. Track every expense.' });
+
+        // ── CAREER OPPORTUNITY ────────────────────────────────────────
+        const leftPathClear = !natalNums.includes(3) && !natalNums.includes(6);
+        if (annualNums.includes(1) && annualNums.includes(2) && leftPathClear)
+          periodRisks.push({ type: 'opportunity', level: 'high', label: 'Raj Yoga Active', desc: 'Best time for career growth and authority. Push hard this period.' });
+        else if (annualNums.includes(1) && (maha.number === 1 || antar.number === 1))
+          periodRisks.push({ type: 'opportunity', level: 'medium', label: 'Career Growth Window', desc: 'Sun energy is strong. Apply for promotions and new roles.' });
+        if (annualNums.includes(5) && annualNums.includes(7))
+          periodRisks.push({ type: 'opportunity', level: 'medium', label: 'Easy Money Period', desc: 'Money flows more easily. Good time for business and investments.' });
+
+        // ── RELATIONSHIP ──────────────────────────────────────────────
+        if (maha.number === 9 && antar.number === 2)
+          periodRisks.push({ type: 'relationship', level: 'high', label: 'Relationship Volcano', desc: 'Mars + Moon = emotional explosions. Choose words carefully.' });
+        else if (maha.number === 9 || antar.number === 9)
+          periodRisks.push({ type: 'relationship', level: 'medium', label: 'Temper Watch', desc: 'Mars energy high. Arguments more likely. Stay calm.' });
+
+        if (periodRisks.length > 0) {
+          risks.push({
+            year: yr,
+            maha: maha.number,
+            maha_planet: PLANET_NAMES[maha.number],
+            antar: antar.number,
+            antar_planet: PLANET_NAMES[antar.number],
+            risks: periodRisks,
+          });
+        }
+      }
+    }
+
+    // Deduplicate by year (keep highest risk entry per year per type)
+    const byYear = {};
+    for (const r of risks) {
+      if (!byYear[r.year]) byYear[r.year] = { ...r, risks: [] };
+      const seen = new Set(byYear[r.year].risks.map(x => x.type + x.label));
+      for (const risk of r.risks) {
+        if (!seen.has(risk.type + risk.label)) {
+          byYear[r.year].risks.push(risk);
+          seen.add(risk.type + risk.label);
+        }
+      }
+    }
+
+    const result = Object.values(byYear)
+      .sort((a, b) => a.year - b.year)
+      .filter(y => y.risks.length > 0);
+
+    res.json({ risks: result, total_years: result.length });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
