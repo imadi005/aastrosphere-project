@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/numerology/numerology_engine.dart';
 import '../../auth/providers/user_provider.dart';
@@ -288,11 +287,8 @@ class _ChartBody extends StatelessWidget {
     final dailyNum = chartData['daily'] as int? ?? 0;
     final hourlyNum = chartData['hourly'] as int? ?? 0;
 
-    // Build grid locally using numerology engine
-    final grid = NumerologyEngine.buildGrid(dob,
-        mahaOverride: mahaNum > 0 ? mahaNum : null,
-        antarOverride: antarNum > 0 ? antarNum : null,
-        monthlyOverride: monthlyNum > 0 ? monthlyNum : null);
+    // Use API grid directly — daily/hourly already injected by backend
+    final grid = chartData['grid'] as List<dynamic>? ?? [];
 
     // Yogas — field is 'yoga' not 'name'
     final yogas = (yogaData?['yogas'] as List? ?? []).cast<Map<String, dynamic>>();
@@ -349,8 +345,17 @@ class _ChartBody extends StatelessWidget {
         ])),
         const SizedBox(height: 18),
 
-        // ── Grid ──────────────────────────────────────────────────────────
-        Center(child: NumerologyGrid(grid: grid, cellSize: 72)),
+        // ── Grid — uses API response with daily/hourly injected ─────────────
+        if (grid.isNotEmpty) ...[
+          _GridWidget(grid: grid, isDark: isDark, gold: gold),
+          const SizedBox(height: 10),
+          _GridLegend(
+            maha: mahaNum, antar: antarNum, monthly: monthlyNum,
+            daily: dailyNum > 0 ? dailyNum : null,
+            hourly: hourlyNum > 0 ? hourlyNum : null,
+            isDark: isDark, gold: gold,
+          ),
+        ],
         const SizedBox(height: 20),
 
         // ── Dasha cards ───────────────────────────────────────────────────
@@ -459,5 +464,113 @@ class _YCard extends StatelessWidget {
           if (desc.isNotEmpty) ...[const SizedBox(height: 3), Text(desc, style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.5))],
         ])),
       ]));
+  }
+}
+
+// ─── Grid Widget (same as user chart) ────────────────────────────────────────
+class _GridWidget extends StatelessWidget {
+  final List<dynamic> grid;
+  final bool isDark;
+  final Color gold;
+  const _GridWidget({required this.grid, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final bg = isDark ? AppColors.bgCardDark : AppColors.bgCardLight;
+    const planetLabels = [
+      ['Jupiter', 'Sun', 'Mars'],
+      ['Venus', 'Ketu', 'Mercury'],
+      ['Moon', 'Saturn', 'Rahu'],
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        color: bg, borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: border, width: 0.5)),
+      child: Column(children: List.generate(3, (row) => Row(
+        children: List.generate(3, (col) {
+          final cell = (grid[row] as List<dynamic>)[col] as List<dynamic>;
+          final planet = planetLabels[row][col];
+          return Expanded(child: Container(
+            height: 90,
+            decoration: BoxDecoration(border: Border(
+              right: col == 2 ? BorderSide.none : BorderSide(color: border, width: 0.5),
+              bottom: row == 2 ? BorderSide.none : BorderSide(color: border, width: 0.5),
+            )),
+            child: _GridCellWidget(cell: cell, planet: planet, isDark: isDark, gold: gold),
+          ));
+        }),
+      ))),
+    );
+  }
+}
+
+class _GridCellWidget extends StatelessWidget {
+  final List<dynamic> cell;
+  final String planet;
+  final bool isDark;
+  final Color gold;
+  const _GridCellWidget({required this.cell, required this.planet, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTertiary = isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight;
+    final successColor = isDark ? AppColors.successDark : AppColors.success;
+
+    if (cell.isEmpty) {
+      return Center(child: Text('—', style: GoogleFonts.dmSans(fontSize: 18, color: textTertiary)));
+    }
+    return Padding(
+      padding: const EdgeInsets.all(6),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 2,
+          children: cell.map((item) {
+            final m = item as Map<String, dynamic>;
+            final highlight = m['highlight'] as String? ?? '';
+            Color numColor = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+            if (highlight == 'maha')    numColor = gold;
+            if (highlight == 'antar')   numColor = successColor;
+            if (highlight == 'monthly') numColor = const Color(0xFF6366F1);
+            if (highlight == 'daily')   numColor = const Color(0xFF06B6D4);  // cyan
+            if (highlight == 'hourly')  numColor = const Color(0xFFF59E0B);  // amber
+            return Text('${m['value']}',
+                style: GoogleFonts.cormorantGaramond(fontSize: 22, fontWeight: FontWeight.w400, color: numColor));
+          }).toList(),
+        ),
+        const SizedBox(height: 2),
+        Text(planet, style: GoogleFonts.dmSans(fontSize: 8, color: textTertiary), textAlign: TextAlign.center),
+      ]),
+    );
+  }
+}
+
+// ─── Grid Legend ──────────────────────────────────────────────────────────────
+class _GridLegend extends StatelessWidget {
+  final int maha, antar, monthly;
+  final int? daily, hourly;
+  final bool isDark;
+  final Color gold;
+  const _GridLegend({required this.maha, required this.antar, required this.monthly,
+      this.daily, this.hourly, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final successColor = isDark ? AppColors.successDark : AppColors.success;
+    final items = <Map<String, dynamic>>[
+      {'label': 'Maha', 'number': maha, 'color': gold},
+      {'label': 'Antar', 'number': antar, 'color': successColor},
+      {'label': 'Monthly', 'number': monthly, 'color': const Color(0xFF6366F1)},
+      if (daily != null) {'label': 'Daily', 'number': daily, 'color': const Color(0xFF06B6D4)},
+      if (hourly != null) {'label': 'Hourly', 'number': hourly, 'color': const Color(0xFFF59E0B)},
+    ];
+    return Wrap(spacing: 12, runSpacing: 6,
+      children: items.map((item) => Row(mainAxisSize: MainAxisSize.min, children: [
+        Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: item['color'] as Color)),
+        const SizedBox(width: 5),
+        Text('${item['label']} (${item['number']})', style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
+      ])).toList());
   }
 }
