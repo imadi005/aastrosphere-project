@@ -240,21 +240,13 @@ class _DashaCard extends StatefulWidget {
   @override State<_DashaCard> createState() => _DashaCardState();
 }
 
-class _DashaCardState extends State<_DashaCard> with SingleTickerProviderStateMixin {
+class _DashaCardState extends State<_DashaCard> {
   bool _open = false;
-  late AnimationController _anim;
-  late Animation<double> _fade;
 
   @override void initState() {
     super.initState();
-    _anim = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
-    _fade = CurvedAnimation(parent: _anim, curve: Curves.easeOut);
-    if (widget.item.isCurrent) {
-      _open = true;
-      _anim.value = 1.0;
-    }
+    if (widget.item.isCurrent) _open = true;
   }
-  @override void dispose() { _anim.dispose(); super.dispose(); }
 
   void _toggle() {
     setState(() { _open = !_open; });
@@ -324,19 +316,9 @@ class _DashaCardState extends State<_DashaCard> with SingleTickerProviderStateMi
     final isPast = d.isPast;
     final numColor = isCurrent ? color : (isPast ? secondary.withOpacity(0.4) : primary);
 
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      // Timeline spine
-      Column(children: [
-        if (!widget.isFirst) Container(width: 1.5, height: 14, color: border),
-        Container(width: 10, height: 10, decoration: BoxDecoration(
-          color: isCurrent ? color : (isPast ? secondary.withOpacity(0.2) : secondary.withOpacity(0.35)),
-          shape: BoxShape.circle,
-          border: isCurrent ? Border.all(color: color.withOpacity(0.4), width: 2.5) : null)),
-        if (!widget.isLast) Container(width: 1.5, height: double.infinity, color: border),
-      ]),
-      const SizedBox(width: 12),
-      // Card
-      Expanded(child: GestureDetector(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 0),
+      child: GestureDetector(
         onTap: _toggle,
         child: Container(
           margin: const EdgeInsets.only(bottom: 10),
@@ -365,19 +347,20 @@ class _DashaCardState extends State<_DashaCard> with SingleTickerProviderStateMi
             ])),
 
             // Expanded content
-            FadeTransition(opacity: _fade, child: _open ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Divider(height: 1, color: border),
-              // Insight text
-              Padding(padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-                child: Text(_insight(), style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6))),
-              // Grid
-              Padding(padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
-                child: _PeriodGrid(grid: _buildPeriodGrid(), isDark: isDark, gold: gold, color: color, tabType: widget.tabType, dashaNum: d.number)),
-            ]) : const SizedBox.shrink()),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              child: _open ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Divider(height: 1, color: border),
+                Padding(padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                  child: Text(_insight(), style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6))),
+                Padding(padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+                  child: _PeriodGrid(grid: _buildPeriodGrid(), isDark: isDark, gold: gold, color: color, tabType: widget.tabType, dashaNum: d.number)),
+              ]) : const SizedBox.shrink()),
           ]),
         ),
-      )),
-    ]);
+      ),
+    );
   }
 }
 
