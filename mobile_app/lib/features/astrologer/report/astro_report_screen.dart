@@ -370,8 +370,9 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
     final clientDob = ref.watch(astroClientDobProvider);
     final clientName = ref.watch(astroClientNameProvider);
     final userAsync = ref.watch(userProfileProvider);
+    final astroAsync = ref.watch(astrologerProfileProvider);
     final activeDob = useClient ? clientDob : userAsync.valueOrNull?.dob;
-    final astrologer = userAsync.valueOrNull;
+    final astrologer = astroAsync.valueOrNull ?? userAsync.valueOrNull;
 
     if (activeDob == null) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
       Icon(Icons.description_outlined, size: 40, color: gold.withOpacity(0.35)),

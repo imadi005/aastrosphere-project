@@ -50,6 +50,25 @@ final userProfileProvider = StreamProvider<UserProfile?>((ref) {
   });
 });
 
+
+// Fetches from users collection first, falls back to astrologers collection
+final astrologerProfileProvider = StreamProvider<UserProfile?>((ref) {
+  final user = _auth.currentUser;
+  if (user == null) return Stream.value(null);
+
+  return _db.collection('users').doc(user.uid).snapshots().asyncMap((doc) async {
+    if (doc.exists && doc.data() != null && (doc.data()!['name'] ?? '').isNotEmpty) {
+      return UserProfile.fromMap(user.uid, doc.data()!);
+    }
+    // Fallback: check astrologers collection
+    final astroDoc = await _db.collection('astrologers').doc(user.uid).get();
+    if (astroDoc.exists && astroDoc.data() != null) {
+      return UserProfile.fromMap(user.uid, astroDoc.data()!);
+    }
+    return null;
+  });
+});
+
 final saveUserProfileProvider = Provider((ref) => _saveProfile);
 
 Future<void> _saveProfile(UserProfile profile) async {
