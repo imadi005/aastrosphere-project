@@ -40,7 +40,12 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
 
     return userAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
-      error: (_, __) => const _NoProfileView(),
+      error: (err, __) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Icon(Icons.error_outline, size: 32, color: Colors.orange),
+        const SizedBox(height: 8),
+        Text('Profile error: ' + err.toString().substring(0, err.toString().length.clamp(0, 100)),
+            style: GoogleFonts.dmSans(fontSize: 11, color: Colors.orange), textAlign: TextAlign.center),
+      ])),
       data: (user) {
         if (user == null) return const _NoProfileView();
         return todayAsync.when(

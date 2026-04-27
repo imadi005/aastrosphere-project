@@ -19,11 +19,18 @@ class UserProfile {
   });
 
   factory UserProfile.fromMap(String uid, Map<String, dynamic> map) {
+    DateTime dob;
+    try {
+      dob = (map['dob'] as Timestamp).toDate();
+    } catch (_) {
+      // dob missing or wrong type — use placeholder so app doesn't crash
+      dob = DateTime(1990, 1, 1);
+    }
     return UserProfile(
       uid: uid,
       name: map['name'] ?? '',
       phone: map['phone'] ?? '',
-      dob: (map['dob'] as Timestamp).toDate(),
+      dob: dob,
       isAstrologer: map['isAstrologer'] ?? false,
     );
   }
@@ -57,13 +64,26 @@ final astrologerProfileProvider = StreamProvider<UserProfile?>((ref) {
   if (user == null) return Stream.value(null);
 
   return _db.collection('users').doc(user.uid).snapshots().asyncMap((doc) async {
-    if (doc.exists && doc.data() != null && (doc.data()!['name'] ?? '').isNotEmpty) {
-      return UserProfile.fromMap(user.uid, doc.data()!);
+    // Check users collection first — needs both name and dob
+    if (doc.exists && doc.data() != null) {
+      final data = doc.data()!;
+      if ((data['name'] ?? '').toString().isNotEmpty && data['dob'] != null) {
+        return UserProfile.fromMap(user.uid, data);
+      }
     }
     // Fallback: check astrologers collection
-    final astroDoc = await _db.collection('astrologers').doc(user.uid).get();
-    if (astroDoc.exists && astroDoc.data() != null) {
-      return UserProfile.fromMap(user.uid, astroDoc.data()!);
+    try {
+      final astroDoc = await _db.collection('astrologers').doc(user.uid).get();
+      if (astroDoc.exists && astroDoc.data() != null) {
+        final aData = astroDoc.data()!;
+        if (aData['dob'] != null) {
+          return UserProfile.fromMap(user.uid, aData);
+        }
+      }
+    } catch (_) {}
+    // Last fallback: use users data even if dob missing (fromMap handles it gracefully)
+    if (doc.exists && doc.data() != null && (doc.data()!['name'] ?? '').toString().isNotEmpty) {
+      return UserProfile.fromMap(user.uid, doc.data()!);
     }
     return null;
   });
