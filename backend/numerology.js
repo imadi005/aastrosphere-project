@@ -315,30 +315,55 @@ export function buildFrequencyMap(dob, mahaOverride, antarOverride, monthlyOverr
 }
 
 export function buildGrid(dob, mahaOverride, antarOverride, monthlyOverride) {
-  const maha = mahaOverride ?? currentMahadasha(dob).number;
-  const antar = antarOverride ?? currentAntardasha(dob).number;
+  const maha    = mahaOverride    ?? currentMahadasha(dob).number;
+  const antar   = antarOverride   ?? currentAntardasha(dob).number;
   const monthly = monthlyOverride ?? currentMonthlyDasha(dob).number;
   const freqMap = buildFrequencyMap(dob, maha, antar, monthly);
 
   const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
+
+  // Build a priority queue for each number — what highlights need to be shown
+  // Rule: every active dasha MUST appear highlighted even if same number
+  // e.g. maha=8, antar=8, monthly=8 → three 8s all highlighted differently
 
   Object.entries(freqMap).forEach(([numStr, count]) => {
     const num = parseInt(numStr);
     const pos = NUMBER_POSITION_MAP[num];
     if (!pos) return;
     const [r, c] = pos;
+
+    // Build the list of highlights needed for this number
+    const highlights = [];
+    if (num === maha)    highlights.push('maha');
+    if (num === antar)   highlights.push('antar');
+    if (num === monthly) highlights.push('monthly');
+
+    // Assign highlights to the last N slots, rest are plain
     for (let i = 0; i < count; i++) {
-      let highlight = '';
-      if (num === maha && num === antar) {
-        highlight = i === count - 2 ? 'maha' : i === count - 1 ? 'antar' : '';
-      } else {
-        if (num === maha && i === count - 1) highlight = 'maha';
-        if (num === antar && i === count - 1) highlight = 'antar';
-        if (num === monthly && i === count - 1 && highlight === '') highlight = 'monthly';
-      }
+      // Highlights go to the last slots: count-1, count-2, count-3
+      const fromEnd = count - 1 - i; // 0 = last slot, 1 = second last, etc.
+      const highlight = fromEnd < highlights.length ? highlights[highlights.length - 1 - fromEnd] : '';
       grid[r][c].push({ value: num, highlight, planet: PLANET_NAMES[num] });
     }
   });
+
+  // IMPORTANT: If a dasha number is NOT in natal chart at all,
+  // inject it as a fresh entry so it always appears highlighted
+  const ensureDasha = (num, highlight) => {
+    if (num <= 0) return;
+    const pos = NUMBER_POSITION_MAP[num];
+    if (!pos) return;
+    const [r, c] = pos;
+    // Check if this highlight is already present
+    const alreadyHighlighted = grid[r][c].some(item => item.highlight === highlight);
+    if (!alreadyHighlighted) {
+      grid[r][c].push({ value: num, highlight, planet: PLANET_NAMES[num], injected: true });
+    }
+  };
+  ensureDasha(maha,    'maha');
+  ensureDasha(antar,   'antar');
+  ensureDasha(monthly, 'monthly');
+
   return grid;
 }
 
