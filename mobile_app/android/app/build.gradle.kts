@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.example.mobile_app"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 34
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -31,10 +31,10 @@ android {
         
         // --- YEH LINE UPDATE HUI HAI ---
         // Google Places API (google_places_flutter) ke liye minSdk 21+ zaroori hai
-        minSdk = flutter.minSdkVersion
+        minSdk = 21
         // -------------------------------
         
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
