@@ -62,8 +62,9 @@ function buildChartData(dob, targetDate, targetHour = null) {
   const basic = basicNumber(day);
   const destiny = destinyNumber(dob);
   const supportive = supportiveNumbers(day);
-  const maha = currentMahadasha(dob);
-  const antar = currentAntardasha(dob);
+  // Use targetDate for maha/antar so custom date shows correct dashas
+  const maha = currentMahadasha(dob, targetDate);
+  const antar = currentAntardasha(dob, targetDate);
   const monthly = currentMonthlyDasha(dob, targetDate);
   const karmic = karmicDebt(dob);
   const lucky = LUCKY_INFO[destiny];

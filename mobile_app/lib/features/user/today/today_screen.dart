@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/providers/role_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -37,11 +38,19 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       }
     });
 
+    // In Me mode (astrologer viewing own data), fall back to astrologerProfileProvider
+    final role = ref.watch(roleProvider);
+    final isAstrologer = role == AppRole.astrologer;
+    final astroProfile = isAstrologer ? ref.watch(astrologerProfileProvider).valueOrNull : null;
+
     return userAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
       error: (_, __) => const Center(child: Text('Error loading profile')),
       data: (user) {
-        if (user == null) return const _NoProfileView();
+        // If user profile missing but astrologer profile exists, use that
+        final effectiveUser = user ?? (isAstrologer ? astroProfile : null);
+        if (effectiveUser == null) return const _NoProfileView();
+        // Use effectiveUser below instead of user
         return todayAsync.when(
           loading: () => Center(child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

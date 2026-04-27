@@ -728,38 +728,74 @@ class _YearCardState extends State<_YearCard> {
                   const SizedBox(height: 12),
                 ],
 
-                // Remedies (editable)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: gold.withOpacity(0.06), borderRadius: BorderRadius.circular(10), border: Border.all(color: gold.withOpacity(0.2), width: 0.5)),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(children: [
-                      Icon(Icons.auto_fix_high_outlined, size: 13, color: gold),
-                      const SizedBox(width: 6),
-                      Text('REMEDIES', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: gold)),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () => setState(() => _editingRemedies = !_editingRemedies),
-                        child: Text(_editingRemedies ? 'Done' : 'Edit',
-                            style: GoogleFonts.dmSans(fontSize: 11, color: gold, fontWeight: FontWeight.w600))),
+                // Remedies — only show where there are warnings/risks
+                // Otherwise show "Add Remedy" button
+                if (s.warnings.isNotEmpty || widget.remedyCtrl.text.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: gold.withOpacity(0.06), borderRadius: BorderRadius.circular(10), border: Border.all(color: gold.withOpacity(0.2), width: 0.5)),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        Icon(Icons.auto_fix_high_outlined, size: 13, color: gold),
+                        const SizedBox(width: 6),
+                        Text('REMEDIES', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: gold)),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () => setState(() => _editingRemedies = !_editingRemedies),
+                          child: Text(_editingRemedies ? 'Done' : 'Edit',
+                              style: GoogleFonts.dmSans(fontSize: 11, color: gold, fontWeight: FontWeight.w600))),
+                      ]),
+                      const SizedBox(height: 8),
+                      _editingRemedies
+                        ? TextField(
+                            controller: widget.remedyCtrl,
+                            onChanged: widget.onRemedyChanged,
+                            maxLines: null, minLines: 3,
+                            style: GoogleFonts.dmSans(fontSize: 12, color: primary, height: 1.6),
+                            decoration: InputDecoration(
+                              filled: true, fillColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+                              contentPadding: const EdgeInsets.all(10),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: gold.withOpacity(0.3), width: 0.5)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: gold, width: 1))),
+                          )
+                        : Text(widget.remedyCtrl.text.isNotEmpty
+                              ? widget.remedyCtrl.text
+                              : 'Tap Edit to add remedies for this risky period.',
+                            style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6)),
                     ]),
-                    const SizedBox(height: 8),
-                    _editingRemedies
-                      ? TextField(
-                          controller: widget.remedyCtrl,
-                          onChanged: widget.onRemedyChanged,
-                          maxLines: null, minLines: 3,
-                          style: GoogleFonts.dmSans(fontSize: 12, color: primary, height: 1.6),
-                          decoration: InputDecoration(
-                            filled: true, fillColor: isDark ? AppColors.bgDark : AppColors.bgLight,
-                            contentPadding: const EdgeInsets.all(10),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: gold.withOpacity(0.3), width: 0.5)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: gold, width: 1))),
-                        )
-                      : Text(widget.remedyCtrl.text,
-                          style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6)),
-                  ]),
-                ),
+                  )
+                else
+                  // No warnings — minimal "Add remedy" button
+                  GestureDetector(
+                    onTap: () => setState(() => _editingRemedies = !_editingRemedies),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: gold.withOpacity(0.2), width: 0.5)),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.add, size: 12, color: gold.withOpacity(0.6)),
+                        const SizedBox(width: 5),
+                        Text('Add Remedy', style: GoogleFonts.dmSans(fontSize: 11, color: gold.withOpacity(0.6))),
+                      ]),
+                    ),
+                  ),
+                if (_editingRemedies && s.warnings.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: TextField(
+                      controller: widget.remedyCtrl,
+                      onChanged: widget.onRemedyChanged,
+                      maxLines: null, minLines: 2,
+                      style: GoogleFonts.dmSans(fontSize: 12, color: primary, height: 1.6),
+                      decoration: InputDecoration(
+                        hintText: 'Write remedy for this year...',
+                        hintStyle: GoogleFonts.dmSans(fontSize: 12, color: secondary.withOpacity(0.5)),
+                        filled: true, fillColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+                        contentPadding: const EdgeInsets.all(10),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: gold.withOpacity(0.3), width: 0.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: gold, width: 1))),
+                    )),
               ])),
             ]) : const SizedBox.shrink(),
           ),
