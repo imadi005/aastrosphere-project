@@ -345,8 +345,7 @@ class _TodayTab extends StatelessWidget {
       const SizedBox(height: 10),
 
       // Detail — collapsible
-      Text(detail, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6),
-          maxLines: 3, overflow: TextOverflow.ellipsis),
+      Text(detail, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6)),
 
       if (doList.isNotEmpty) ...[
         const SizedBox(height: 14),
