@@ -86,37 +86,8 @@ function buildChartData(dob, targetDate, targetHour = null) {
   }
 
   // Build enhanced grid — inject maha/antar/daily/hourly into grid
-  const rawGrid = buildGrid(dob, maha.number, antar.number, monthly.number);
-
-  // Deep clone grid
-  const enhancedGrid = rawGrid.map(row => row.map(cell => cell.map(item => ({...item}))));
-
-  // Always inject daily as a FRESH entry — never just highlight existing natal
-  // This ensures the number appears twice if it's already in natal chart
-  const dailyPos = GRID_POSITIONS[dailyNum];
-  if (dailyPos) {
-    const [dr, dc] = dailyPos;
-    enhancedGrid[dr][dc] = [...enhancedGrid[dr][dc], {
-      value: dailyNum,
-      highlight: 'daily',
-      planet: CELL_PLANETS[`${dr},${dc}`] || '',
-      injected: true,
-    }];
-  }
-
-  // Always inject hourly as a FRESH entry — same logic
-  if (hourlyNum !== null) {
-    const hourlyPos = GRID_POSITIONS[hourlyNum];
-    if (hourlyPos) {
-      const [hr, hc] = hourlyPos;
-      enhancedGrid[hr][hc] = [...enhancedGrid[hr][hc], {
-        value: hourlyNum,
-        highlight: 'hourly',
-        planet: CELL_PLANETS[`${hr},${hc}`] || '',
-        injected: true,
-      }];
-    }
-  }
+  // buildGrid now handles daily+hourly counts AND highlights all in one pass
+  const enhancedGrid = buildGrid(dob, maha.number, antar.number, monthly.number, dailyNum, hourlyNum ?? undefined);
 
   // Day analysis — combinations, warnings, opportunities
   const natalNums = Object.keys(buildFrequencyMap(dob)).map(Number);

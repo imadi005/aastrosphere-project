@@ -308,23 +308,26 @@ export function buildFrequencyMap(dob, mahaOverride, antarOverride, monthlyOverr
   const antar = antarOverride ?? currentAntardasha(dob).number;
   const monthly = monthlyOverride ?? currentMonthlyDasha(dob).number;
 
-  map[maha] = (map[maha] || 0) + 1;
-  if (antar !== maha) map[antar] = (map[antar] || 0) + 1;
-  if (monthly !== maha && monthly !== antar) map[monthly] = (map[monthly] || 0) + 1;
+  // Always add ALL dashas — even if same number as natal or each other
+  // e.g. natal has 8, maha=8, monthly=8 → 8 appears 3 times in grid
+  map[maha]    = (map[maha]    || 0) + 1;
+  map[antar]   = (map[antar]   || 0) + 1;
+  map[monthly] = (map[monthly] || 0) + 1;
   return map;
 }
 
-export function buildGrid(dob, mahaOverride, antarOverride, monthlyOverride) {
+export function buildGrid(dob, mahaOverride, antarOverride, monthlyOverride, dailyOverride, hourlyOverride) {
   const maha    = mahaOverride    ?? currentMahadasha(dob).number;
   const antar   = antarOverride   ?? currentAntardasha(dob).number;
   const monthly = monthlyOverride ?? currentMonthlyDasha(dob).number;
+
+  // Start with natal frequency map
   const freqMap = buildFrequencyMap(dob, maha, antar, monthly);
+  // daily and hourly also add to count if provided
+  if (dailyOverride)  freqMap[dailyOverride]  = (freqMap[dailyOverride]  || 0) + 1;
+  if (hourlyOverride) freqMap[hourlyOverride] = (freqMap[hourlyOverride] || 0) + 1;
 
   const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
-
-  // Build a priority queue for each number — what highlights need to be shown
-  // Rule: every active dasha MUST appear highlighted even if same number
-  // e.g. maha=8, antar=8, monthly=8 → three 8s all highlighted differently
 
   Object.entries(freqMap).forEach(([numStr, count]) => {
     const num = parseInt(numStr);
@@ -332,37 +335,39 @@ export function buildGrid(dob, mahaOverride, antarOverride, monthlyOverride) {
     if (!pos) return;
     const [r, c] = pos;
 
-    // Build the list of highlights needed for this number
-    const highlights = [];
-    if (num === maha)    highlights.push('maha');
-    if (num === antar)   highlights.push('antar');
-    if (num === monthly) highlights.push('monthly');
+    // All highlights this number needs — in priority order (last slot = highest priority)
+    const needed = [];
+    if (num === maha)                            needed.push('maha');
+    if (num === antar)                           needed.push('antar');
+    if (num === monthly)                         needed.push('monthly');
+    if (dailyOverride  && num === dailyOverride)  needed.push('daily');
+    if (hourlyOverride && num === hourlyOverride) needed.push('hourly');
 
-    // Assign highlights to the last N slots, rest are plain
+    // Assign highlights to the LAST N slots in this cell
     for (let i = 0; i < count; i++) {
-      // Highlights go to the last slots: count-1, count-2, count-3
-      const fromEnd = count - 1 - i; // 0 = last slot, 1 = second last, etc.
-      const highlight = fromEnd < highlights.length ? highlights[highlights.length - 1 - fromEnd] : '';
+      const fromEnd = count - 1 - i; // 0=last, 1=second-last, etc.
+      const highlight = fromEnd < needed.length
+        ? needed[needed.length - 1 - fromEnd]
+        : '';
       grid[r][c].push({ value: num, highlight, planet: PLANET_NAMES[num] });
     }
   });
 
-  // IMPORTANT: If a dasha number is NOT in natal chart at all,
-  // inject it as a fresh entry so it always appears highlighted
-  const ensureDasha = (num, highlight) => {
-    if (num <= 0) return;
+  // Ensure every dasha is visible — inject if not already highlighted
+  const ensureDasha = (num, hl) => {
+    if (!num) return;
     const pos = NUMBER_POSITION_MAP[num];
     if (!pos) return;
     const [r, c] = pos;
-    // Check if this highlight is already present
-    const alreadyHighlighted = grid[r][c].some(item => item.highlight === highlight);
-    if (!alreadyHighlighted) {
-      grid[r][c].push({ value: num, highlight, planet: PLANET_NAMES[num], injected: true });
+    if (!grid[r][c].some(item => item.highlight === hl)) {
+      grid[r][c].push({ value: num, highlight: hl, planet: PLANET_NAMES[num], injected: true });
     }
   };
-  ensureDasha(maha,    'maha');
-  ensureDasha(antar,   'antar');
-  ensureDasha(monthly, 'monthly');
+  ensureDasha(maha,          'maha');
+  ensureDasha(antar,         'antar');
+  ensureDasha(monthly,       'monthly');
+  ensureDasha(dailyOverride,  'daily');
+  ensureDasha(hourlyOverride, 'hourly');
 
   return grid;
 }
