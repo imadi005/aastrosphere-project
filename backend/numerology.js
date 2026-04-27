@@ -90,11 +90,11 @@ export function buildDashaCycle(basic) {
   return [...all.slice(idx), ...all.slice(0, idx)];
 }
 
-export function currentMahadasha(dob) {
+export function currentMahadasha(dob, targetDate = null) {
   const d = new Date(dob);
   const basic = basicNumber(d.getDate());
   const cycle = buildDashaCycle(basic);
-  const today = new Date();
+  const ref = targetDate ? new Date(targetDate) : new Date();
   let current = new Date(d);
   let i = 0;
 
@@ -104,7 +104,7 @@ export function currentMahadasha(dob) {
     const end = new Date(current);
     end.setFullYear(end.getFullYear() + duration);
 
-    if (today >= current && today < end) {
+    if (ref >= current && ref < end) {
       return {
         number: dasha,
         planet: PLANET_NAMES[dasha],
@@ -153,12 +153,12 @@ export function mahadashaTimeline(dob, pastYears = 20, futureYears = 50) {
   return results;
 }
 
-export function currentAntardasha(dob) {
+export function currentAntardasha(dob, targetDate = null) {
   const d = new Date(dob);
   const basic = basicNumber(d.getDate());
   const month = d.getMonth() + 1;
   const day = d.getDate();
-  const today = new Date();
+  const today = targetDate ? new Date(targetDate) : new Date();
 
   const bdayThisYear = new Date(today.getFullYear(), month - 1, day);
   const antarYear = today < bdayThisYear ? today.getFullYear() - 1 : today.getFullYear();
