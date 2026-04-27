@@ -85,8 +85,8 @@ function buildChartData(dob, targetDate, targetHour = null) {
     hourlyNum = redToSingle(dailyNum + hour12);
   }
 
-  // Build enhanced grid — inject daily/hourly into their grid cell even if absent from natal
-  const rawGrid = buildGrid(dob);
+  // Build enhanced grid — inject maha/antar/daily/hourly into grid
+  const rawGrid = buildGrid(dob, maha.number, antar.number, monthly.number);
 
   // Deep clone grid
   const enhancedGrid = rawGrid.map(row => row.map(cell => cell.map(item => ({...item}))));
@@ -1114,10 +1114,30 @@ app.post('/api/predict/future-risks', (req, res) => {
         }
 
         if (risks.length > 0) {
+          // Find specific risky months within this year
+          const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          const riskyMonths = [];
+          const safeMonths = [];
+          for (let mo = 0; mo < 12; mo++) {
+            const mDate = new Date(yr, mo, 15).toISOString();
+            const mon = currentMonthlyDasha(dob, mDate);
+            const monNum = mon?.number ?? 5;
+            const isRisky = (monNum === 4 && (maha.number === 9 || antar === 9)) ||
+                            (monNum === 9 && (maha.number === 4 || antar === 4)) ||
+                            (monNum === 4 && antar === 4) ||
+                            (monNum === 9 && antar === 9);
+            const isSafe = (monNum === 3 || monNum === 1) && (maha.number !== 4) && (antar !== 4);
+            if (isRisky) riskyMonths.push({ month: MONTH_NAMES[mo], number: mo+1, monthly: monNum });
+            if (isSafe) safeMonths.push({ month: MONTH_NAMES[mo], number: mo+1, monthly: monNum });
+          }
           riskWindows.push({
             year: yr,
             maha: { number: maha.number, planet: maha.planet },
             antar: { number: antar, planet: ['','Sun','Moon','Jupiter','Rahu','Mercury','Venus','Ketu','Saturn','Mars'][antar] ?? '' },
+            combination: `${maha.number}+${antar}`,
+            combination_label: `Maha ${maha.planet} + Antar ${['','Sun','Moon','Jupiter','Rahu','Mercury','Venus','Ketu','Saturn','Mars'][antar] ?? ''}`,
+            risky_months: riskyMonths,
+            safe_months: safeMonths,
             risks,
           });
         }

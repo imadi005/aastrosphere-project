@@ -822,12 +822,23 @@ class _HistoryTab extends ConsumerWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('astro_reports')
           .where('astrologer_uid', isEqualTo: uid)
-          .orderBy('created_at', descending: true).snapshots(),
+          .snapshots(),
       builder: (ctx, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold));
         }
-        final docs = snap.data?.docs ?? [];
+        final rawDocs = snap.data?.docs ?? [];
+        // Sort client-side by created_at descending (avoids index requirement)
+        final docs = [...rawDocs]..sort((a, b) {
+          final aData = a.data() as Map<String,dynamic>;
+          final bData = b.data() as Map<String,dynamic>;
+          final at = aData['created_at'] as Timestamp?;
+          final bt = bData['created_at'] as Timestamp?;
+          if (at == null && bt == null) return 0;
+          if (at == null) return 1;
+          if (bt == null) return -1;
+          return bt.compareTo(at);
+        });
         if (docs.isEmpty) {
           return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.history_outlined, size: 36, color: gold.withOpacity(0.3)), const SizedBox(height: 14),

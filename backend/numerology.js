@@ -95,6 +95,8 @@ export function currentMahadasha(dob, targetDate = null) {
   const basic = basicNumber(d.getDate());
   const cycle = buildDashaCycle(basic);
   const ref = targetDate ? new Date(targetDate) : new Date();
+  // Cannot go before date of birth
+  if (ref < d) return { number: basic, planet: PLANET_NAMES[basic], start: d.toISOString(), end: d.toISOString(), isCurrent: false };
   let current = new Date(d);
   let i = 0;
 
@@ -160,6 +162,8 @@ export function currentAntardasha(dob, targetDate = null) {
   const day = d.getDate();
   const today = targetDate ? new Date(targetDate) : new Date();
 
+  // Cannot go before date of birth
+  if (today < d) return { number: basic, planet: PLANET_NAMES[basic], start: d.toISOString(), end: d.toISOString(), isCurrent: false };
   const bdayThisYear = new Date(today.getFullYear(), month - 1, day);
   const antarYear = today < bdayThisYear ? today.getFullYear() - 1 : today.getFullYear();
 

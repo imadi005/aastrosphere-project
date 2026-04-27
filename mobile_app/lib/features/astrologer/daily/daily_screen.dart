@@ -495,7 +495,7 @@ class _RiskTabState extends State<_RiskTab> {
 
               return _RiskYearCard(
                 year: year, maha: maha, antar: antar,
-                risks: filteredRisks, isDark: isDark, gold: gold,
+                data: w, risks: filteredRisks, isDark: isDark, gold: gold,
                 isNow: isNow,
               );
             })),
@@ -505,12 +505,12 @@ class _RiskTabState extends State<_RiskTab> {
 
 class _RiskYearCard extends StatefulWidget {
   final int year;
-  final Map<String,dynamic> maha, antar;
+  final Map<String,dynamic> maha, antar, data;
   final List<Map<String,dynamic>> risks;
   final bool isDark, isNow;
   final Color gold;
   const _RiskYearCard({required this.year, required this.maha, required this.antar,
-      required this.risks, required this.isDark, required this.gold, required this.isNow});
+      required this.data, required this.risks, required this.isDark, required this.gold, required this.isNow});
   @override State<_RiskYearCard> createState() => _RiskYearCardState();
 }
 
@@ -589,8 +589,25 @@ class _RiskYearCardState extends State<_RiskYearCard> {
             duration: const Duration(milliseconds: 200), curve: Curves.easeOut,
             child: _expanded ? Container(
               margin: const EdgeInsets.fromLTRB(14, 0, 14, 16),
-              child: Column(children: [
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Divider(height: 12, color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                // Combination analysis
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: gold.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: gold.withOpacity(0.2), width: 0.5)),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(widget.data['combination_label'] as String? ?? 'Maha ${widget.maha['number']} + Antar ${widget.antar['number']}',
+                        style: GoogleFonts.dmSans(fontSize: 11, color: gold, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 6),
+                    Text('This specific combination of Mahadasha and Antardasha creates the energy environment for this year. '
+                        'The risks listed below emerge from how these two frequencies interact.',
+                        style: GoogleFonts.dmSans(fontSize: 12, color: primary, height: 1.6)),
+                  ])),
+                const SizedBox(height: 10),
+                // Risk details
                 ...widget.risks.map((r) {
                   final rc = _riskColor(r['type'] as String, isDark);
                   return Container(
@@ -607,6 +624,43 @@ class _RiskYearCardState extends State<_RiskYearCard> {
                           style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.6))),
                     ]));
                 }),
+                // Risky months
+                if ((widget.data['risky_months'] as List? ?? []).isNotEmpty) ...[
+                  Text('RISKY MONTHS', style: GoogleFonts.dmSans(fontSize: 9, color: isDark ? AppColors.dangerDark : AppColors.danger, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
+                  const SizedBox(height: 6),
+                  Wrap(spacing: 6, runSpacing: 6, children: (widget.data['risky_months'] as List).map((m) {
+                    final mm = m as Map;
+                    final red = isDark ? AppColors.dangerDark : AppColors.danger;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: red.withOpacity(0.1), borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: red.withOpacity(0.3), width: 0.5)),
+                      child: Column(children: [
+                        Text(mm['month'] as String? ?? '', style: GoogleFonts.dmSans(fontSize: 11, color: red, fontWeight: FontWeight.w700)),
+                        Text('Mo ${mm['monthly']}', style: GoogleFonts.dmSans(fontSize: 9, color: red.withOpacity(0.7))),
+                      ]));
+                  }).toList()),
+                  const SizedBox(height: 10),
+                ],
+                // Safe months
+                if ((widget.data['safe_months'] as List? ?? []).isNotEmpty) ...[
+                  Text('SAFER MONTHS', style: GoogleFonts.dmSans(fontSize: 9, color: isDark ? AppColors.successDark : AppColors.success, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
+                  const SizedBox(height: 6),
+                  Wrap(spacing: 6, runSpacing: 6, children: (widget.data['safe_months'] as List).map((m) {
+                    final mm = m as Map;
+                    final grn = isDark ? AppColors.successDark : AppColors.success;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: grn.withOpacity(0.1), borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: grn.withOpacity(0.3), width: 0.5)),
+                      child: Column(children: [
+                        Text(mm['month'] as String? ?? '', style: GoogleFonts.dmSans(fontSize: 11, color: grn, fontWeight: FontWeight.w700)),
+                        Text('Mo ${mm['monthly']}', style: GoogleFonts.dmSans(fontSize: 9, color: grn.withOpacity(0.7))),
+                      ]));
+                  }).toList()),
+                ],
               ])) : const SizedBox.shrink()),
         ]),
       ),

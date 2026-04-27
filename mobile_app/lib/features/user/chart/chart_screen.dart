@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/providers/role_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -27,10 +28,14 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
     final userAsync = ref.watch(userProfileProvider);
     final chartAsync = ref.watch(chartDataProvider);
 
+    final role = ref.watch(roleProvider);
+    final isAstro = role == AppRole.astrologer;
+    final astroFallback = isAstro ? ref.watch(astrologerProfileProvider).valueOrNull : null;
     return userAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
       error: (_, __) => const Center(child: Text('Error')),
-      data: (user) {
+      data: (userRaw) {
+        final user = userRaw ?? (isAstro ? astroFallback : null);
         if (user == null) return const Center(child: Text('No profile'));
         return chartAsync.when(
           loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),

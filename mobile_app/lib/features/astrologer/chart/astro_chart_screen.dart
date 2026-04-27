@@ -76,7 +76,7 @@ class _AstroChartScreenState extends ConsumerState<AstroChartScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(1900), lastDate: DateTime(2100),
+      firstDate: dob, lastDate: DateTime(2100),
       builder: (ctx, child) => Theme(data: Theme.of(ctx).copyWith(
         colorScheme: isDark
             ? ColorScheme.dark(primary: gold, onPrimary: Colors.black, surface: AppColors.bgCardDark, onSurface: AppColors.textPrimaryDark)

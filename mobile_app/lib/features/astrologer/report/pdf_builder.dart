@@ -793,7 +793,7 @@ class PdfReportBuilder {
     final rows = <pw.TableRow>[];
     rows.add(pw.TableRow(
       decoration: pw.BoxDecoration(color: _card),
-      children: ['MONTH','MONTHLY','LABEL','FINANCE','HEALTH','NOTES'].map((h) =>
+      children: ['MONTH','MONTHLY','FINANCE','HEALTH','RISKY DAYS','NOTES'].map((h) =>
         pw.Padding(padding: const pw.EdgeInsets.all(5),
           child: pw.Text(h, style: pw.TextStyle(fontSize: 6.5, color: _muted,
               fontWeight: pw.FontWeight.bold, letterSpacing: 0.3)))).toList()));
@@ -813,19 +813,26 @@ class PdfReportBuilder {
       final nc = isCurrent ? _gold : (hasRisk ? _danger : _body);
       final notes = cauts.isNotEmpty ? cauts.first : (bestFor.isNotEmpty ? 'Best for: ${bestFor.first}' : '--');
 
+      final riskyDays = (m['risky_days'] as List?)?.cast<int>() ?? [];
+      final luckyDays = (m['lucky_days'] as List?)?.cast<int>() ?? [];
+      final riskyDayStr = riskyDays.isNotEmpty ? riskyDays.map((d) => '$d').join(', ') : '--';
+      final luckyDayStr = luckyDays.isNotEmpty ? luckyDays.map((d) => '$d').join(', ') : '';
       rows.add(pw.TableRow(
         decoration: pw.BoxDecoration(color: bg),
         children: [
           pw.Padding(padding: const pw.EdgeInsets.all(5),
-            child: pw.Text(name, style: pw.TextStyle(fontSize: 7.5, color: nc, fontWeight: pw.FontWeight.bold))),
+            child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+              pw.Text(name, style: pw.TextStyle(fontSize: 7.5, color: nc, fontWeight: pw.FontWeight.bold)),
+              if (luckyDayStr.isNotEmpty) pw.Text('Lucky: $luckyDayStr', style: pw.TextStyle(fontSize: 6, color: _good)),
+            ])),
           pw.Padding(padding: const pw.EdgeInsets.all(5),
             child: pw.Text('$mNum ${_p(mNum)}', style: pw.TextStyle(fontSize: 7.5, color: isCurrent ? _gold : _info, fontWeight: pw.FontWeight.bold))),
-          pw.Padding(padding: const pw.EdgeInsets.all(5),
-            child: pw.Text(_s(label), style: pw.TextStyle(fontSize: 7.5, color: _muted))),
           pw.Padding(padding: const pw.EdgeInsets.all(5),
             child: pw.Text(_s(fin), style: pw.TextStyle(fontSize: 7.5, color: _body, lineSpacing: 1.3))),
           pw.Padding(padding: const pw.EdgeInsets.all(5),
             child: pw.Text(_s(hlt), style: pw.TextStyle(fontSize: 7.5, color: _body, lineSpacing: 1.3))),
+          pw.Padding(padding: const pw.EdgeInsets.all(5),
+            child: pw.Text(riskyDayStr, style: pw.TextStyle(fontSize: 7.5, color: riskyDays.isNotEmpty ? _danger : _muted, fontWeight: riskyDays.isNotEmpty ? pw.FontWeight.bold : pw.FontWeight.normal))),
           pw.Padding(padding: const pw.EdgeInsets.all(5),
             child: pw.Text(_s(notes), style: pw.TextStyle(fontSize: 7.5, color: hasRisk ? _danger : _body, lineSpacing: 1.3))),
         ]));
@@ -833,12 +840,12 @@ class PdfReportBuilder {
 
     return pw.Table(
       columnWidths: {
-        0: const pw.FractionColumnWidth(0.10),
+        0: const pw.FractionColumnWidth(0.13),
         1: const pw.FractionColumnWidth(0.10),
-        2: const pw.FractionColumnWidth(0.10),
-        3: const pw.FractionColumnWidth(0.22),
-        4: const pw.FractionColumnWidth(0.20),
-        5: const pw.FractionColumnWidth(0.28),
+        2: const pw.FractionColumnWidth(0.19),
+        3: const pw.FractionColumnWidth(0.19),
+        4: const pw.FractionColumnWidth(0.12),
+        5: const pw.FractionColumnWidth(0.27),
       },
       border: pw.TableBorder.all(color: _subtle, width: 0.3),
       children: rows);

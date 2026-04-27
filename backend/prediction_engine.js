@@ -877,6 +877,20 @@ export function generateYearlyPrediction(ctx, targetDate = new Date().toISOStrin
     const monthNum = mon ? mon.number : 5;
     const char = MONTH_CHARACTER[monthNum];
     const isCurrentMonth = m === currentMonth;
+    // Find specific risky + lucky days in this month
+    const WDAY_LORDS = [1,2,9,5,3,6,8]; // Sun=0..Sat=6
+    const riskyDaysArr = [];
+    const luckyDaysArr = [];
+    const daysInMo = new Date(year, m + 1, 0).getDate();
+    for (let day = 1; day <= daysInMo; day++) {
+      const dt = new Date(year, m, day);
+      const wdL = WDAY_LORDS[dt.getDay()];
+      let rawD = monthNum + wdL; while (rawD > 9) rawD = String(rawD).split('').reduce((a,b)=>a+parseInt(b),0);
+      const isRisky = (rawD === 4 && (maha === 9 || antar === 9)) || (rawD === 9 && (maha === 4 || antar === 4));
+      const isLucky = (rawD === 7 && (maha === 1 || antar === 1 || maha === 5)) || (rawD === 3 && (maha === 1 || antar === 1 || maha === 9));
+      if (isRisky) riskyDaysArr.push(day);
+      if (isLucky) luckyDaysArr.push(day);
+    }
     months_breakdown.push({
       month_name: MONTH_NAMES[m],
       month_number: m + 1,
@@ -889,6 +903,8 @@ export function generateYearlyPrediction(ctx, targetDate = new Date().toISOStrin
       finance: char?.finance || '',
       relationships: char?.relationships || '',
       health: char?.health || '',
+      risky_days: riskyDaysArr,
+      lucky_days: luckyDaysArr,
     });
   }
 
