@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/providers/role_provider.dart';
+import '../../../core/providers/today_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +22,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userAsync = ref.watch(userProfileProvider);
+    final userAsync = ref.watch(activeProfileProvider);
     final todayAsync = ref.watch(todayDataProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
@@ -38,21 +38,11 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       }
     });
 
-    // In Me mode (astrologer viewing own data), fall back to astrologerProfileProvider
-    final role = ref.watch(roleProvider);
-    final isAstrologer = role == AppRole.astrologer;
-    final astroProfile = isAstrologer ? ref.watch(astrologerProfileProvider).valueOrNull : null;
-
     return userAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
-      error: (_, __) => const Center(child: Text('Error loading profile')),
+      error: (_, __) => const _NoProfileView(),
       data: (user) {
-        // If user profile missing but astrologer profile exists, use that
-        final effectiveUser = user ?? (isAstrologer ? astroProfile : null);
-        if (effectiveUser == null) return const _NoProfileView();
-        // Shadow user with non-null effectiveUser so rest of code works
-        // ignore: parameter_assignments
-        final UserProfile userNonNull = effectiveUser;
+        if (user == null) return const _NoProfileView();
         return todayAsync.when(
           loading: () => Center(child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -65,7 +55,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
           )),
           error: (e, _) => _ErrorView(onRetry: () => ref.refresh(todayDataProvider)),
           data: (data) => _TodayView(
-            data: data, name: userNonNull.name, isDark: isDark,
+            data: data, name: user.name, isDark: isDark,
             onRefresh: () async => ref.refresh(todayDataProvider),
           ),
         );
