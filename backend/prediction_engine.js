@@ -87,9 +87,9 @@ export function getDeepNumberProfile(num, destinyNum = null, mahaNum = null, nat
   const hasKetu = natalNums.includes(7);
 
   const natalNote = hasRahu && hasMars
-    ? "Rahu and Mars both in their chart — the accident-prone, financially impulsive combination is permanent background noise. It doesn't define they, but it requires conscious management."
-    : hasRahu ? "Rahu in their natal chart means the financial impulsive tendency is always present — awareness is the management."
-    : hasSaturn && num === 8 ? "Saturn is both natal and personal number — the karmic weight they carry is significant, but so is the loyalty and durability they offer."
+    ? "Rahu and Mars both in your chart — the accident-prone, financially impulsive combination is permanent background noise. It doesn't define you, but it requires conscious management."
+    : hasRahu ? "Rahu in your natal chart means the financial impulsive tendency is always present — awareness is the management."
+    : hasSaturn && num === 8 ? "Saturn is both natal and personal number — the karmic weight you carry is significant, but so is the loyalty and durability you offer."
     : null;
 
   return {
@@ -371,7 +371,7 @@ export function getPrimaryAction(ctx) {
   }
   if (yogaIds.includes('easy_money')) {
     return {
-      do: "Act on the financial opportunity in front of they — the luck is structural, not random.",
+      do: "Act on the financial opportunity in front of you — the luck is structural, not random.",
       avoid: "Letting easy income leave as easily as it arrived. Save something from what comes.",
     };
   }
@@ -384,7 +384,7 @@ export function getPrimaryAction(ctx) {
   if (yogaIds.includes('bandhan')) {
     return {
       do: "Navigate the constraint rather than fight it. Find the door instead of breaking the wall.",
-      avoid: "Explosive reactions to being blocked — they make the cage smaller.",
+      avoid: "Explosive reactions to being blocked — they make the situation worse.",
     };
   }
   if (yogaIds.includes('uplifting_319')) {
@@ -401,21 +401,21 @@ export function getPrimaryAction(ctx) {
   }
   if (yogaIds.includes('high_intuition')) {
     return {
-      do: "Trust the first read on the situation or person today — their instincts are accurate.",
+      do: "Trust the first read on the situation or person today — your instincts are accurate.",
       avoid: "Overanalyzing what only feeling can resolve.",
     };
   }
 
   const dailyActions = {
-    1: { do: "Take initiative on the one thing requiring a decision — their confidence is warranted today.", avoid: "Letting pride turn a small disagreement into a larger conflict." },
+    1: { do: "Take initiative on the one thing requiring a decision — your confidence is warranted today.", avoid: "Letting pride turn a small disagreement into a larger conflict." },
     2: { do: "Have the meaningful conversation they've been avoiding — emotional honesty lands well today.", avoid: "Making financial decisions from emotional reasoning." },
-    3: { do: "Seek or give advice on something that matters — their judgment is particularly sound today.", avoid: "Ethical shortcuts. The consequences multiply today." },
-    4: { do: "Research before committing to anything — their analytical ability is sharp today.", avoid: "Impulsive purchases or commitments. Verify first." },
+    3: { do: "Seek or give advice on something that matters — your judgment is particularly sound today.", avoid: "Ethical shortcuts. The consequences multiply today." },
+    4: { do: "Research before committing to anything — your analytical ability is sharp today.", avoid: "Impulsive purchases or commitments. Verify first." },
     5: { do: "Negotiate, pitch, or close the business conversation they've been putting off.", avoid: "Letting the sharp mind run into overthinking and anxiety tonight." },
     6: { do: "Express genuine appreciation to someone who deserves it — it lands unusually well today.", avoid: "Harsh words when frustrated. Their tongue carries extra weight today." },
-    7: { do: "Trust their gut over the spreadsheet today — intuition is outperforming analysis.", avoid: "Forcing outcomes. What needs to arrive will, when they stop pushing." },
+    7: { do: "Trust your gut over the spreadsheet today — intuition is outperforming analysis.", avoid: "Forcing outcomes. What needs to arrive will, when you stop pushing." },
     8: { do: "Do the one hard thing they've been postponing. Today's effort compounds.", avoid: "Shortcuts. Saturn is watching every one of them today." },
-    9: { do: "Make the bold move that requires courage. The energy is behind they today.", avoid: "Starting fights that aren't worth the energy they'll cost." },
+    9: { do: "Make the bold move that requires courage. The energy is behind you today.", avoid: "Starting fights that aren't worth the cost." },
   };
 
   // Daily + maha combination for those without triggering yogas
@@ -504,13 +504,13 @@ function buildDailyInsight({ daily, maha, antar, monthly, basic, destiny,
   const dailySignal = {
     1: "Take initiative today — the conditions favor bold decisions.",
     2: "Connection and creativity are the day's strongest currents.",
-    3: "Wisdom and sound judgment are accessible today — trust their read.",
-    4: "Stay flexible today — what disrupts they is also redirecting they.",
+    3: "Wisdom and sound judgment are accessible today — trust your read.",
+    4: "Stay flexible today — what disrupts you is also redirecting you.",
     5: "Sharp thinking and financial instinct are running high today.",
     6: "Beauty, connection, and ease — today rewards presence over effort.",
-    7: "Luck is quiet but active today. Trust their instincts over analysis.",
-    8: "Discipline and output — what they put in today compounds later.",
-    9: "Energy and courage are their tools today. Act before they overthink.",
+    7: "Luck is quiet but active today. Trust your instincts over analysis.",
+    8: "Discipline and output — what you put in today compounds later.",
+    9: "Energy and courage are your tools today. Act before you overthink.",
   };
   parts.push(dailySignal[daily] || `Today's energy favors ${dailyEnergy.essence}.`);
 
@@ -1125,7 +1125,7 @@ function getYogaContext(yogas, period) {
     active_positive: positive,
     active_caution: negative,
     summary: positive.length > negative.length
-      ? `${positive.join(', ')} are working in their favor this ${period}.`
+      ? `${positive.join(', ')} are working in your favor this ${period}.`
       : negative.length > 0
         ? `${negative.join(', ')} require conscious navigation this ${period}.`
         : `Balanced energy this ${period}.`,
@@ -1138,16 +1138,16 @@ function getFinanceSignal(freqMap, maha, antar, period, monthly = null, daily = 
   const c8 = freqMap[8] || 0;
 
   // Natal combinations
-  if (nums.includes(5) && nums.includes(7)) signals.push("Easy Money combination in their chart — financial opportunities arrive with less friction than average.");
-  if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) signals.push("Financial Bandhan in their natal — save actively and defer large purchases.");
-  if (c8 >= 2 && c8 % 2 === 0) signals.push("Even 8s in their chart support disciplined wealth accumulation this period.");
+  if (nums.includes(5) && nums.includes(7)) signals.push("Easy Money combination in your chart — financial opportunities arrive with less friction than average.");
+  if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) signals.push("Financial Bandhan in your natal — save actively and defer large purchases.");
+  if (c8 >= 2 && c8 % 2 === 0) signals.push("Even 8s in your chart support disciplined wealth accumulation this period.");
 
   // Maha+antar combination
   if (maha === 5 && antar === 7) signals.push("Easy Money period + chapter combination — the most financially fortunate dasha window.");
-  else if (maha === 7 && antar === 5) signals.push("Fortune and intelligence aligned in their current periods — financial opportunities are real.");
-  else if (maha === 5 || antar === 5) signals.push("Mercury active in their periods — cash flow and commercial opportunities are elevated.");
+  else if (maha === 7 && antar === 5) signals.push("Fortune and intelligence aligned in your current periods — financial opportunities are real.");
+  else if (maha === 5 || antar === 5) signals.push("Mercury active in your periods — cash flow and commercial opportunities are elevated.");
   else if (maha === 1 || antar === 1) signals.push("Sun period/chapter — significant financial events and bulk money are characteristic right now.");
-  else if (maha === 4 || antar === 4) signals.push("Rahu active in their periods — financial caution essential. Impulsive decisions create debt.");
+  else if (maha === 4 || antar === 4) signals.push("Rahu active in your periods — financial caution essential. Impulsive decisions create debt.");
   else if (maha === 8 && antar === 8) signals.push("Double Saturn period — slow and steady accumulation. No speculation. The discipline is the point.");
   else if (maha === 8) signals.push("Saturn period — income through sustained disciplined effort. No shortcuts. The compounding is real.");
 
