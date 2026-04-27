@@ -50,7 +50,9 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         // If user profile missing but astrologer profile exists, use that
         final effectiveUser = user ?? (isAstrologer ? astroProfile : null);
         if (effectiveUser == null) return const _NoProfileView();
-        // Use effectiveUser below instead of user
+        // Shadow user with non-null effectiveUser so rest of code works
+        // ignore: parameter_assignments
+        final UserProfile userNonNull = effectiveUser;
         return todayAsync.when(
           loading: () => Center(child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -63,7 +65,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
           )),
           error: (e, _) => _ErrorView(onRetry: () => ref.refresh(todayDataProvider)),
           data: (data) => _TodayView(
-            data: data, name: user.name, isDark: isDark,
+            data: data, name: userNonNull.name, isDark: isDark,
             onRefresh: () async => ref.refresh(todayDataProvider),
           ),
         );
