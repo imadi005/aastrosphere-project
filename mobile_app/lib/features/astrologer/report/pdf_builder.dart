@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
-import 'package:printing/printing.dart';
 import '../../../core/numerology/numerology_engine.dart';
 import 'astro_report_screen.dart';
 
@@ -62,14 +61,8 @@ class PdfReportBuilder {
     required int years,
     required List<YearSection> sections,
   }) async {
-    pw.Font reg; pw.Font bold;
-    try {
-      reg  = await PdfGoogleFonts.openSansRegular();
-      bold = await PdfGoogleFonts.openSansBold();
-    } catch (_) {
-      reg  = pw.Font.courier();
-      bold = pw.Font.courierBold();
-    }
+    final pw.Font reg  = pw.Font.helvetica();
+    final pw.Font bold = pw.Font.helveticaBold();
 
     pw.ImageProvider? logo;
     try {
