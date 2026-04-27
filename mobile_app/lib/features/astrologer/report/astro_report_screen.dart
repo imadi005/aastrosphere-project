@@ -860,19 +860,11 @@ class _HistoryTab extends ConsumerWidget {
             final years = data['years'] as int? ?? 0;
             final ts = data['created_at'] as Timestamp?;
             final date = ts != null ? _fmtDate(ts.toDate()) : '';
-            return Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: isDark ? AppColors.bgCardDark : AppColors.bgCardLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: border, width: 0.5)),
-              child: Row(children: [
-                Container(width: 36, height: 36, decoration: BoxDecoration(color: gold.withOpacity(0.1), borderRadius: BorderRadius.circular(18)),
-                  child: Center(child: Text(clientName[0].toUpperCase(), style: GoogleFonts.cormorantGaramond(fontSize: 18, color: gold)))),
-                const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(clientName, style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w500, color: primary)),
-                  Text('$clientDob  ·  $years yrs  ·  $date', style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
-                ])),
-                Icon(Icons.chevron_right, size: 16, color: secondary),
-              ]));
+            return _HistoryCard(
+              data: data, clientName: clientName, clientDob: clientDob,
+              years: years, date: date, isDark: isDark, gold: gold,
+              primary: primary, secondary: secondary, border: border,
+            );
           });
       });
   }
@@ -880,6 +872,121 @@ class _HistoryTab extends ConsumerWidget {
   String _fmtDate(DateTime d) {
     const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return '${d.day} ${m[d.month-1]} ${d.year}';
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HISTORY CARD
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _HistoryCard extends ConsumerStatefulWidget {
+  final Map<String,dynamic> data;
+  final String clientName, clientDob, date;
+  final int years;
+  final bool isDark;
+  final Color gold, primary, secondary, border;
+  const _HistoryCard({required this.data, required this.clientName,
+      required this.clientDob, required this.years, required this.date,
+      required this.isDark, required this.gold, required this.primary,
+      required this.secondary, required this.border});
+  @override ConsumerState<_HistoryCard> createState() => _HistoryCardState();
+}
+
+class _HistoryCardState extends ConsumerState<_HistoryCard> {
+  bool _loading = false;
+
+  Future<void> _openReport() async {
+    setState(() => _loading = true);
+    try {
+      // Rebuild sections from saved Firestore data
+      final raw = (widget.data['sections'] as List? ?? []).cast<Map<String,dynamic>>();
+      final sections = raw.map((s) => YearSection(
+        year: s['year'] as int? ?? 0,
+        label: s['label'] as String? ?? '',
+        mahaNum: s['maha'] as int? ?? 0,
+        mahaPlanet: s['maha_planet'] as String? ?? '',
+        mahaChanged: false,
+        antarNum: s['antar'] as int? ?? 0,
+        antarPlanet: s['antar_planet'] as String? ?? '',
+        monthlyNum: 0,
+        monthlyPlanet: '',
+        insights: (s['insights'] as List? ?? []).cast<String>(),
+        warnings: (s['warnings'] as List? ?? []).cast<String>(),
+        yogas: (s['yogas'] as List? ?? []).cast<String>(),
+        cautionDays: (s['caution_days'] as List? ?? []).cast<String>(),
+        isCurrent: false,
+        remedies: s['remedies'] as String? ?? '',
+      )).toList();
+
+      // Parse DOB
+      final dobParts = widget.clientDob.split('-');
+      final dob = dobParts.length == 3
+          ? DateTime(int.parse(dobParts[0]), int.parse(dobParts[1]), int.parse(dobParts[2]))
+          : DateTime(1990, 1, 1);
+
+      // Get astrologer info
+      final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+      String astroName = 'Astrologer'; String astroPhone = '';
+      try {
+        final doc = await FirebaseFirestore.instance.collection('astrologers').doc(uid).get();
+        if (doc.exists) {
+          astroName = doc.data()?['name'] ?? astroName;
+          astroPhone = doc.data()?['phone'] ?? astroPhone;
+        }
+      } catch (_) {}
+
+      final pdfPath = await PdfReportBuilder.build(
+        clientName: widget.clientName,
+        dob: dob,
+        astrologerName: astroName,
+        astrologerPhone: astroPhone,
+        years: widget.years,
+        sections: sections,
+      );
+      await OpenFilex.open(pdfPath);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _loading ? null : _openReport,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: widget.isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: widget.border, width: 0.5)),
+        child: Row(children: [
+          Container(width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: widget.gold.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(18)),
+            child: Center(child: Text(
+              widget.clientName.isNotEmpty ? widget.clientName[0].toUpperCase() : '?',
+              style: GoogleFonts.cormorantGaramond(fontSize: 18, color: widget.gold)))),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(widget.clientName, style: GoogleFonts.dmSans(
+                fontSize: 13, fontWeight: FontWeight.w500, color: widget.primary)),
+            Text('${widget.clientDob}  ·  ${widget.years} yrs  ·  ${widget.date}',
+                style: GoogleFonts.dmSans(fontSize: 10, color: widget.secondary)),
+          ])),
+          _loading
+            ? SizedBox(width: 16, height: 16,
+                child: CircularProgressIndicator(strokeWidth: 1.5, color: widget.gold))
+            : Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.picture_as_pdf_outlined, size: 14, color: widget.gold.withOpacity(0.6)),
+                const SizedBox(width: 4),
+                Icon(Icons.chevron_right, size: 16, color: widget.secondary),
+              ]),
+        ])));
   }
 }
 
