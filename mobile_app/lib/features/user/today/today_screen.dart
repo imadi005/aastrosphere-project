@@ -23,7 +23,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userAsync = ref.watch(activeProfileProvider);
+    final userAsync = ref.watch(userProfileProvider);
     final todayAsync = ref.watch(todayDataProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
@@ -41,12 +41,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
 
     return userAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
-      error: (err, __) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.error_outline, size: 32, color: Colors.orange),
-        const SizedBox(height: 8),
-        Text('Profile error: ' + err.toString().substring(0, err.toString().length.clamp(0, 100)),
-            style: GoogleFonts.dmSans(fontSize: 11, color: Colors.orange), textAlign: TextAlign.center),
-      ])),
+      error: (_, __) => const _NoProfileView(),
       data: (user) {
         if (user == null) return const _NoProfileView();
         return todayAsync.when(
