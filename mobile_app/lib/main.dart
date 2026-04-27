@@ -10,6 +10,8 @@ import 'features/splash/screens/splash_screen.dart';
 import 'features/auth/screens/role_selection_screen.dart';
 import 'firebase_options.dart';
 import 'core/services/midnight_refresh.dart';
+import 'core/services/analytics_service.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'core/services/notification_service.dart';
 
 void main() async {
@@ -37,6 +39,9 @@ class AastrosphereApp extends ConsumerWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
+      navigatorObservers: [
+        FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
+      ],
       home: const _AuthGate(),
     );
   }
@@ -51,7 +56,15 @@ class _AuthGate extends ConsumerWidget {
     return authState.when(
       loading: () => const SplashScreen(),
       error: (_, __) => const RoleSelectionScreen(),
-      data: (user) => user == null ? const RoleSelectionScreen() : const AppShell(),
+      data: (user) {
+        if (user != null) {
+          // Identify + track app open — wires all events to this Firebase user
+          AnalyticsService.appOpened();
+          // isAstrologer resolved by role provider — use uid for now, role set on login
+          AnalyticsService.identify(user.uid, isAstrologer: false);
+        }
+        return user == null ? const RoleSelectionScreen() : const AppShell();
+      },
     );
   }
 }

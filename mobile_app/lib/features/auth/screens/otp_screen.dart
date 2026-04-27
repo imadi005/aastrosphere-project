@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/analytics_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:aastrosphere/common/widgets/spinning_wheel.dart';
 import 'package:aastrosphere/core/theme/app_theme.dart';
@@ -55,6 +56,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
       final UserCredential userCredential =
           await ref.read(firebaseAuthProvider).signInWithCredential(credential);
       final String uid = userCredential.user!.uid;
+      await AnalyticsService.login('phone');
 
       final authRepo = ref.read(authRepositoryProvider);
       final roles = await authRepo.getUserRoles(uid);
@@ -113,6 +115,8 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
 
   /// Set role in provider (persists to SharedPreferences) then navigate home
   Future<void> _setRoleAndGoHome(AppRole role) async {
+    final uid = ref.read(firebaseAuthProvider).currentUser?.uid ?? '';
+    await AnalyticsService.identify(uid, isAstrologer: role == AppRole.astrologer);
     await ref.read(roleProvider.notifier).setRole(role);
     _navigateToHome();
   }
