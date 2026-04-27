@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:open_filex/open_filex.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/api_service.dart';
+import '../../../core/services/analytics_service.dart';
 import 'pdf_builder.dart';
 import '../../../core/numerology/numerology_engine.dart';
 import '../providers/astro_client_provider.dart';
@@ -316,6 +317,7 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
           sections[i].richData = rich;
         } catch (_) {}
       }
+      AnalyticsService.reportGenerated(_years);
       if (mounted) setState(() { _sections = sections; _generating = false; });
     } catch (e) {
       if (mounted) setState(() { _error = 'Generation failed: \$e'; _generating = false; });
@@ -390,6 +392,7 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
         if (mounted) setState(() { _saving = false; _error = 'PDF failed: ' + pdfErr.toString(); });
         return;
       }
+      AnalyticsService.pdfExported(_years);
       await OpenFilex.open(pdfPath);
 
       if (mounted) setState(() { _saving = false; });

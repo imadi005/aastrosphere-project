@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/analytics_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -47,7 +48,7 @@ class _AstroChartScreenState extends ConsumerState<AstroChartScreen> {
         chart = await ApiService.getChartForDate(dobStr, dateStr, _selectedHour);
       }
       final yogas = await ApiService.getYogas(dobStr);
-      if (mounted) setState(() { _chartData = chart; _yogaData = yogas; _loading = false; });
+      if (mounted) { setState(() { _chartData = chart; _yogaData = yogas; _loading = false; }); AnalyticsService.chartViewed(isCustomDate: _selectedDate != null); }
     } catch (e) {
       if (mounted) setState(() { _error = 'Failed to load chart'; _loading = false; });
     }
@@ -67,6 +68,7 @@ class _AstroChartScreenState extends ConsumerState<AstroChartScreen> {
     if (picked != null && mounted) {
       ref.read(astroClientDobProvider.notifier).state = picked;
       ref.read(astroUseClientDobProvider.notifier).state = true;
+      AnalyticsService.clientDobEntered();
       _selectedDate = null; _selectedHour = null;
       await _loadChart(picked);
     }
@@ -113,6 +115,7 @@ class _AstroChartScreenState extends ConsumerState<AstroChartScreen> {
     }
 
     setState(() { _selectedDate = picked; _selectedHour = hour; });
+    AnalyticsService.chartDateChanged();
     await _loadChart(dob);
   }
 

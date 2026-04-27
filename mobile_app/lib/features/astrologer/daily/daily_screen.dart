@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/analytics_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -549,7 +550,7 @@ class _RiskYearCardState extends State<_RiskYearCard> {
     final cardBorder = hasHigh ? (isDark ? AppColors.dangerDark : AppColors.danger) : (isDark ? AppColors.warningDark : AppColors.warning);
 
     return GestureDetector(
-      onTap: () => setState(() => _expanded = !_expanded),
+      onTap: () { setState(() => _expanded = !_expanded); if (!_expanded) AnalyticsService.riskYearExpanded(widget.year); },
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(

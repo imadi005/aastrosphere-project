@@ -6,6 +6,7 @@ import '../../core/services/midnight_refresh.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
+import '../../core/services/analytics_service.dart';
 import '../auth/providers/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

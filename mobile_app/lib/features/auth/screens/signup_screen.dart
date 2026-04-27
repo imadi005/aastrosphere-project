@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/analytics_service.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

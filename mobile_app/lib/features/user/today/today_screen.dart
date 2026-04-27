@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/providers/today_provider.dart';
+import '../../../core/services/analytics_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -59,10 +60,10 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             ],
           )),
           error: (e, _) => _ErrorView(onRetry: () => ref.refresh(todayDataProvider)),
-          data: (data) => _TodayView(
+          data: (data) { AnalyticsService.todayViewed(); return _TodayView(
             data: data, name: user.name, isDark: isDark,
             onRefresh: () async => ref.refresh(todayDataProvider),
-          ),
+          ); },
         );
       },
     );
