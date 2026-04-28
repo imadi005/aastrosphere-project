@@ -300,7 +300,7 @@ SYSTEM DATE: ${targetDate}
 USER'S COMPLETE CHART (DOB: ${dob}):
 Basic Number: ${ctx.basic} (${PNAME[ctx.basic]})
 Destiny Number: ${ctx.destiny} (${PNAME[ctx.destiny]})
-Maha Dasha: ${ctx.maha} (${PNAME[ctx.maha]}) — multi-year period
+Maha Dasha: ${ctx.maha} (${PNAME[ctx.maha]}) — ${[0,1,2,3,4,5,6,7,8,9][ctx.maha] || ctx.maha} year period, ends: ${currentPeriod?.mahaEnd || 'see timeline'}
 Antar Dasha: ${ctx.antar} (${PNAME[ctx.antar]}) — current chapter, ends: ${currentPeriod?.antarEnd || 'see timeline'}
 Monthly Dasha: ${ctx.monthly} (${PNAME[ctx.monthly]}) — ends: ${currentPeriod?.end || 'see timeline'}
 Daily Number today: ${ctx.daily} (${PNAME[ctx.daily]})
@@ -327,6 +327,12 @@ ${timelineStr}
 ${compatSection}
 
 ${KNOWLEDGE[questionType] || KNOWLEDGE.general}
+
+STRICT RULES ABOUT DASHA DURATIONS (NEVER DEVIATE):
+- Sun(1) = 1 year, Moon(2) = 2 years, Jupiter(3) = 3 years, Rahu(4) = 4 years
+- Mercury(5) = 5 years, Venus(6) = 6 years, Ketu(7) = 7 years, Saturn(8) = 8 years, Mars(9) = 9 years
+- These are FIXED. Never say Jupiter is 12 or 16 years. Never use Vedic Vimshottari durations.
+- This system uses Ank Jyotish durations ONLY — number = years exactly.
 
 RESPONSE RULES:
 1. Reference past period experiences to show accuracy ("pichle 2-3 mahine mein aisa feel hua hoga...")
