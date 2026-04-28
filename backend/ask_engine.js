@@ -163,12 +163,16 @@ function buildCompatibilityContext(dob1, dob2, targetDate) {
   const relDD = getRelType(d1, d2);
 
   return `
-OTHER PERSON'S CHART (DOB: ${dob2}):
+━━━ OTHER PERSON'S CHART ━━━ (DOB: ${dob2})
+⚠️ IMPORTANT: The section below is ONLY about the other person. Do NOT confuse with the primary user above.
 Basic: ${b2} (${PNAME[b2]}) | Destiny: ${d2} (${PNAME[d2]})
-Their current period: ${PNAME[maha2.number]} maha + ${PNAME[antar2.number]} antar + ${PNAME[monthly2.number]} monthly
-Their antar ends: ${antar2.end?.slice(0,10)}
+Other person's Maha: ${maha2.number} ${PNAME[maha2.number]} (ends ${maha2.end?.slice(0,10)})
+Other person's Antar: ${antar2.number} ${PNAME[antar2.number]} (ends ${antar2.end?.slice(0,10)})
+Other person's Monthly: ${monthly2.number} ${PNAME[monthly2.number]}
+Other person natal numbers: ${Object.keys(buildFrequencyMap(dob2, null, null, null, true)).join(', ')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-COMPATIBILITY:
+COMPATIBILITY (${PNAME[b1]} + ${PNAME[b2]}):
 Basic-to-basic: ${PNAME[b1]}(${b1}) vs ${PNAME[b2]}(${b2}) = ${relBB}
 Destiny-to-destiny: ${PNAME[d1]}(${d1}) vs ${PNAME[d2]}(${d2}) = ${getRelType(d1,d2)}
 Core dynamic: ${pair?.core || 'unique combination'}
@@ -344,6 +348,13 @@ MOST IMPORTANT RULE — MISSING NUMBER = POSITIVE (NEVER GET THIS WRONG):
 - Example: Natal has 8 (Saturn) → Saturn period = heavy, karmic, delays, hard work required.
 - ALWAYS check natal numbers before calling any period negative or positive.
 - User's natal numbers are listed above. Cross-reference every period against this list.
+
+TWO-PERSON RULE — CRITICAL:
+- When user asks about another person (mummy, papa, friend etc.), their chart is in 'OTHER PERSON' section above.
+- NEVER mix the two people's maha/antar/monthly. Each person has their own completely separate dashas.
+- Primary user's maha/antar is in 'USER'S COMPLETE CHART'. Other person's maha/antar is in 'OTHER PERSON' section.
+- If user says "mummy ka current phase" — use OTHER PERSON's maha/antar, not user's.
+- Always state clearly whose period you are describing: "Aapka..." vs "Unka..."
 
 ANTARDASHA DATES — USE EXACT DATES FROM TIMELINE (NEVER APPROXIMATE):
 - Each antardasha has exact start and end dates in the timeline provided.
