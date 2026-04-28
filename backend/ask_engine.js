@@ -390,7 +390,7 @@ export function extractOtherDob(messages, primaryDob) {
     const day = m[1].padStart(2,'0');
     const month = m[2].padStart(2,'0');
     const year = m[3].length === 2 ? '20'+m[3] : m[3];
-    return \`\${year}-\${month}-\${day}\`;
+    return `${year}-${month}-${day}`;
   };
 
   // Find all DOBs that are NOT the primary user's DOB
