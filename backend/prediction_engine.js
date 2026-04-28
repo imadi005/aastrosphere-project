@@ -184,7 +184,7 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
     maha: maha.number, antar: antar.number, monthly: monthly.number,
     daily, hours,
     freqMap: annualFreq, natalFreq,
-    allNums: annualNums, natalNums,
+    allNums: annualNums, natalNums, natalFreq,
     yogas, modifiers,
     mahaDetails: maha, antarDetails: antar, monthlyDetails: monthly,
     _dob: dob, // for period processing

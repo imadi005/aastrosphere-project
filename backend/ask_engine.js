@@ -304,8 +304,9 @@ Maha Dasha: ${ctx.maha} (${PNAME[ctx.maha]}) — ${[0,1,2,3,4,5,6,7,8,9][ctx.mah
 Antar Dasha: ${ctx.antar} (${PNAME[ctx.antar]}) — current chapter, ends: ${currentPeriod?.antarEnd || 'see timeline'}
 Monthly Dasha: ${ctx.monthly} (${PNAME[ctx.monthly]}) — ends: ${currentPeriod?.end || 'see timeline'}
 Daily Number today: ${ctx.daily} (${PNAME[ctx.daily]})
-Natal Numbers PRESENT: ${ctx.natalNums.join(', ')}
-Numbers ABSENT from natal (= POSITIVE when active as dasha): ${[1,2,3,4,5,6,7,8,9].filter(n => !ctx.natalNums.includes(n)).join(', ') || 'none'}
+Natal Numbers PRESENT (with frequency): ${Object.entries(ctx.natalFreq || {}).map(([k,v]) => k + (v>1 ? '(x'+v+')' : '')).join(', ')}
+Numbers ABSENT from natal (= POSITIVE/LUCKY when active): ${[1,2,3,4,5,6,7,8,9].filter(n => !ctx.natalNums.includes(n)).join(', ') || 'none — all numbers present'}
+IMPORTANT: Numbers listed as PRESENT above are IN the chart. Do NOT say they are absent. Double-check before every analysis.
 
 PERSONALITY PATTERN:
 ${profile?.pattern || ''}
