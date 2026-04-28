@@ -864,7 +864,7 @@ app.post('/api/ask', async (req, res) => {
     const questionType = classifyQuestion(lastMessage);
 
     // Extract other person DOB if mentioned
-    const otherDob = extractOtherDob(messages);
+    const otherDob = extractOtherDob(messages, dob);
 
     // Detect historical date/time in question
     const dateTime = extractDateTimeFromQuestion(lastMessage);

@@ -374,19 +374,37 @@ RESPONSE RULES:
 }
 
 // ─── Extract other person DOB from conversation ───────────────────────────────
-export function extractOtherDob(messages) {
-  // Look through last few messages for a DOB pattern
+export function extractOtherDob(messages, primaryDob) {
   const dobPattern = /\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})\b/g;
-  const allText = messages.slice(-6).map(m => m.content).join(' ');
+  const allText = messages.slice(-8).map(m => m.content).join(' ');
   const matches = [...allText.matchAll(dobPattern)];
-  if (matches.length >= 2) {
-    // Second DOB = other person
-    const m = matches[matches.length - 1];
+
+  // Keywords that signal another person is mentioned
+  const otherPersonKeywords = /patni|wife|husband|pati|mummy|mama|papa|father|mother|bhai|sister|behen|friend|dost|partner|girlfriend|boyfriend|unka|unki|uska|uski/i;
+  const hasOtherPerson = otherPersonKeywords.test(allText);
+
+  // Parse primary dob to string for comparison
+  const primaryParsed = primaryDob ? primaryDob.slice(0,10) : '';
+
+  const parseDob = (m) => {
     const day = m[1].padStart(2,'0');
     const month = m[2].padStart(2,'0');
     const year = m[3].length === 2 ? '20'+m[3] : m[3];
-    return `${year}-${month}-${day}`;
+    return \`\${year}-\${month}-\${day}\`;
+  };
+
+  // Find all DOBs that are NOT the primary user's DOB
+  const otherDobs = matches.map(parseDob).filter(d => d !== primaryParsed);
+
+  if (otherDobs.length > 0) {
+    return otherDobs[otherDobs.length - 1]; // most recent other DOB
   }
+
+  // Single DOB in message + other person keyword = that DOB is the other person
+  if (matches.length === 1 && hasOtherPerson) {
+    return parseDob(matches[0]);
+  }
+
   return null;
 }
 
