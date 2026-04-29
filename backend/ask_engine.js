@@ -22,18 +22,21 @@ export function classifyQuestion(text) {
   const t = text.toLowerCase();
 
   // Finance — broadest category
+  if (t.match(/property|ghar kharidna|makan|makaan|zameen|plot|flat kab|rent|kiraya/)) return 'finance';
   if (t.match(/pais|money|income|earn|paisa|paison|salary|job|naukri|business|karobar|loss|nuksan|debt|karz|invest|profit|faida|financial|rupee|rupay|fund|saving|bachao|kharcha|spend|broke|poor|ameer|rich|wealth|daulat|lakshmi|loan|udhar|transaction|deal|contract|afford|budget|stock|trade|bank|account|flow|ruk|band|nahi aa|nahi mil|khatam|zero|0 ho/)) return 'finance';
 
   // Relationship — love/breakup/marriage
   if (t.match(/love|pyaar|mohabbat|breakup|break up|ex|wapas|phir milenge|milegi|milega|shaadi|marriage|shadi|vivah|rishta|relation|partner|girlfriend|boyfriend|ladki|ladka|girl|boy|wife|husband|pati|patni|divorce|talak|attract|pasand|like karta|like karti|dil|feelings|sath|saath|alag|judaa|door|paas|propose|date|dating/)) return 'relationship';
 
-  // Health
+  // Health — accident first
+  if (t.match(/accident|chot|injury|gir gaya|gir gayi|takkar|crash/)) return 'health';
   if (t.match(/health|bimari|beemari|sick|hospital|doctor|dawa|medicine|dard|pain|bukhar|fever|surgery|operation|tension|stress|mental|anxiety|depression|thaka|tired|neend|sleep|khana|diet|weight|cancer|blood|sugar|bp|pressure|treatment|disease/)) return 'health';
 
   // Career
   if (t.match(/career|naukri|job|promotion|interview|office|boss|colleague|company|resign|quit|change|badlao|kaam|work|profession|success|failure|exam|study|padhai|result|rank|college|abroad|foreign|settle|opportunities|growth|business partner/)) return 'career';
 
   // Timing/lucky
+  if (/\b20[2-3]\d\b/.test(t)) return 'timing'; // year like 2026, 2027...
   if (t.match(/kab|when|kitne din|kitne time|lucky|luckiest|acha din|best day|best time|sahi time|sahi waqt|future|bhavishya|next|agle|coming|aane wala|predict|batao kab|kal|tomorrow|aaj|today|is mahine|this month|is saal|this year/)) return 'timing';
 
   // Family
@@ -308,6 +311,7 @@ Maha Dasha: ${ctx.maha} (${PNAME[ctx.maha]}) — ${[0,1,2,3,4,5,6,7,8,9][ctx.mah
 Antar Dasha: ${ctx.antar} (${PNAME[ctx.antar]}) — current chapter, ends: ${currentPeriod?.antarEnd || 'see timeline'}
 Monthly Dasha: ${ctx.monthly} (${PNAME[ctx.monthly]}) — ends: ${currentPeriod?.end || 'see timeline'}
 Daily Number today: ${ctx.daily} (${PNAME[ctx.daily]})
+Hourly Number now: ${ctx.hourly !== null ? ctx.hourly + ' (' + PNAME[ctx.hourly] + ')' : 'N/A'}
 Natal Numbers PRESENT (with frequency): ${Object.entries(ctx.natalFreq || {}).map(([k,v]) => k + (v>1 ? '(x'+v+')' : '')).join(', ')}
 Numbers ABSENT from natal (= POSITIVE/LUCKY when active): ${[1,2,3,4,5,6,7,8,9].filter(n => !ctx.natalNums.includes(n)).join(', ') || 'none — all numbers present'}
 IMPORTANT: Numbers listed as PRESENT above are IN the chart. Do NOT say they are absent. Double-check before every analysis.
@@ -361,6 +365,13 @@ ANTARDASHA DATES — USE EXACT DATES FROM TIMELINE (NEVER APPROXIMATE):
 - Never say "March-August" if the actual date is "August 11". Use the exact dates given.
 - If asked about a specific period, check the timeline and give the exact start and end date.
 
+SELF-CHECK BEFORE EVERY RESPONSE:
+1. What is this person's current Maha? (check USER'S COMPLETE CHART above)
+2. What is their current Antar? (check exact end date)
+3. Is the number I'm about to mention present or absent in their natal?
+4. If talking about another person — am I using THEIR chart section, not the primary user's?
+Only after answering these 4 checks internally, write the response.
+
 RESPONSE RULES:
 1. Reference past period experiences to show accuracy ("pichle 2-3 mahine mein aisa feel hua hoga...")
 2. Give current period explanation without jargon
@@ -409,8 +420,10 @@ export function extractOtherDob(messages, primaryDob) {
   }
 
   // Single DOB in message + other person keyword = that DOB is the other person
+  // BUT only if it's different from primary user's DOB
   if (matches.length === 1 && hasOtherPerson) {
-    return parseDob(matches[0]);
+    const parsed = parseDob(matches[0]);
+    if (parsed !== primaryParsed) return parsed;
   }
 
   return null;
