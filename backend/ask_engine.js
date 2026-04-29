@@ -6,7 +6,7 @@
 
 import {
   basicNumber, destinyNumber, currentMahadasha, currentAntardasha,
-  currentMonthlyDasha, buildFrequencyMap, antardashaTimeline, supportiveNumbers
+  currentMonthlyDasha, dailyDasha, buildFrequencyMap, antardashaTimeline, supportiveNumbers
 } from './numerology.js';
 import { buildChartContext, getDeepNumberProfile, getDashaExperience } from './prediction_engine.js';
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, VEDIC_RELATIONS, getRelType } from './compatibility_library.js';
@@ -389,7 +389,15 @@ export function extractOtherDob(messages, primaryDob) {
   const parseDob = (m) => {
     const day = m[1].padStart(2,'0');
     const month = m[2].padStart(2,'0');
-    const year = m[3].length === 2 ? '20'+m[3] : m[3];
+    const yr2 = parseInt(m[3]);
+    const currentYr2 = new Date().getFullYear() % 100; // e.g. 26 for 2026
+    let year;
+    if (m[3].length === 2) {
+      // 76 => 1976 (>= 27 means 1900s), 03 => 2003 (< 27 means 2000s)
+      year = yr2 > currentYr2 ? '19'+m[3] : '20'+m[3].padStart(2,'0');
+    } else {
+      year = m[3];
+    }
     return `${year}-${month}-${day}`;
   };
 
@@ -596,4 +604,82 @@ export async function buildYearAccidentAnalysis(dob, year) {
   } catch(e) {
     return 'Year analysis error: ' + e.message;
   }
+}
+
+// ─── Smart DOB Parser ─────────────────────────────────────────────────────────
+// Handles: 17/10/76, 17/10/1976, 17-10-76, 1976-10-17, "17th Oct 1976" etc.
+export function smartParseDob(input) {
+  if (!input) return null;
+  const s = input.toString().trim();
+
+  // Already ISO format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+  // Named month: "17 Oct 1976" or "Oct 17 1976"
+  const months = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  const namedMatch = s.match(/(\d{1,2})\s+([a-zA-Z]{3,})\s+(\d{2,4})/);
+  if (namedMatch) {
+    const mo = months[namedMatch[2].toLowerCase().slice(0,3)];
+    if (mo) {
+      const yr = resolveYear(namedMatch[3]);
+      return `${yr}-${String(mo).padStart(2,'0')}-${namedMatch[1].padStart(2,'0')}`;
+    }
+  }
+
+  // DD/MM/YY or DD/MM/YYYY or DD-MM-YY etc.
+  const numMatch = s.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+  if (numMatch) {
+    const day = numMatch[1].padStart(2,'0');
+    const mo  = numMatch[2].padStart(2,'0');
+    const yr  = resolveYear(numMatch[3]);
+    return `${yr}-${mo}-${day}`;
+  }
+
+  return null;
+}
+
+function resolveYear(yearStr) {
+  if (yearStr.length === 4) return yearStr;
+  const y2 = parseInt(yearStr);
+  const cur2 = new Date().getFullYear() % 100; // 26
+  // 27-99 = 1900s, 00-26 = 2000s
+  return y2 > cur2 ? `19${yearStr.padStart(2,'0')}` : `20${yearStr.padStart(2,'0')}`;
+}
+
+// ─── Full Chart Builder for Chatbot ──────────────────────────────────────────
+// Given any DOB string, returns complete verified chart data
+export function buildFullChartForChat(dobRaw, targetDate = new Date().toISOString()) {
+  const dob = smartParseDob(dobRaw);
+  if (!dob) return null;
+
+  const dobDate = new Date(dob);
+  const basic   = basicNumber(dobDate.getDate());
+  const destiny = destinyNumber(dob);
+  const maha    = currentMahadasha(dob, targetDate);
+  const antar   = currentAntardasha(dob, targetDate);
+  const monthly = currentMonthlyDasha(dob, targetDate);
+  const daily   = dailyDasha(dob, targetDate);
+  const natalFreq = buildFrequencyMap(dob, null, null, null, true);
+  const natalNums = Object.keys(natalFreq).map(Number);
+  const absentNums = [1,2,3,4,5,6,7,8,9].filter(n => !natalNums.includes(n));
+
+  // Next 5 antardashas
+  const upcomingAntar = antardashaTimeline(dob, 1, 6)
+    .filter(a => a.end > targetDate.slice(0,10))
+    .slice(0, 5);
+
+  const PNAME = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'Ketu',8:'Saturn',9:'Mars'};
+
+  return {
+    dob_parsed: dob,
+    basic: `${basic} (${PNAME[basic]})`,
+    destiny: `${destiny} (${PNAME[destiny]})`,
+    natal_present: Object.entries(natalFreq).map(([k,v]) => `${k}${v>1?'(x'+v+')':''}`).join(', '),
+    natal_absent: absentNums.join(', ') || 'none',
+    maha: `${maha.number} ${PNAME[maha.number]} — ends ${maha.end.slice(0,10)}`,
+    antar: `${antar.number} ${PNAME[antar.number]} — ends ${antar.end.slice(0,10)}`,
+    monthly: `${monthly.number} ${PNAME[monthly.number]}`,
+    daily: `${daily} (${PNAME[daily]})`,
+    upcoming_antar: upcomingAntar.map(a => `${a.number} ${PNAME[a.number]}: ${a.start.slice(0,7)} → ${a.end.slice(0,7)}`).join(' | '),
+  };
 }

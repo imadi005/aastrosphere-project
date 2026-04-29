@@ -33,7 +33,7 @@ import {
 } from './prediction_engine.js';
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
-import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis } from './ask_engine.js';
+import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis, buildFullChartForChat, smartParseDob } from './ask_engine.js';
 import { buildScanContext } from './event_scanner.js';
 import { DEEP_NUMBER_PROFILES, DEEP_COMBINATIONS as DEEP_COMBINATION_LIBRARY } from './deep_library.js';
 
@@ -890,6 +890,29 @@ app.post('/api/ask', async (req, res) => {
 
     // Build system prompt with full chart + relevant knowledge
     let systemPrompt = buildSystemPrompt(dob, targetDate, questionType, otherDob);
+
+    // If other person DOB detected, inject their FULL verified chart
+    if (otherDob) {
+      const otherChart = buildFullChartForChat(otherDob, targetDate);
+      if (otherChart) {
+        systemPrompt += `
+
+━━━ OTHER PERSON VERIFIED CHART (computed from DOB: ${otherChart.dob_parsed}) ━━━
+USE THESE VALUES — DO NOT CALCULATE YOURSELF:
+Basic: ${otherChart.basic}
+Destiny: ${otherChart.destiny}
+Natal PRESENT: ${otherChart.natal_present}
+Natal ABSENT (= positive periods): ${otherChart.natal_absent}
+Current Maha: ${otherChart.maha}
+Current Antar: ${otherChart.antar}
+Current Monthly: ${otherChart.monthly}
+Today's Daily: ${otherChart.daily}
+Upcoming Antars: ${otherChart.upcoming_antar}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+      }
+    }
+
     if (historicalContext) systemPrompt += historicalContext;
     if (scanContext) systemPrompt += scanContext;
 
