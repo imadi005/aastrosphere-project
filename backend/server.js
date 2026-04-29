@@ -897,17 +897,23 @@ app.post('/api/ask', async (req, res) => {
       if (otherChart) {
         systemPrompt += `
 
-━━━ OTHER PERSON VERIFIED CHART (computed from DOB: ${otherChart.dob_parsed}) ━━━
-USE THESE VALUES — DO NOT CALCULATE YOURSELF:
+━━━ OTHER PERSON VERIFIED CHART — DOB: ${otherChart.dob_parsed} ━━━
+⚠️ USE THESE EXACT VALUES. DO NOT RECALCULATE. DO NOT GUESS.
 Basic: ${otherChart.basic}
 Destiny: ${otherChart.destiny}
 Natal PRESENT: ${otherChart.natal_present}
-Natal ABSENT (= positive periods): ${otherChart.natal_absent}
+Natal ABSENT (= POSITIVE/LUCKY periods): ${otherChart.natal_absent}
 Current Maha: ${otherChart.maha}
 Current Antar: ${otherChart.antar}
 Current Monthly: ${otherChart.monthly}
-Today's Daily: ${otherChart.daily}
-Upcoming Antars: ${otherChart.upcoming_antar}
+Today Daily: ${otherChart.daily}
+Upcoming Antars (in order): ${otherChart.upcoming_antar}
+Personality: ${otherChart.personality}
+Money pattern: ${otherChart.money}
+Work pattern: ${otherChart.work}
+Current period feels like: ${otherChart.period_feel}
+What is actually happening: ${otherChart.period_reality}
+Active yogas: ${otherChart.yogas || 'none detected'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
       }

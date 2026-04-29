@@ -652,34 +652,38 @@ export function buildFullChartForChat(dobRaw, targetDate = new Date().toISOStrin
   const dob = smartParseDob(dobRaw);
   if (!dob) return null;
 
-  const dobDate = new Date(dob);
-  const basic   = basicNumber(dobDate.getDate());
-  const destiny = destinyNumber(dob);
-  const maha    = currentMahadasha(dob, targetDate);
-  const antar   = currentAntardasha(dob, targetDate);
-  const monthly = currentMonthlyDasha(dob, targetDate);
-  const daily   = dailyDasha(dob, targetDate);
-  const natalFreq = buildFrequencyMap(dob, null, null, null, true);
-  const natalNums = Object.keys(natalFreq).map(Number);
+  // Use prediction engine — same as primary user flow
+  const ctx        = buildChartContext(dob, targetDate);
+  const profile    = getDeepNumberProfile(ctx.basic, ctx.destiny, ctx.maha, ctx.natalNums);
+  const dasha      = getDashaExperience(ctx.maha, ctx.antar);
+  const natalFreq  = ctx.natalFreq || buildFrequencyMap(dob, null, null, null, true);
+  const natalNums  = Object.keys(natalFreq).map(Number);
   const absentNums = [1,2,3,4,5,6,7,8,9].filter(n => !natalNums.includes(n));
+  const PNAME      = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'Ketu',8:'Saturn',9:'Mars'};
 
   // Next 5 antardashas
   const upcomingAntar = antardashaTimeline(dob, 1, 6)
     .filter(a => a.end > targetDate.slice(0,10))
     .slice(0, 5);
 
-  const PNAME = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'Ketu',8:'Saturn',9:'Mars'};
-
   return {
     dob_parsed: dob,
-    basic: `${basic} (${PNAME[basic]})`,
-    destiny: `${destiny} (${PNAME[destiny]})`,
+    basic:   `${ctx.basic} (${PNAME[ctx.basic]})`,
+    destiny: `${ctx.destiny} (${PNAME[ctx.destiny]})`,
     natal_present: Object.entries(natalFreq).map(([k,v]) => `${k}${v>1?'(x'+v+')':''}`).join(', '),
-    natal_absent: absentNums.join(', ') || 'none',
-    maha: `${maha.number} ${PNAME[maha.number]} — ends ${maha.end.slice(0,10)}`,
-    antar: `${antar.number} ${PNAME[antar.number]} — ends ${antar.end.slice(0,10)}`,
-    monthly: `${monthly.number} ${PNAME[monthly.number]}`,
-    daily: `${daily} (${PNAME[daily]})`,
-    upcoming_antar: upcomingAntar.map(a => `${a.number} ${PNAME[a.number]}: ${a.start.slice(0,7)} → ${a.end.slice(0,7)}`).join(' | '),
+    natal_absent:  absentNums.join(', ') || 'none',
+    maha:    `${ctx.maha} ${PNAME[ctx.maha]} — ends ${ctx.mahaEnd || '?'}`,
+    antar:   `${ctx.antar} ${PNAME[ctx.antar]} — ends ${ctx.antarEnd || '?'}`,
+    monthly: `${ctx.monthly} (${PNAME[ctx.monthly]})`,
+    daily:   `${ctx.daily} (${PNAME[ctx.daily]})`,
+    upcoming_antar: upcomingAntar.map(a => `${a.number} ${PNAME[a.number]}: ${a.start.slice(0,7)} -> ${a.end.slice(0,7)}`).join(' | '),
+    // Rich prediction engine data
+    personality:  profile?.pattern || '',
+    money:        profile?.money_pattern || '',
+    work:         profile?.work_pattern || '',
+    shadow:       profile?.shadow || '',
+    period_feel:  dasha?.what_it_feels_like || '',
+    period_reality: dasha?.what_is_actually_happening || '',
+    yogas:        (ctx.yogas || []).join(', '),
   };
 }
