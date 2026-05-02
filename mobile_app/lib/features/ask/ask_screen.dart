@@ -598,13 +598,16 @@ I'm your personal astro guide. Ask me anything about:
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     final hh = time.hour.toString().padLeft(2, '0');
     final mm = time.minute.toString().padLeft(2, '0');
-    if (diff.inHours < 24) return '$hh:$mm';
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return '${time.day} ${months[time.month-1]}, $hh:$mm';
+    final dayName = days[time.weekday - 1];
+    final dateStr = '${time.day} ${months[time.month-1]}';
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '$dayName, $hh:$mm';
+    if (diff.inHours < 24) return '$dayName, $hh:$mm';
+    return '$dayName $dateStr, $hh:$mm';
   }
   
   Color secondaryTextColor(bool isDark) {
