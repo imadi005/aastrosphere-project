@@ -109,10 +109,14 @@ I'm your personal astro guide. Ask me anything about:
       
       if (doc.exists && doc.data() != null) {
         final history = (doc.data()!['messages'] as List? ?? []);
-        final loaded = history.map((m) => ChatMessage(
-          role: m['role'] as String,
-          content: m['content'] as String,
-        )).toList();
+        final loaded = history.map((m) {
+          final ts = m['ts'] as int?;
+          return ChatMessage(
+            role: m['role'] as String,
+            content: m['content'] as String,
+            timestamp: ts != null ? DateTime.fromMillisecondsSinceEpoch(ts) : null,
+          );
+        }).toList();
         
         if (mounted && loaded.isNotEmpty) {
           setState(() {
@@ -138,7 +142,7 @@ I'm your personal astro guide. Ask me anything about:
       final toSave = _messages
           .skip(1)
           .take(50)
-          .map((m) => {'role': m.role, 'content': m.content})
+          .map((m) => {'role': m.role, 'content': m.content, 'ts': m.timestamp.millisecondsSinceEpoch})
           .toList();
       
       await FirebaseFirestore.instance
@@ -173,7 +177,7 @@ I'm your personal astro guide. Ask me anything about:
           ? allHistory.sublist(allHistory.length - 20)
           : allHistory;
       final apiMessages = recentMessages
-          .map((m) => {'role': m.role, 'content': m.content})
+          .map((m) => {'role': m.role, 'content': m.content, 'ts': m.timestamp.millisecondsSinceEpoch})
           .toList();
 
       final result = await ApiService.ask(
@@ -593,12 +597,14 @@ I'm your personal astro guide. Ask me anything about:
   
   String _formatTime(DateTime time) {
     final now = DateTime.now();
-    final difference = now.difference(time);
-    
-    if (difference.inMinutes < 1) return 'Just now';
-    if (difference.inMinutes < 60) return '${difference.inMinutes}m ago';
-    if (difference.inHours < 24) return '${difference.inHours}h ago';
-    return '${difference.inDays}d ago';
+    final diff = now.difference(time);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    final hh = time.hour.toString().padLeft(2, '0');
+    final mm = time.minute.toString().padLeft(2, '0');
+    if (diff.inHours < 24) return '$hh:$mm';
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${time.day} ${months[time.month-1]}, $hh:$mm';
   }
   
   Color secondaryTextColor(bool isDark) {
