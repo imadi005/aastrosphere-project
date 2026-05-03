@@ -451,9 +451,12 @@ export function generateDailyPrediction(ctx) {
   // ── Day rating using full chart ──────────────────────────────────────────
   const rating = assessFullDayRating(basic, destiny, maha, antar, monthly, daily, yogas, freqMap);
 
-  // ── Quote — vary by basic + daily + maha ─────────────────────────────────
+  // ── Quote — vary by basic + daily + date so no weekly repeat ───────────
   const quotes = DAILY_QUOTES[daily];
-  const quoteIndex = (basic + destiny + maha + antar + monthly + daily) % quotes.length;
+  // Include day-of-year so same weekday next week gets different quote
+  const targetDateObj = new Date(targetDate);
+  const dayOfYear = Math.floor((targetDateObj - new Date(targetDateObj.getFullYear(), 0, 0)) / 86400000);
+  const quoteIndex = (basic + destiny + maha + antar + monthly + daily + dayOfYear) % quotes.length;
   const quote = quotes[quoteIndex];
 
   // ── Yoga messages ────────────────────────────────────────────────────────

@@ -256,71 +256,7 @@ export const DASHA_COMBO_PREDICTIONS = {
 };
 
 // ─── Daily quotes library (based on daily dasha number) ──────────────────────
-export const DAILY_QUOTES = {
-  1: [
-    "A day to take the lead — their instincts are sharper than anyone else's right now.",
-    "Today rewards the bold. The decision they've been postponing is ready to be made.",
-    "Their presence commands attention today — use it with intention, not ego.",
-    "The universe is backing their ambitions today. Step forward without hesitation.",
-    "Authority is earned one decisive move at a time — today is their turn.",
-  ],
-  2: [
-    "Today asks they to feel before they act — their emotional intelligence is their superpower.",
-    "Connections made today are deeper than they appear. Pay attention to who shows up.",
-    "Their sensitivity isn't weakness today — it's the sharpest tool they have.",
-    "A quiet day for inner knowing. Trust the feeling, not just the logic.",
-    "Today favors the gentle approach — force achieves nothing, warmth achieves everything.",
-  ],
-  3: [
-    "Wisdom over speed today — the right answer takes a moment longer to find.",
-    "Today is for counsel, not conflict. Their words carry unusual weight — choose them carefully.",
-    "Family matters surface today. Address them with patience, not solutions.",
-    "A day to teach, guide, or be guided. The lesson they receive today is the one they needed.",
-    "Their judgment is sound today — trust it, especially when others doubt they.",
-  ],
-  4: [
-    "Expect the unexpected today — and don't fight it. The disruption is the direction.",
-    "Today favors research over action. Understand before they commit.",
-    "Their mind moves faster than usual today — brilliant ideas arrive. Write them down immediately.",
-    "Routine breaks today. Let it. What replaces it may be better.",
-    "The unconventional path is the right one today. Don't explain it to anyone.",
-  ],
-  5: [
-    "Money and opportunity speak the same language today — listen carefully.",
-    "Their communication is razor-sharp today. Negotiate, propose, and close.",
-    "Today is for business — every conversation is a potential transaction.",
-    "Clarity about their finances arrives today if they actually look at the numbers.",
-    "Their intellect is at peak today. Use it for something that matters.",
-  ],
-  6: [
-    "Beauty, connection, and ease — today asks they to receive, not just give.",
-    "Love languages are loud today — speak yours and listen for others'.",
-    "Their environment affects their energy today more than usual. Surround yourself with beauty.",
-    "Today is for pleasure without guilt — they've earned a moment of luxury.",
-    "Relationships they've neglected call for attention today. A small gesture goes a long way.",
-  ],
-  7: [
-    "Luck is quiet today — it's working behind the scenes whether they see it or not.",
-    "Today rewards the curious. Ask the question they've been afraid to ask.",
-    "Intuition is sharper than analysis today. Trust the gut over the spreadsheet.",
-    "A fortunate alignment is active today — stay open to what arrives.",
-    "The answer they're searching for is closer than they think. Stillness reveals it.",
-  ],
-  8: [
-    "Today demands discipline — the shortcut they're considering will cost more than the long way.",
-    "Hard work today doesn't just move the needle — it resets the trajectory.",
-    "The karmic account is being settled today. Give their best regardless of what's given to they.",
-    "Today's effort is an investment in a version of yourself that hasn't arrived yet.",
-    "Resilience is the skill being tested today. They have more of it than they remember.",
-  ],
-  9: [
-    "Energy is high today — channel it or it channels they.",
-    "Today rewards courage. The bold move they've been avoiding is today's priority.",
-    "Their fighting spirit is activated today — use it for progress, not conflict.",
-    "Act first, analyze later today — overthinking will slow what momentum wants to deliver.",
-    "Today is for the warrior in they — bold, focused, unstoppable.",
-  ],
-};
+// DAILY_QUOTES moved to quotes_library.js (889 quotes)
 
 // ─── What to do / What to avoid (per day number + context) ────────────────────
 export const DAILY_GUIDANCE = {
@@ -729,7 +665,6 @@ export default {
   NUMBER_ENERGY,
   COMBINATION_MEANINGS,
   DASHA_COMBO_PREDICTIONS,
-  DAILY_QUOTES,
   DAILY_GUIDANCE,
   HOUR_QUALITIES,
   COMBO_DAILY_INSIGHTS,
