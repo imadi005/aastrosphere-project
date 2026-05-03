@@ -301,35 +301,29 @@ class _DayCardState extends State<_DayCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Rating + number
-          Row(
-            children: [
-              Text('${widget.dailyNum}',
-                  style: GoogleFonts.cormorantGaramond(
-                      fontSize: 52, fontWeight: FontWeight.w300,
-                      color: widget.gold, height: 1)),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: ratingColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: ratingColor.withOpacity(0.3), width: 0.5),
-                ),
-                child: Text(ratingLabel,
-                    style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5, color: ratingColor)),
+          // Rating tag only — number removed
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: ratingColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: ratingColor.withOpacity(0.3), width: 0.5),
               ),
-            ],
+              child: Text(ratingLabel,
+                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5, color: ratingColor)),
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
-          // Quote
+          // Quote — ultra big
           if (widget.quote.isNotEmpty)
             Text('"${widget.quote}"',
                 style: GoogleFonts.cormorantGaramond(
-                    fontSize: 16, fontStyle: FontStyle.italic,
-                    color: widget.gold, height: 1.5)),
+                    fontSize: 26, fontStyle: FontStyle.italic,
+                    color: widget.gold, height: 1.5, fontWeight: FontWeight.w500)),
           const SizedBox(height: 12),
           Divider(color: border, thickness: 0.5),
           const SizedBox(height: 10),
