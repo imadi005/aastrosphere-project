@@ -833,10 +833,10 @@ class _DayBlocksState extends State<_DayBlocks> {
   int? _openBlock;
 
   static const _blocks = [
-    {'label': 'Morning',   'icon': '🌅', 'start': 5,  'end': 11},
-    {'label': 'Afternoon', 'icon': '☀️',  'start': 12, 'end': 16},
-    {'label': 'Evening',   'icon': '🌆', 'start': 17, 'end': 20},
-    {'label': 'Night',     'icon': '🌙', 'start': 21, 'end': 23},
+    {'label': 'Morning',   'icon': 'M', 'start': 5,  'end': 11},
+    {'label': 'Afternoon', 'icon': 'A', 'start': 12, 'end': 16},
+    {'label': 'Evening',   'icon': 'E', 'start': 17, 'end': 20},
+    {'label': 'Night',     'icon': 'N', 'start': 21, 'end': 23},
   ];
 
   Color _hourColor(String cls) {
@@ -900,7 +900,20 @@ class _DayBlocksState extends State<_DayBlocks> {
                     width: hasNow ? 1.2 : 0.5),
               ),
               child: Row(children: [
-                Text(block['icon'] as String, style: const TextStyle(fontSize: 18)),
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: hasNow ? widget.gold.withOpacity(0.12) : border.withOpacity(0.4),
+                    border: Border.all(
+                      color: hasNow ? widget.gold.withOpacity(0.4) : border,
+                      width: 0.8),
+                  ),
+                  child: Center(child: Text(block['icon'] as String,
+                      style: GoogleFonts.cormorantGaramond(
+                          fontSize: 14, fontWeight: FontWeight.w600,
+                          color: hasNow ? widget.gold : secondary))),
+                ),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(children: [
