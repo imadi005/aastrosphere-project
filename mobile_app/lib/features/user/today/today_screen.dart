@@ -152,12 +152,10 @@ class _TodayView extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ── 8. Hour strip ────────────────────────────────────
-            _HourStrip(
+            // ── 8. Hour section — heatmap + current + next 3 ──────
+            _HourSection(
               allHours: allHours,
-              bestHours: bestHours,
-              cautionHours: cautionHours,
-              currentHour: currentHour,
+              currentHour: DateTime.now().hour,
               isDark: isDark, gold: gold,
             ),
 
@@ -342,6 +340,266 @@ class _DayCardState extends State<_DayCard> {
 }
 
 // ─── 4. Best & Caution hours summary ─────────────────────────────────────────
+// ─── Hour Section: Heatmap strip + Current hour + Next 3 ─────────────────────
+class _HourSection extends StatelessWidget {
+  final List<dynamic> allHours;
+  final int currentHour;
+  final bool isDark;
+  final Color gold;
+
+  const _HourSection({
+    required this.allHours, required this.currentHour,
+    required this.isDark, required this.gold,
+  });
+
+  Color _hourColor(String cls, bool isDark) {
+    switch (cls) {
+      case 'best':    return isDark ? AppColors.successDark : AppColors.success;
+      case 'caution': return const Color(0xFFF59E0B);
+      case 'avoid':   return isDark ? AppColors.dangerDark : AppColors.danger;
+      default:        return isDark ? Colors.white24 : Colors.black12;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final primary   = isDark ? AppColors.textPrimaryDark  : AppColors.textPrimaryLight;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final cardBg    = isDark ? AppColors.bgCardDark : AppColors.bgCardLight;
+    final border    = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final subtleBg  = isDark ? AppColors.bgSubtleDark : AppColors.bgSubtleLight;
+
+    final waking = allHours
+        .where((h) { final hr = h['hour'] as int; return hr >= 5 && hr <= 23; })
+        .toList();
+
+    final currentData = allHours.firstWhere(
+      (h) => h['hour'] == currentHour,
+      orElse: () => allHours.isNotEmpty ? allHours.first : <String, dynamic>{},
+    ) as Map<String, dynamic>;
+
+    final nextHours = allHours
+        .where((h) {
+          final hr = h['hour'] as int;
+          return hr > currentHour && hr <= currentHour + 3;
+        })
+        .take(3)
+        .toList();
+
+    final currentCls = currentData['classification'] as String? ?? 'neutral';
+    final currentColor = _hourColor(currentCls, isDark);
+    final currentLabel = _clsLabel(currentCls);
+    final currentReason = currentData['reason'] as String? ?? '';
+    final currentAction = currentData['best_action'] as String? ?? '';
+    final currentGoodFor = (currentData['good_for'] as List? ?? []).cast<String>();
+    final currentAvoid = (currentData['avoid'] as List? ?? []).cast<String>();
+
+    final ch12 = currentHour == 0 ? 12 : currentHour > 12 ? currentHour - 12 : currentHour;
+    final campm = currentHour < 12 ? 'AM' : 'PM';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Section label
+        SectionLabel('Hour by Hour'),
+        const SizedBox(height: 10),
+
+        // ── D: Heatmap strip ────────────────────────────────────────────────
+        AstroCard(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // 24hr color bar
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: SizedBox(
+                height: 8,
+                child: Row(
+                  children: waking.map((h) {
+                    final cls = h['classification'] as String? ?? 'neutral';
+                    final hr  = h['hour'] as int;
+                    final isCurrent = hr == currentHour;
+                    return Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isCurrent
+                              ? gold
+                              : _hourColor(cls, isDark).withOpacity(cls == 'neutral' ? 0.15 : 0.5),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Hour labels — just key times
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: ['6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM'].map((t) =>
+                Text(t, style: GoogleFonts.dmSans(fontSize: 8, color: secondary.withOpacity(0.5)))
+              ).toList(),
+            ),
+            const SizedBox(height: 8),
+            // Legend
+            Row(children: [
+              _Dot(color: isDark ? AppColors.successDark : AppColors.success), const SizedBox(width: 4),
+              Text('Best', style: GoogleFonts.dmSans(fontSize: 9, color: secondary)),
+              const SizedBox(width: 12),
+              _Dot(color: const Color(0xFFF59E0B)), const SizedBox(width: 4),
+              Text('Caution', style: GoogleFonts.dmSans(fontSize: 9, color: secondary)),
+              const SizedBox(width: 12),
+              _Dot(color: gold), const SizedBox(width: 4),
+              Text('Now', style: GoogleFonts.dmSans(fontSize: 9, color: secondary)),
+              const Spacer(),
+              Text('Tap hour for detail', style: GoogleFonts.dmSans(fontSize: 9, color: secondary.withOpacity(0.5))),
+            ]),
+          ]),
+        ),
+        const SizedBox(height: 10),
+
+        // ── B: Current hour — big card ───────────────────────────────────────
+        GestureDetector(
+          onTap: () => _HourStrip.showHourBottomSheet(context, currentData, isDark, gold),
+          child: AstroCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Text('NOW  $ch12 $campm',
+                    style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
+                        letterSpacing: 1, color: gold)),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: currentColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: currentColor.withOpacity(0.3), width: 0.5),
+                  ),
+                  child: Text(currentLabel,
+                      style: GoogleFonts.dmSans(fontSize: 8, fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5, color: currentColor)),
+                ),
+              ]),
+              const SizedBox(height: 10),
+              if (currentReason.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.only(left: 10, top: 2, bottom: 2),
+                  decoration: BoxDecoration(
+                    border: Border(left: BorderSide(color: gold.withOpacity(0.4), width: 2))),
+                  child: Text(currentReason,
+                      style: GoogleFonts.dmSans(fontSize: 13, color: primary.withOpacity(0.85), height: 1.5)),
+                ),
+              if (currentAction.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Icon(Icons.arrow_forward_ios, size: 11, color: gold),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text(currentAction,
+                      style: GoogleFonts.dmSans(fontSize: 12, color: primary.withOpacity(0.8),
+                          fontWeight: FontWeight.w600, height: 1.4))),
+                ]),
+              ],
+              if (currentGoodFor.isNotEmpty || currentAvoid.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  if (currentGoodFor.isNotEmpty) Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('GOOD FOR', style: GoogleFonts.dmSans(fontSize: 8,
+                          color: (isDark ? AppColors.successDark : AppColors.success),
+                          fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+                      const SizedBox(height: 4),
+                      ...currentGoodFor.take(3).map((g) => Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: Text(g, style: GoogleFonts.dmSans(fontSize: 11,
+                            color: primary.withOpacity(0.7), height: 1.4)),
+                      )),
+                    ]),
+                  ),
+                  if (currentAvoid.isNotEmpty) Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('AVOID', style: GoogleFonts.dmSans(fontSize: 8,
+                          color: isDark ? AppColors.dangerDark : AppColors.danger,
+                          fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+                      const SizedBox(height: 4),
+                      ...currentAvoid.take(3).map((a) => Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: Text(a, style: GoogleFonts.dmSans(fontSize: 11,
+                            color: primary.withOpacity(0.7), height: 1.4)),
+                      )),
+                    ]),
+                  ),
+                ]),
+              ],
+            ]),
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // ── Next 3 hours ────────────────────────────────────────────────────
+        if (nextHours.isNotEmpty) Row(
+          children: nextHours.map((h) {
+            final hr  = h['hour'] as int;
+            final cls = h['classification'] as String? ?? 'neutral';
+            final reason = h['reason'] as String? ?? '';
+            final action = h['best_action'] as String? ?? '';
+            final clsColor = _hourColor(cls, isDark);
+            final h12 = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
+            final ampm = hr < 12 ? 'AM' : 'PM';
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => _HourStrip.showHourBottomSheet(context, h as Map<String, dynamic>, isDark, gold),
+                child: Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: border, width: 0.5),
+                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      Text('$h12 $ampm', style: GoogleFonts.dmSans(
+                          fontSize: 10, fontWeight: FontWeight.w700, color: gold)),
+                      const Spacer(),
+                      Container(width: 7, height: 7,
+                          decoration: BoxDecoration(shape: BoxShape.circle,
+                              color: clsColor.withOpacity(0.8))),
+                    ]),
+                    const SizedBox(height: 6),
+                    Text(action.isNotEmpty ? action : reason,
+                        maxLines: 2, overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.dmSans(fontSize: 10,
+                            color: primary.withOpacity(0.75), height: 1.4)),
+                  ]),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  String _clsLabel(String cls) {
+    switch (cls) {
+      case 'best':    return 'BEST HOUR';
+      case 'caution': return 'CAUTION';
+      case 'avoid':   return 'AVOID';
+      default:        return 'NEUTRAL';
+    }
+  }
+}
+
+class _Dot extends StatelessWidget {
+  final Color color;
+  const _Dot({required this.color});
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 7, height: 7,
+    decoration: BoxDecoration(shape: BoxShape.circle, color: color));
+}
+
+
 class _HourSummaryCard extends StatelessWidget {
   final List<dynamic> bestHours, cautionHours;
   final bool isDark;
@@ -696,7 +954,7 @@ class _HourStrip extends StatelessWidget {
               final ampm = hr < 12 ? 'AM' : 'PM';
 
               return GestureDetector(
-                onTap: () => _showHourDetail(ctx, h, isDark, gold),
+                onTap: () => _HourStrip.showHourBottomSheet(ctx, h, isDark, gold),
                 child: Container(
                   width: 56,
                   margin: const EdgeInsets.only(right: 6),
@@ -748,7 +1006,7 @@ class _HourStrip extends StatelessWidget {
     );
   }
 
-  void _showHourDetail(BuildContext context, Map<String, dynamic> h, bool isDark, Color gold) {
+  static void showHourBottomSheet(BuildContext context, Map<String, dynamic> h, bool isDark, Color gold) {
     final hr = h['hour'] as int;
     final num = h['number'] as int;
     final classification = h['classification'] as String? ?? 'neutral';
