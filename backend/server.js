@@ -233,7 +233,7 @@ app.post('/api/today', (req, res) => {
     })();
 
     // All hours with full detail for clickable cards
-    const allHours = (hourly.all || []).map(h => ({
+    const allHours = (hourly.all || []).filter(h => h.hour >= 6 && h.hour <= 23).map(h => ({
       ...h,
       // Ensure good_for and avoid arrays are present
       good_for: h.good_for || [],
