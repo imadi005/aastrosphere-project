@@ -21,6 +21,7 @@ import {
   DAILY_LAYER, MAHA_CONTEXT, ANTAR_CONTEXT, MONTHLY_CONTEXT,
 } from './daily_prediction_library.js';
 import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
+import { getDayDefinition } from './day_definition_library.js';
 
 import { DEEP_PERIOD_TEXTS_GENERATED } from './deep_library_generated.js';
 
@@ -443,7 +444,7 @@ export function generateDailyPrediction(ctx) {
   const { basic, destiny, maha, antar, monthly, daily, yogas, freqMap, allNums, natalNums } = ctx;
 
   // ── Full 6-layer insight ─────────────────────────────────────────────────
-  const insight = buildFullDailyInsight({ basic, destiny, maha, antar, monthly, daily, yogas, natalNums });
+  const insight = getDayDefinition(maha, antar, daily);
 
   // ── Personalized do/avoid from natal + maha + antar + daily ──────────────
   const guidance = getPersonalizedGuidance(basic, daily, maha, antar, yogas);
