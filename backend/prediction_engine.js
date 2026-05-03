@@ -17,7 +17,7 @@ import {
 import { classifyHourDeep } from './hour_library.js';
 import { DAILY_QUOTES } from './quotes_library.js';
 import {
-  buildFullDailyInsight, getPersonalizedGuidance, assessFullDayRating,
+  getPersonalizedGuidance, assessFullDayRating,
   DAILY_LAYER, MAHA_CONTEXT, ANTAR_CONTEXT, MONTHLY_CONTEXT,
 } from './daily_prediction_library.js';
 import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
@@ -483,16 +483,8 @@ export function generateDailyPrediction(ctx) {
     quote,
     rating,
     insight,
-    what_to_do: (guidance.do || []).slice(0, 4).map(s => {
-      const phrase = s.split(' — ')[0].split(', ')[0].split('. ')[0];
-      const words = phrase.split(' ');
-      return words.length > 6 ? words.slice(0, 6).join(' ') : phrase;
-    }),
-    what_to_avoid: (guidance.avoid || []).slice(0, 4).map(s => {
-      const phrase = s.split(' — ')[0].split(', ')[0].split('. ')[0];
-      const words = phrase.split(' ');
-      return words.length > 6 ? words.slice(0, 6).join(' ') : phrase;
-    }),
+    what_to_do: (guidance.do || []).slice(0, 4),
+    what_to_avoid: (guidance.avoid || []).slice(0, 4),
     yoga_messages: yogaInsights,
     active_yogas: yogas,
     // Layer breakdown for transparency
