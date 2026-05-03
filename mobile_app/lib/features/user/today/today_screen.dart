@@ -404,55 +404,40 @@ class _HourSection extends StatelessWidget {
         SectionLabel('Hour by Hour'),
         const SizedBox(height: 10),
 
-        // ── D: Heatmap strip ────────────────────────────────────────────────
+        // ── Energy Wave ────────────────────────────────────────────────────
         AstroCard(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // 24hr color bar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: SizedBox(
-                height: 8,
-                child: Row(
-                  children: waking.map((h) {
-                    final cls = h['classification'] as String? ?? 'neutral';
-                    final hr  = h['hour'] as int;
-                    final isCurrent = hr == currentHour;
-                    return Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isCurrent
-                              ? gold
-                              : _hourColor(cls, isDark).withOpacity(cls == 'neutral' ? 0.15 : 0.5),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+            Row(children: [
+              Text('ENERGY TODAY', style: GoogleFonts.dmSans(
+                  fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: gold)),
+              const Spacer(),
+              _Dot(color: isDark ? AppColors.successDark : AppColors.success), const SizedBox(width: 4),
+              Text('Best', style: GoogleFonts.dmSans(fontSize: 8, color: secondary)),
+              const SizedBox(width: 10),
+              _Dot(color: const Color(0xFFF59E0B)), const SizedBox(width: 4),
+              Text('Caution', style: GoogleFonts.dmSans(fontSize: 8, color: secondary)),
+            ]),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 56,
+              child: CustomPaint(
+                size: const Size(double.infinity, 56),
+                painter: _EnergyWavePainter(
+                  hours: waking,
+                  currentHour: currentHour,
+                  gold: gold,
+                  successColor: isDark ? AppColors.successDark : AppColors.success,
+                  cautionColor: const Color(0xFFF59E0B),
+                  isDark: isDark,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            // Hour labels — just key times
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: ['6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM'].map((t) =>
-                Text(t, style: GoogleFonts.dmSans(fontSize: 8, color: secondary.withOpacity(0.5)))
-              ).toList(),
-            ),
-            const SizedBox(height: 8),
-            // Legend
-            Row(children: [
-              _Dot(color: isDark ? AppColors.successDark : AppColors.success), const SizedBox(width: 4),
-              Text('Best', style: GoogleFonts.dmSans(fontSize: 9, color: secondary)),
-              const SizedBox(width: 12),
-              _Dot(color: const Color(0xFFF59E0B)), const SizedBox(width: 4),
-              Text('Caution', style: GoogleFonts.dmSans(fontSize: 9, color: secondary)),
-              const SizedBox(width: 12),
-              _Dot(color: gold), const SizedBox(width: 4),
-              Text('Now', style: GoogleFonts.dmSans(fontSize: 9, color: secondary)),
-              const Spacer(),
-              Text('Tap hour for detail', style: GoogleFonts.dmSans(fontSize: 9, color: secondary.withOpacity(0.5))),
-            ]),
+            const SizedBox(height: 6),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: ['6a', '9a', '12p', '3p', '6p', '9p'].map((t) =>
+                Text(t, style: GoogleFonts.dmSans(fontSize: 8, color: secondary.withOpacity(0.4)))
+              ).toList()),
           ]),
         ),
         const SizedBox(height: 10),
@@ -588,60 +573,10 @@ class _HourSection extends StatelessWidget {
             );
           }).toList(),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 2),
 
-        // ── All hours — horizontal pill scroll ──────────────────────────────
-        SizedBox(
-          height: 72,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            itemCount: waking.length,
-            itemBuilder: (ctx, i) {
-              final h   = waking[i] as Map<String, dynamic>;
-              final hr  = h['hour'] as int;
-              final cls = h['classification'] as String? ?? 'neutral';
-              final isCurrent = hr == currentHour;
-              final clsColor  = _hourColor(cls, isDark);
-              final h12  = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
-              final ampm = hr < 12 ? 'a' : 'p';
-              final bgColor = isCurrent
-                  ? gold
-                  : cls == 'best'
-                      ? clsColor.withOpacity(0.12)
-                      : cls == 'caution'
-                          ? clsColor.withOpacity(0.10)
-                          : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04));
-              final textColor = isCurrent ? Colors.white : (cls == 'neutral' ? secondary : clsColor);
-              return GestureDetector(
-                onTap: () => _HourStrip.showHourBottomSheet(ctx, h, isDark, gold),
-                child: Container(
-                  width: 54,
-                  margin: const EdgeInsets.only(right: 7),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(14),
-                    border: isCurrent ? null : Border.all(
-                        color: cls == 'neutral'
-                            ? (isDark ? Colors.white12 : Colors.black12)
-                            : clsColor.withOpacity(0.25),
-                        width: 0.8),
-                  ),
-                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text('$h12$ampm',
-                        style: GoogleFonts.dmSans(
-                            fontSize: 11, fontWeight: FontWeight.w700, color: textColor)),
-                    const SizedBox(height: 3),
-                    Container(width: 6, height: 6,
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isCurrent ? Colors.white.withOpacity(0.8) : clsColor.withOpacity(0.7))),
-                  ]),
-                ),
-              );
-            },
-          ),
-        ),
+        // ── Day Blocks ────────────────────────────────────────────────────
+        _DayBlocks(allHours: allHours, currentHour: currentHour, isDark: isDark, gold: gold),
       ],
     );
   }
@@ -663,6 +598,275 @@ class _Dot extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: 7, height: 7,
     decoration: BoxDecoration(shape: BoxShape.circle, color: color));
+}
+
+
+// ─── Energy Wave Painter ──────────────────────────────────────────────────────
+class _EnergyWavePainter extends CustomPainter {
+  final List<dynamic> hours;
+  final int currentHour;
+  final Color gold, successColor, cautionColor;
+  final bool isDark;
+
+  const _EnergyWavePainter({
+    required this.hours, required this.currentHour,
+    required this.gold, required this.successColor,
+    required this.cautionColor, required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (hours.isEmpty) return;
+    final n = hours.length;
+    final w = size.width;
+    final h = size.height;
+
+    // Score per hour: best=1.0, neutral=0.55, caution=0.2
+    double score(String cls) {
+      switch (cls) {
+        case 'best':    return 1.0;
+        case 'caution': return 0.22;
+        case 'avoid':   return 0.05;
+        default:        return 0.55;
+      }
+    }
+
+    // Build path points
+    final pts = <Offset>[];
+    for (int i = 0; i < n; i++) {
+      final x = (i / (n - 1)) * w;
+      final cls = hours[i]['classification'] as String? ?? 'neutral';
+      final y = h - score(cls) * (h * 0.82) - (h * 0.08);
+      pts.add(Offset(x, y));
+    }
+
+    // Smooth curve using cubic bezier
+    final path = Path()..moveTo(pts[0].dx, pts[0].dy);
+    for (int i = 0; i < pts.length - 1; i++) {
+      final cp1x = pts[i].dx + (pts[i + 1].dx - pts[i].dx) / 2;
+      final cp2x = pts[i].dx + (pts[i + 1].dx - pts[i].dx) / 2;
+      path.cubicTo(cp1x, pts[i].dy, cp2x, pts[i + 1].dy, pts[i + 1].dx, pts[i + 1].dy);
+    }
+
+    // Fill gradient under curve
+    final fillPath = Path.from(path)
+      ..lineTo(w, h) ..lineTo(0, h) ..close();
+
+    final grad = LinearGradient(
+      begin: Alignment.topCenter, end: Alignment.bottomCenter,
+      colors: [successColor.withOpacity(0.18), successColor.withOpacity(0.02)],
+    );
+    canvas.drawPath(fillPath, Paint()..shader = grad.createShader(Rect.fromLTWH(0, 0, w, h)));
+
+    // Draw line
+    final linePaint = Paint()
+      ..color = successColor.withOpacity(0.6)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(path, linePaint);
+
+    // Current hour vertical line + dot
+    final curIdx = hours.indexWhere((h) => h['hour'] == currentHour);
+    if (curIdx >= 0) {
+      final cx = (curIdx / (n - 1)) * w;
+      final cy = pts[curIdx].dy;
+
+      // Dashed vertical line
+      final dashPaint = Paint()..color = gold.withOpacity(0.5)..strokeWidth = 1;
+      double y0 = 0;
+      while (y0 < h) {
+        canvas.drawLine(Offset(cx, y0), Offset(cx, (y0 + 4).clamp(0, h)), dashPaint);
+        y0 += 8;
+      }
+
+      // Dot on curve
+      canvas.drawCircle(Offset(cx, cy), 5, Paint()..color = gold);
+      canvas.drawCircle(Offset(cx, cy), 3, Paint()..color = Colors.white);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_EnergyWavePainter old) => old.currentHour != currentHour;
+}
+
+// ─── Day Blocks ───────────────────────────────────────────────────────────────
+class _DayBlocks extends StatefulWidget {
+  final List<dynamic> allHours;
+  final int currentHour;
+  final bool isDark;
+  final Color gold;
+  const _DayBlocks({required this.allHours, required this.currentHour,
+      required this.isDark, required this.gold});
+  @override State<_DayBlocks> createState() => _DayBlocksState();
+}
+
+class _DayBlocksState extends State<_DayBlocks> {
+  int? _openBlock;
+
+  static const _blocks = [
+    {'label': 'Morning',   'icon': '🌅', 'start': 5,  'end': 11},
+    {'label': 'Afternoon', 'icon': '☀️',  'start': 12, 'end': 16},
+    {'label': 'Evening',   'icon': '🌆', 'start': 17, 'end': 20},
+    {'label': 'Night',     'icon': '🌙', 'start': 21, 'end': 23},
+  ];
+
+  Color _hourColor(String cls) {
+    final isDark = widget.isDark;
+    switch (cls) {
+      case 'best':    return isDark ? AppColors.successDark : AppColors.success;
+      case 'caution': return const Color(0xFFF59E0B);
+      case 'avoid':   return isDark ? AppColors.dangerDark : AppColors.danger;
+      default:        return isDark ? Colors.white30 : Colors.black26;
+    }
+  }
+
+  String _blockSummary(List<dynamic> hours) {
+    final best = hours.where((h) => h['classification'] == 'best').length;
+    final total = hours.length;
+    if (best == total) return 'All clear';
+    if (best > total / 2) return 'Mostly good';
+    if (best == 0) return 'Stay careful';
+    return '$best of $total good';
+  }
+
+  Color _blockColor(List<dynamic> hours) {
+    final best = hours.where((h) => h['classification'] == 'best').length;
+    final total = hours.length;
+    if (best > total / 2) return widget.isDark ? AppColors.successDark : AppColors.success;
+    if (best == 0) return const Color(0xFFF59E0B);
+    return widget.gold;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final primary   = widget.isDark ? AppColors.textPrimaryDark  : AppColors.textPrimaryLight;
+    final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border    = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
+
+    return Column(
+      children: List.generate(_blocks.length, (bi) {
+        final block = _blocks[bi];
+        final start = block['start'] as int;
+        final end   = block['end']   as int;
+        final blockHours = widget.allHours
+            .where((h) { final hr = h['hour'] as int; return hr >= start && hr <= end; })
+            .toList();
+        if (blockHours.isEmpty) return const SizedBox.shrink();
+
+        final isOpen    = _openBlock == bi;
+        final hasNow    = widget.currentHour >= start && widget.currentHour <= end;
+        final summary   = _blockSummary(blockHours);
+        final blockColor = hasNow ? widget.gold : _blockColor(blockHours);
+
+        return Column(children: [
+          GestureDetector(
+            onTap: () => setState(() => _openBlock = isOpen ? null : bi),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              decoration: BoxDecoration(
+                color: widget.isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: hasNow ? widget.gold.withOpacity(0.4) : border,
+                    width: hasNow ? 1.2 : 0.5),
+              ),
+              child: Row(children: [
+                Text(block['icon'] as String, style: const TextStyle(fontSize: 18)),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(children: [
+                    Text(block['label'] as String,
+                        style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600,
+                            color: primary)),
+                    if (hasNow) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                            color: widget.gold.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4)),
+                        child: Text('NOW', style: GoogleFonts.dmSans(
+                            fontSize: 8, fontWeight: FontWeight.w700,
+                            color: widget.gold, letterSpacing: 0.5)),
+                      ),
+                    ],
+                  ]),
+                  const SizedBox(height: 3),
+                  Text(summary, style: GoogleFonts.dmSans(
+                      fontSize: 11, color: blockColor)),
+                ])),
+                // Mini dots for each hour
+                Row(children: blockHours.map((h) {
+                  final cls = h['classification'] as String? ?? 'neutral';
+                  final isNowHour = (h['hour'] as int) == widget.currentHour;
+                  return Container(
+                    width: 7, height: 7,
+                    margin: const EdgeInsets.only(left: 3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isNowHour ? widget.gold : _hourColor(cls).withOpacity(0.7),
+                    ),
+                  );
+                }).toList()),
+                const SizedBox(width: 8),
+                Icon(isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    size: 16, color: secondary),
+              ]),
+            ),
+          ),
+          // Expanded hours
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            child: isOpen ? Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(children: blockHours.map((h) {
+                final hr     = h['hour'] as int;
+                final cls    = h['classification'] as String? ?? 'neutral';
+                final action = h['best_action'] as String? ?? h['reason'] as String? ?? '';
+                final isNow  = hr == widget.currentHour;
+                final clr    = _hourColor(cls);
+                final h12    = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
+                final ampm   = hr < 12 ? 'AM' : 'PM';
+                return GestureDetector(
+                  onTap: () => _HourStrip.showHourBottomSheet(
+                      context, h as Map<String, dynamic>, widget.isDark, widget.gold),
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+                    margin: const EdgeInsets.only(bottom: 4),
+                    decoration: BoxDecoration(
+                      color: isNow
+                          ? widget.gold.withOpacity(0.07)
+                          : (widget.isDark ? AppColors.bgSubtleDark : AppColors.bgSubtleLight),
+                      borderRadius: BorderRadius.circular(10),
+                      border: isNow ? Border.all(color: widget.gold.withOpacity(0.3), width: 0.8) : null,
+                    ),
+                    child: Row(children: [
+                      SizedBox(width: 46, child: Text('$h12 $ampm',
+                          style: GoogleFonts.dmSans(fontSize: 11,
+                              fontWeight: isNow ? FontWeight.w700 : FontWeight.w500,
+                              color: isNow ? widget.gold : secondary))),
+                      Container(width: 6, height: 6,
+                          decoration: BoxDecoration(shape: BoxShape.circle,
+                              color: clr.withOpacity(0.8))),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(action,
+                          style: GoogleFonts.dmSans(fontSize: 11,
+                              color: primary.withOpacity(isNow ? 0.9 : 0.75), height: 1.3))),
+                      Icon(Icons.chevron_right, size: 13, color: secondary.withOpacity(0.3)),
+                    ]),
+                  ),
+                );
+              }).toList()),
+            ) : const SizedBox.shrink(),
+          ),
+          const SizedBox(height: 8),
+        ]);
+      }),
+    );
+  }
 }
 
 
