@@ -954,7 +954,7 @@ Active yogas: ${otherChart.yogas || 'none detected'}
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 400,
+        max_tokens: 1024,
         system: systemPrompt,
         messages: anthropicMessages,
       }),

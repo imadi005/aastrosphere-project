@@ -304,7 +304,7 @@ I'm your personal astro guide. Ask me anything about:
         ],
       ),
       actions: [
-        if (_messages.isNotEmpty)
+        if (_messages.length > 1)
           IconButton(
             icon: Icon(Icons.delete_outline_rounded, size: 20, color: secondary),
             onPressed: _clearChat,
