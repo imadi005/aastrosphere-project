@@ -105,12 +105,12 @@ class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObser
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _AttributionFooter(isDark: isDark),
           _BottomNav(
             currentIndex: index,
             items: _items,
             onTap: (i) => ref.read(_userIndexProvider.notifier).state = i,
           ),
+          _AttributionFooter(isDark: isDark),
         ],
       ),
     );
@@ -214,12 +214,12 @@ class _AstrologerShell extends ConsumerWidget {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _AttributionFooter(isDark: isDark),
           _BottomNav(
             currentIndex: index,
             items: isMeView ? _meItems : _clientItems,
             onTap: (i) => ref.read(_astroIndexProvider.notifier).state = i,
           ),
+          _AttributionFooter(isDark: isDark),
         ],
       ),
     );
@@ -359,6 +359,8 @@ class _BottomNav extends StatelessWidget {
         onTap: onTap,
         items: items,
         iconSize: 20,
+        selectedFontSize: 10,
+        unselectedFontSize: 10,
       ),
     );
   }
@@ -376,9 +378,12 @@ class _AttributionFooter extends StatelessWidget {
         : Colors.black.withOpacity(0.70);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(bottom: 6, top: 4),
+      padding: EdgeInsets.only(
+        top: 4,
+        bottom: MediaQuery.of(context).padding.bottom + 6,
+      ),
       child: Text(
-        'Aastrosphere  ·  Ank Jyotish & Palmist Pankajj Kumar Mishra',
+        'Aastrosphere for Pankajj Kumar Mishra  ( Ank Jyotish & Palmist )',
         textAlign: TextAlign.center,
         style: GoogleFonts.cormorantGaramond(
           fontSize: 10,
