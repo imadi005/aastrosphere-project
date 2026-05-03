@@ -22,6 +22,7 @@ import {
 } from './daily_prediction_library.js';
 import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
 import { getDayDefinition } from './day_definition_library.js';
+import { getPriorityAction } from './priority_action_library.js';
 
 import { DEEP_PERIOD_TEXTS_GENERATED } from './deep_library_generated.js';
 
@@ -361,6 +362,12 @@ function getChartModifiers(nums, freq, basic, destiny, natalNums = []) {
 // ─── Primary action — chart-specific, not from generic guidance list ─────────
 // Based on active yogas + maha+antar+daily combination
 export function getPrimaryAction(ctx) {
+  // Use new vast library — all 81 maha+daily combos + yoga overrides
+  return getPriorityAction(ctx);
+}
+
+// Legacy kept for reference
+function _getPrimaryActionLegacy(ctx) {
   const { basic, destiny, maha, antar, monthly, daily, yogas, natalNums } = ctx;
   const yogaIds = yogas.map(y => y.id);
 
@@ -436,8 +443,7 @@ export function getPrimaryAction(ctx) {
     do: "Focus on what matters most today and give it full attention.",
     avoid: "Distractions that feel important but aren't.",
   };
-}
-
+} // end _getPrimaryActionLegacy
 
 // ─── Generate daily prediction ────────────────────────────────────────────────
 export function generateDailyPrediction(ctx) {
