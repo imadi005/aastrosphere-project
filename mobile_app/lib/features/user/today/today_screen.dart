@@ -387,7 +387,7 @@ class _HourSection extends StatelessWidget {
     final nextHours = allHours
         .where((h) {
           final hr = h['hour'] as int;
-          return hr > currentHour && hr <= currentHour + 3;
+          return hr > currentHour && hr <= currentHour + 3 && hr >= 6 && hr <= 23;
         })
         .take(3)
         .toList();
@@ -539,7 +539,7 @@ class _HourSection extends StatelessWidget {
         const SizedBox(height: 8),
 
         // ── Next 3 hours ────────────────────────────────────────────────────
-        if (nextHours.isNotEmpty) Row(
+        if (nextHours.length >= 2) Row(
           children: nextHours.map((h) {
             final hr  = h['hour'] as int;
             final cls = h['classification'] as String? ?? 'neutral';
