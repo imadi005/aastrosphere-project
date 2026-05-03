@@ -289,6 +289,9 @@ export function buildSystemPrompt(dob, targetDate, questionType, otherDob = null
   const nextGoodPeriod = timeline.find(t =>
     t.status === 'future' && ['strong','good'].includes(getPeriodQuality(t.antar, t.monthly, ctx.basic, ctx.destiny))
   );
+  // Exact maha/antar end dates — use these, never guess
+  const mahaInfo  = currentMahadasha(dob, targetDate);
+  const antarInfo = currentAntardasha(dob, targetDate);
 
   return `You are an Ank Jyotish (Vedic numerology) assistant representing Pankajj Kumar Mishra, an expert Ank Jyotish and Palmist.
 
@@ -307,8 +310,8 @@ SYSTEM DATE: ${targetDate}
 USER'S COMPLETE CHART (DOB: ${dob}):
 Basic Number: ${ctx.basic} (${PNAME[ctx.basic]})
 Destiny Number: ${ctx.destiny} (${PNAME[ctx.destiny]})
-Maha Dasha: ${ctx.maha} (${PNAME[ctx.maha]}) — ${[0,1,2,3,4,5,6,7,8,9][ctx.maha] || ctx.maha} year period, ends: ${currentPeriod?.mahaEnd || 'see timeline'}
-Antar Dasha: ${ctx.antar} (${PNAME[ctx.antar]}) — current chapter, ends: ${currentPeriod?.antarEnd || 'see timeline'}
+Maha Dasha: ${ctx.maha} (${PNAME[ctx.maha]}) — ends EXACTLY ${mahaInfo?.end?.slice(0,10)} (${PNAME[ctx.maha]} = ${ctx.maha} years duration)
+Antar Dasha: ${ctx.antar} (${PNAME[ctx.antar]}) — ends EXACTLY ${antarInfo?.end?.slice(0,10)}
 Monthly Dasha: ${ctx.monthly} (${PNAME[ctx.monthly]}) — ends: ${currentPeriod?.end || 'see timeline'}
 Daily Number today: ${ctx.daily} (${PNAME[ctx.daily]})
 Hourly Number now: ${ctx.hourly !== null ? ctx.hourly + ' (' + PNAME[ctx.hourly] + ')' : 'N/A'}
