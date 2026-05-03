@@ -483,8 +483,16 @@ export function generateDailyPrediction(ctx) {
     quote,
     rating,
     insight,
-    what_to_do: guidance.do,
-    what_to_avoid: guidance.avoid,
+    what_to_do: (guidance.do || []).slice(0, 4).map(s => {
+      const phrase = s.split(' — ')[0].split(', ')[0].split('. ')[0];
+      const words = phrase.split(' ');
+      return words.length > 6 ? words.slice(0, 6).join(' ') : phrase;
+    }),
+    what_to_avoid: (guidance.avoid || []).slice(0, 4).map(s => {
+      const phrase = s.split(' — ')[0].split(', ')[0].split('. ')[0];
+      const words = phrase.split(' ');
+      return words.length > 6 ? words.slice(0, 6).join(' ') : phrase;
+    }),
     yoga_messages: yogaInsights,
     active_yogas: yogas,
     // Layer breakdown for transparency

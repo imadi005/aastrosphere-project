@@ -492,91 +492,66 @@ class _GuidanceCard extends StatefulWidget {
 }
 
 class _GuidanceCardState extends State<_GuidanceCard> {
-  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final successColor = widget.isDark ? AppColors.successDark : AppColors.success;
-    final dangerColor = widget.isDark ? AppColors.dangerDark : AppColors.danger;
-    final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final border = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
+    final dangerColor  = widget.isDark ? AppColors.dangerDark  : AppColors.danger;
+    final primary   = widget.isDark ? AppColors.textPrimaryDark  : AppColors.textPrimaryLight;
+    final border    = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
 
-    final showDo = _expanded ? widget.toDo : widget.toDo.take(3).toList();
-    final showAvoid = _expanded ? widget.avoid : widget.avoid.take(2).toList();
+    // Max 4 each, already trimmed by backend
+    final dos    = widget.toDo.take(4).toList();
+    final avoids = widget.avoid.take(4).toList();
 
     return AstroCard(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('TODAY\'S GUIDANCE', style: GoogleFonts.dmSans(
-                fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: widget.gold)),
-            GestureDetector(
-              onTap: () => setState(() => _expanded = !_expanded),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(_expanded ? 'Less' : 'More',
-                    style: GoogleFonts.dmSans(fontSize: 11, color: widget.gold)),
-                Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                    size: 14, color: widget.gold),
-              ]),
-            ),
-          ]),
-          const SizedBox(height: 10),
+          Text('TODAY\'S GUIDANCE', style: GoogleFonts.dmSans(
+              fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: widget.gold)),
+          const SizedBox(height: 12),
 
-          // Two columns
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Do column
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('DO', style: GoogleFonts.dmSans(
-                        fontSize: 9, fontWeight: FontWeight.w700,
-                        letterSpacing: 1, color: successColor)),
-                    const SizedBox(height: 8),
-                    ...showDo.map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Padding(padding: const EdgeInsets.only(top: 5),
-                            child: Container(width: 4, height: 4,
-                                decoration: BoxDecoration(shape: BoxShape.circle, color: successColor))),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(item,
-                            style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.4))),
-                      ]),
-                    )),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Avoid column
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('AVOID', style: GoogleFonts.dmSans(
-                        fontSize: 9, fontWeight: FontWeight.w700,
-                        letterSpacing: 1, color: dangerColor)),
-                    const SizedBox(height: 8),
-                    ...showAvoid.map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Padding(padding: const EdgeInsets.only(top: 5),
-                            child: Container(width: 4, height: 4,
-                                decoration: BoxDecoration(shape: BoxShape.circle, color: dangerColor))),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(item,
-                            style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.4))),
-                      ]),
-                    )),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // DO column
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('DO', style: GoogleFonts.dmSans(
+                  fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: successColor)),
+              const SizedBox(height: 8),
+              ...dos.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 9),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Padding(padding: const EdgeInsets.only(top: 4),
+                    child: Icon(Icons.check, size: 11, color: successColor)),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text(item,
+                      style: GoogleFonts.dmSans(
+                          fontSize: 12, color: primary.withOpacity(0.8), height: 1.5))),
+                ]),
+              )),
+            ])),
+
+            Container(width: 0.5, color: border, margin: const EdgeInsets.symmetric(horizontal: 10)),
+
+            // AVOID column
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('AVOID', style: GoogleFonts.dmSans(
+                  fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: dangerColor)),
+              const SizedBox(height: 8),
+              ...avoids.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 9),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Padding(padding: const EdgeInsets.only(top: 4),
+                    child: Icon(Icons.close, size: 11, color: dangerColor)),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text(item,
+                      style: GoogleFonts.dmSans(
+                          fontSize: 12, color: primary.withOpacity(0.8), height: 1.5))),
+                ]),
+              )),
+            ])),
+          ]),
         ],
       ),
     );
@@ -957,7 +932,7 @@ class _HourStrip extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(txt,
-                        style: GoogleFonts.dmSans(fontSize: 11, color: secondary, height: 1.4))),
+                        style: GoogleFonts.dmSans(fontSize: 12, color: primary.withOpacity(0.8), height: 1.5))),
                   ]),
                 );
               }),
