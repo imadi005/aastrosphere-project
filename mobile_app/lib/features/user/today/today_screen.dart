@@ -301,36 +301,40 @@ class _DayCardState extends State<_DayCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Rating tag only — number removed
-          Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: ratingColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: ratingColor.withOpacity(0.3), width: 0.5),
-              ),
-              child: Text(ratingLabel,
-                  style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5, color: ratingColor)),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Quote — ultra big
-          if (widget.quote.isNotEmpty)
+          // Quote + tag inline
+          if (widget.quote.isNotEmpty) ...[
             Text('"${widget.quote}"',
                 style: GoogleFonts.cormorantGaramond(
                     fontSize: 26, fontStyle: FontStyle.italic,
                     color: widget.gold, height: 1.5, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 10),
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: ratingColor.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: ratingColor.withOpacity(0.25), width: 0.5),
+                ),
+                child: Text(ratingLabel,
+                    style: GoogleFonts.dmSans(fontSize: 8, fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8, color: ratingColor)),
+              ),
+            ]),
+          ],
           const SizedBox(height: 12),
           Divider(color: border, thickness: 0.5),
           const SizedBox(height: 10),
 
-          // Insight
-          Text(widget.insight,
-              style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.65)),
+          // Insight — styled with left border
+          Container(
+            padding: const EdgeInsets.only(left: 12, top: 2, bottom: 2),
+            decoration: BoxDecoration(
+              border: Border(left: BorderSide(color: widget.gold.withOpacity(0.35), width: 2)),
+            ),
+            child: Text(widget.insight,
+                style: GoogleFonts.dmSans(fontSize: 13, color: primary.withOpacity(0.8), height: 1.7)),
+          ),
 
 
         ],
