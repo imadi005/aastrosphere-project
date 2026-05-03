@@ -376,7 +376,7 @@ class _HourSection extends StatelessWidget {
     final subtleBg  = isDark ? AppColors.bgSubtleDark : AppColors.bgSubtleLight;
 
     final waking = allHours
-        .where((h) { final hr = h['hour'] as int; return hr >= 5 && hr <= 23; })
+        .where((h) { final hr = h['hour'] as int; return hr >= 6 && hr <= 23; })
         .toList();
 
     final currentData = allHours.firstWhere(
@@ -833,7 +833,7 @@ class _DayBlocksState extends State<_DayBlocks> {
   int? _openBlock;
 
   static const _blocks = [
-    {'label': 'Morning',   'icon': 'M', 'start': 5,  'end': 11},
+    {'label': 'Morning',   'icon': 'M', 'start': 6,  'end': 11},
     {'label': 'Afternoon', 'icon': 'A', 'start': 12, 'end': 16},
     {'label': 'Evening',   'icon': 'E', 'start': 17, 'end': 20},
     {'label': 'Night',     'icon': 'N', 'start': 21, 'end': 23},
