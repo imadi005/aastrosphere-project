@@ -614,6 +614,16 @@ class _EnergyWavePainter extends CustomPainter {
     required this.cautionColor, required this.isDark,
   });
 
+  // Color per hour classification
+  Color _segColor(String cls) {
+    switch (cls) {
+      case 'best':    return successColor;
+      case 'caution': return cautionColor;
+      case 'avoid':   return const Color(0xFFDC2626);
+      default:        return isDark ? const Color(0x33FFFFFF) : const Color(0x22000000);
+    }
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     if (hours.isEmpty) return;
@@ -621,67 +631,71 @@ class _EnergyWavePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // Score per hour: best=1.0, neutral=0.55, caution=0.2
     double score(String cls) {
       switch (cls) {
         case 'best':    return 1.0;
-        case 'caution': return 0.22;
-        case 'avoid':   return 0.05;
+        case 'caution': return 0.28;
+        case 'avoid':   return 0.08;
         default:        return 0.55;
       }
     }
 
-    // Build path points
+    // Build points
     final pts = <Offset>[];
     for (int i = 0; i < n; i++) {
       final x = (i / (n - 1)) * w;
-      final cls = hours[i]['classification'] as String? ?? 'neutral';
+      final cls = (hours[i] as Map)['classification'] as String? ?? 'neutral';
       final y = h - score(cls) * (h * 0.82) - (h * 0.08);
       pts.add(Offset(x, y));
     }
 
-    // Smooth curve using cubic bezier
-    final path = Path()..moveTo(pts[0].dx, pts[0].dy);
-    for (int i = 0; i < pts.length - 1; i++) {
+    // Draw segment by segment — each with its own color
+    for (int i = 0; i < n - 1; i++) {
+      final cls  = (hours[i] as Map)['classification'] as String? ?? 'neutral';
+      final c    = _segColor(cls);
       final cp1x = pts[i].dx + (pts[i + 1].dx - pts[i].dx) / 2;
-      final cp2x = pts[i].dx + (pts[i + 1].dx - pts[i].dx) / 2;
-      path.cubicTo(cp1x, pts[i].dy, cp2x, pts[i + 1].dy, pts[i + 1].dx, pts[i + 1].dy);
+
+      // Fill under segment
+      final fill = Path()
+        ..moveTo(pts[i].dx, h)
+        ..lineTo(pts[i].dx, pts[i].dy)
+        ..cubicTo(cp1x, pts[i].dy, cp1x, pts[i+1].dy, pts[i+1].dx, pts[i+1].dy)
+        ..lineTo(pts[i+1].dx, h)
+        ..close();
+      canvas.drawPath(fill, Paint()..color = c.withOpacity(0.12));
+
+      // Stroke
+      final seg = Path()..moveTo(pts[i].dx, pts[i].dy);
+      seg.cubicTo(cp1x, pts[i].dy, cp1x, pts[i+1].dy, pts[i+1].dx, pts[i+1].dy);
+      canvas.drawPath(seg, Paint()
+        ..color = c.withOpacity(0.8)
+        ..strokeWidth = 2.2
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round);
     }
 
-    // Fill gradient under curve
-    final fillPath = Path.from(path)
-      ..lineTo(w, h) ..lineTo(0, h) ..close();
+    // Dots at caution/avoid hours
+    for (int i = 0; i < n; i++) {
+      final cls = (hours[i] as Map)['classification'] as String? ?? 'neutral';
+      if (cls == 'caution' || cls == 'avoid') {
+        final c = _segColor(cls);
+        canvas.drawCircle(pts[i], 4, Paint()..color = c);
+        canvas.drawCircle(pts[i], 2.5, Paint()..color = Colors.white.withOpacity(0.85));
+      }
+    }
 
-    final grad = LinearGradient(
-      begin: Alignment.topCenter, end: Alignment.bottomCenter,
-      colors: [successColor.withOpacity(0.18), successColor.withOpacity(0.02)],
-    );
-    canvas.drawPath(fillPath, Paint()..shader = grad.createShader(Rect.fromLTWH(0, 0, w, h)));
-
-    // Draw line
-    final linePaint = Paint()
-      ..color = successColor.withOpacity(0.6)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(path, linePaint);
-
-    // Current hour vertical line + dot
-    final curIdx = hours.indexWhere((h) => h['hour'] == currentHour);
+    // Current hour — dashed line + gold dot
+    final curIdx = hours.indexWhere((h) => (h as Map)['hour'] == currentHour);
     if (curIdx >= 0) {
-      final cx = (curIdx / (n - 1)) * w;
+      final cx = curIdx == 0 ? 0.0 : (curIdx / (n - 1)) * w;
       final cy = pts[curIdx].dy;
-
-      // Dashed vertical line
-      final dashPaint = Paint()..color = gold.withOpacity(0.5)..strokeWidth = 1;
+      final dashPaint = Paint()..color = gold.withOpacity(0.55)..strokeWidth = 1;
       double y0 = 0;
       while (y0 < h) {
-        canvas.drawLine(Offset(cx, y0), Offset(cx, (y0 + 4).clamp(0, h)), dashPaint);
+        canvas.drawLine(Offset(cx, y0), Offset(cx, (y0 + 4).clamp(0.0, h)), dashPaint);
         y0 += 8;
       }
-
-      // Dot on curve
-      canvas.drawCircle(Offset(cx, cy), 5, Paint()..color = gold);
+      canvas.drawCircle(Offset(cx, cy), 5.5, Paint()..color = gold);
       canvas.drawCircle(Offset(cx, cy), 3, Paint()..color = Colors.white);
     }
   }
