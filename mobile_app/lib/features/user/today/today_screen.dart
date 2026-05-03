@@ -338,38 +338,7 @@ class _DayCardState extends State<_DayCard> {
           Text(widget.insight,
               style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.65)),
 
-          // Expand toggle
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: () => setState(() => _expanded = !_expanded),
-            child: Row(children: [
-              Text(_expanded ? 'Show less' : 'What\'s happening in your chart',
-                  style: GoogleFonts.dmSans(fontSize: 12, color: widget.gold)),
-              const SizedBox(width: 4),
-              Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                  size: 14, color: widget.gold),
-            ]),
-          ),
 
-          // Expanded detail — actual layers
-          if (_expanded) ...[
-            const SizedBox(height: 12),
-            Divider(color: border, thickness: 0.5),
-            const SizedBox(height: 10),
-            if (widget.layers != null) ...{
-              if (widget.layers!['maha'] != null)
-                _LayerRow('Multi-year', widget.layers!['maha'] as String, secondary, widget.gold),
-              if (widget.layers!['antar'] != null)
-                _LayerRow('This chapter', widget.layers!['antar'] as String, secondary, widget.gold),
-              if (widget.layers!['monthly'] != null)
-                _LayerRow('This month', widget.layers!['monthly'] as String, secondary, widget.gold),
-              if (widget.layers!['daily'] != null)
-                _LayerRow('Today', widget.layers!['daily'] as String, secondary, widget.gold),
-            } else ...[
-              Text("Four layers shape today: your multi-year period, current chapter, this month, and today's frequency.",
-                  style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6, fontStyle: FontStyle.italic)),
-            ],
-          ],
         ],
       ),
     );
