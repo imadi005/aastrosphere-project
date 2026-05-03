@@ -590,53 +590,57 @@ class _HourSection extends StatelessWidget {
         ),
         const SizedBox(height: 10),
 
-        // ── All hours scrollable list ─────────────────────────────────────
-        AstroCard(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('ALL HOURS', style: GoogleFonts.dmSans(
-                fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: gold)),
-            const SizedBox(height: 10),
-            ...waking.map((h) {
+        // ── All hours — horizontal pill scroll ──────────────────────────────
+        SizedBox(
+          height: 72,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            itemCount: waking.length,
+            itemBuilder: (ctx, i) {
+              final h   = waking[i] as Map<String, dynamic>;
               final hr  = h['hour'] as int;
               final cls = h['classification'] as String? ?? 'neutral';
-              final reason = h['reason'] as String? ?? '';
-              final action = h['best_action'] as String? ?? '';
               final isCurrent = hr == currentHour;
-              final clsColor = _hourColor(cls, isDark);
-              final h12 = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
-              final ampm = hr < 12 ? 'AM' : 'PM';
+              final clsColor  = _hourColor(cls, isDark);
+              final h12  = hr == 0 ? 12 : hr > 12 ? hr - 12 : hr;
+              final ampm = hr < 12 ? 'a' : 'p';
+              final bgColor = isCurrent
+                  ? gold
+                  : cls == 'best'
+                      ? clsColor.withOpacity(0.12)
+                      : cls == 'caution'
+                          ? clsColor.withOpacity(0.10)
+                          : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04));
+              final textColor = isCurrent ? Colors.white : (cls == 'neutral' ? secondary : clsColor);
               return GestureDetector(
-                onTap: () => _HourStrip.showHourBottomSheet(
-                    context, h as Map<String, dynamic>, isDark, gold),
+                onTap: () => _HourStrip.showHourBottomSheet(ctx, h, isDark, gold),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  width: 54,
+                  margin: const EdgeInsets.only(right: 7),
                   decoration: BoxDecoration(
-                    color: isCurrent ? gold.withOpacity(0.04) : null,
-                    border: Border(bottom: BorderSide(
-                        color: border.withOpacity(0.5), width: 0.5)),
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(14),
+                    border: isCurrent ? null : Border.all(
+                        color: cls == 'neutral'
+                            ? (isDark ? Colors.white12 : Colors.black12)
+                            : clsColor.withOpacity(0.25),
+                        width: 0.8),
                   ),
-                  child: Row(children: [
-                    SizedBox(width: 52,
-                      child: Text('$h12 $ampm',
-                          style: GoogleFonts.dmSans(fontSize: 11,
-                              fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
-                              color: isCurrent ? gold : secondary))),
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Text('$h12$ampm',
+                        style: GoogleFonts.dmSans(
+                            fontSize: 11, fontWeight: FontWeight.w700, color: textColor)),
+                    const SizedBox(height: 3),
                     Container(width: 6, height: 6,
-                        decoration: BoxDecoration(shape: BoxShape.circle,
-                            color: clsColor.withOpacity(0.8))),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(action.isNotEmpty ? action : reason,
-                        style: GoogleFonts.dmSans(fontSize: 11,
-                            color: primary.withOpacity(isCurrent ? 0.9 : 0.7),
-                            height: 1.3))),
-                    Icon(Icons.chevron_right, size: 14,
-                        color: secondary.withOpacity(0.35)),
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isCurrent ? Colors.white.withOpacity(0.8) : clsColor.withOpacity(0.7))),
                   ]),
                 ),
               );
-            }).toList(),
-          ]),
+            },
+          ),
         ),
       ],
     );
