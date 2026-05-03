@@ -149,9 +149,7 @@ class _TodayView extends StatelessWidget {
             _GuidanceCard(toDo: toDo, avoid: avoid, isDark: isDark, gold: gold),
             const SizedBox(height: 16),
 
-            // ── 7. What's active in chart ────────────────────────
-            if (comboYogas.isNotEmpty)
-              _ActiveEnergyCard(combos: comboYogas, isDark: isDark, gold: gold),
+
             const SizedBox(height: 16),
 
             // ── 8. Hour strip ────────────────────────────────────
