@@ -184,7 +184,7 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
     maha: maha.number, antar: antar.number, monthly: monthly.number,
     daily, hours,
     freqMap: annualFreq, natalFreq,
-    allNums: annualNums, natalNums, natalFreq,
+    allNums: annualNums, natalNums, natalFreq, _targetDate: targetDate,
     yogas, modifiers,
     mahaDetails: maha, antarDetails: antar, monthlyDetails: monthly,
     _dob: dob, // for period processing
@@ -453,9 +453,10 @@ export function generateDailyPrediction(ctx) {
 
   // ── Quote — vary by basic + daily + date so no weekly repeat ───────────
   const quotes = DAILY_QUOTES[daily] || DAILY_QUOTES[5]; // fallback to 5 if undefined
-  // Include day-of-year so same weekday next week gets different quote
-  const targetDateObj = targetDate ? new Date(targetDate) : new Date();
-  const dayOfYear = Math.floor((targetDateObj - new Date(targetDateObj.getFullYear(), 0, 0)) / 86400000);
+  // Use ctx._targetDate if available, otherwise today
+  const _tDate = ctx._targetDate || ctx.targetDate || new Date().toISOString();
+  const _tDateObj = new Date(_tDate);
+  const dayOfYear = Math.floor((_tDateObj - new Date(_tDateObj.getFullYear(), 0, 0)) / 86400000);
   const safeIdx = (basic + destiny + maha + antar + monthly + (daily||5) + dayOfYear) % quotes.length;
   const quote = quotes[safeIdx];
 

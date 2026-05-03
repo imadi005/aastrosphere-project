@@ -385,6 +385,7 @@ class _AttributionFooter extends StatelessWidget {
           color: color.withOpacity(0.75),
           letterSpacing: 0.4,
           fontStyle: FontStyle.italic,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
