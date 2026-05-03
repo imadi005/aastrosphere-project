@@ -22,6 +22,7 @@ import {
 } from './daily_prediction_library.js';
 import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
 import { getDayDefinition } from './day_definition_library.js';
+import { getDayScore } from './day_score_library.js';
 import { getPriorityAction } from './priority_action_library.js';
 
 import { DEEP_PERIOD_TEXTS_GENERATED } from './deep_library_generated.js';
@@ -479,9 +480,12 @@ export function generateDailyPrediction(ctx) {
     }
   }
 
+  const dayScore = getDayScore({ ...ctx, rating });
+
   return {
     quote,
     rating,
+    day_score: dayScore,
     insight,
     what_to_do: (guidance.do || []).slice(0, 4),
     what_to_avoid: (guidance.avoid || []).slice(0, 4),

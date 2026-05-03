@@ -258,6 +258,7 @@ app.post('/api/today', (req, res) => {
       date: today,
       daily_number: ctx.daily,
       rating: daily.rating,
+      day_score: daily.day_score,
       quote: daily.quote,
       insight: daily.insight,
       layers: daily.layers,

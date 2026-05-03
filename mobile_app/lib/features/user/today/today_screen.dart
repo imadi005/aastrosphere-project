@@ -85,6 +85,7 @@ class _TodayView extends StatelessWidget {
     final insight = data['insight'] as String? ?? '';
     final toDo = (data['what_to_do'] as List? ?? []).cast<String>();
     final avoid = (data['what_to_avoid'] as List? ?? []).cast<String>();
+    final dayScoreData = data['day_score'] as Map<String, dynamic>?;
     final primaryAction = data['primary_action'] as String?;
     final primaryAvoid = data['primary_avoid'] as String?;
     final structuralYogas = (data['structural_yogas'] as List? ?? []);
@@ -152,7 +153,12 @@ class _TodayView extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ── 8. Hour section — heatmap + current + next 3 ──────
+            // ── 8. Day Score card ────────────────────────────────
+            if (dayScoreData != null)
+              _DayScoreCard(data: dayScoreData, isDark: isDark, gold: gold),
+            const SizedBox(height: 10),
+
+            // ── 9. Hour section — heatmap + current + next 3 ──────
             _HourSection(
               allHours: allHours,
               currentHour: DateTime.now().hour,
@@ -598,6 +604,114 @@ class _Dot extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: 7, height: 7,
     decoration: BoxDecoration(shape: BoxShape.circle, color: color));
+}
+
+
+// ─── Day Score Card ───────────────────────────────────────────────────────────
+class _DayScoreCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final bool isDark;
+  final Color gold;
+  const _DayScoreCard({required this.data, required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context) {
+    final score    = data['score'] as int? ?? 65;
+    final label    = data['label'] as String? ?? 'Good day';
+    final colorKey = data['color'] as String? ?? 'neutral';
+    final goodFor  = (data['good_for'] as List? ?? []).cast<String>();
+    final badFor   = (data['bad_for'] as List? ?? []).cast<String>();
+
+    final primary   = isDark ? AppColors.textPrimaryDark  : AppColors.textPrimaryLight;
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border    = isDark ? AppColors.borderDark : AppColors.borderLight;
+
+    final Color scoreColor;
+    switch (colorKey) {
+      case 'success': scoreColor = isDark ? AppColors.successDark : AppColors.success;
+      case 'good':    scoreColor = isDark ? AppColors.successDark : AppColors.success;
+      case 'caution': scoreColor = const Color(0xFFF59E0B);
+      case 'avoid':   scoreColor = isDark ? AppColors.dangerDark : AppColors.danger;
+      default:        scoreColor = gold;
+    }
+
+    return AstroCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Score row
+        Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+          Text('$score', style: GoogleFonts.cormorantGaramond(
+              fontSize: 52, fontWeight: FontWeight.w600,
+              color: scoreColor, height: 1)),
+          const SizedBox(width: 4),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text('/100', style: GoogleFonts.dmSans(
+                fontSize: 13, color: secondary))),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const SizedBox(height: 10),
+            Text(label, style: GoogleFonts.dmSans(
+                fontSize: 14, fontWeight: FontWeight.w600, color: primary)),
+          ])),
+        ]),
+        const SizedBox(height: 6),
+        // Score bar
+        ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: LinearProgressIndicator(
+            value: score / 100,
+            minHeight: 4,
+            backgroundColor: border,
+            valueColor: AlwaysStoppedAnimation<Color>(scoreColor.withOpacity(0.7)),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Divider(height: 1, color: border),
+        const SizedBox(height: 12),
+        // Good for / Bad for
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Good for
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('GOOD FOR', style: GoogleFonts.dmSans(
+                fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.8,
+                color: isDark ? AppColors.successDark : AppColors.success)),
+            const SizedBox(height: 8),
+            ...goodFor.map((g) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(children: [
+                Container(width: 4, height: 4,
+                    decoration: BoxDecoration(shape: BoxShape.circle,
+                        color: (isDark ? AppColors.successDark : AppColors.success).withOpacity(0.7))),
+                const SizedBox(width: 7),
+                Expanded(child: Text(g, style: GoogleFonts.dmSans(
+                    fontSize: 12, color: primary.withOpacity(0.8)))),
+              ]),
+            )),
+          ])),
+          Container(width: 0.5, color: border, margin: const EdgeInsets.symmetric(horizontal: 12)),
+          // Bad for
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('NOT IDEAL FOR', style: GoogleFonts.dmSans(
+                fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.8,
+                color: const Color(0xFFF59E0B))),
+            const SizedBox(height: 8),
+            ...badFor.map((b) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(children: [
+                Container(width: 4, height: 4,
+                    decoration: BoxDecoration(shape: BoxShape.circle,
+                        color: const Color(0xFFF59E0B).withOpacity(0.7))),
+                const SizedBox(width: 7),
+                Expanded(child: Text(b, style: GoogleFonts.dmSans(
+                    fontSize: 12, color: primary.withOpacity(0.8)))),
+              ]),
+            )),
+          ])),
+        ]),
+      ]),
+    );
+  }
 }
 
 
