@@ -39,3 +39,5 @@ jspm_packages/
 # --- OS Specific ---
 .DS_Store
 Thumbs.db
+# Allow web build for deployment
+!web_build/
