@@ -7,7 +7,8 @@
 .pub-cache/
 
 # Build artifacts
-build/
+mobile_app/build/
+backend/build/
 
 # IDE specific
 *.iml
@@ -39,5 +40,3 @@ jspm_packages/
 # --- OS Specific ---
 .DS_Store
 Thumbs.db
-# Allow web build for deployment
-!web_build/
