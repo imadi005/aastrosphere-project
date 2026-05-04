@@ -4,8 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-import 'package:open_filex/open_filex.dart';
+import 'dart:io' if (dart.library.html) '';
+import 'package:flutter/foundation.dart';
+import 'package:open_filex/open_filex.dart' if (dart.library.html) '';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/analytics_service.dart';
@@ -393,7 +394,8 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
         return;
       }
       AnalyticsService.pdfExported(_years);
-      await OpenFilex.open(pdfPath);
+      if (!kIsWeb) await OpenFilex.open(pdfPath);
+      // Web: PDF already downloaded via browser
 
       if (mounted) setState(() { _saving = false; });
     } catch (e) {
@@ -944,7 +946,8 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
         years: widget.years,
         sections: sections,
       );
-      await OpenFilex.open(pdfPath);
+      if (!kIsWeb) await OpenFilex.open(pdfPath);
+      // Web: PDF already downloaded via browser
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));

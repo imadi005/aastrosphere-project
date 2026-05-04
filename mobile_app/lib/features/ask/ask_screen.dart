@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../core/services/analytics_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -158,7 +159,7 @@ I'm your personal astro guide. Ask me anything about:
     final text = _ctrl.text.trim();
     if (text.isEmpty || _loading || _userDob == null) return;
     
-    HapticFeedback.lightImpact();
+    if (!kIsWeb) HapticFeedback.lightImpact();
     
     setState(() {
       _messages.add(ChatMessage(role: 'user', content: text));
@@ -222,7 +223,7 @@ I'm your personal astro guide. Ask me anything about:
   }
   
   void _clearChat() {
-    HapticFeedback.selectionClick();
+    if (!kIsWeb) HapticFeedback.selectionClick();
     setState(() {
       _messages.clear();
       _addWelcomeMessage();

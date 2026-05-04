@@ -1,12 +1,12 @@
 {
-    "name": "mobile_app",
-    "short_name": "mobile_app",
+    "name": "Aastrosphere",
+    "short_name": "Aastrosphere",
+    "description": "Ank Jyotish by Pankajj Kumar Mishra",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#F5F0E8",
+    "theme_color": "#9D7213",
+    "orientation": "portrait",
     "prefer_related_applications": false,
     "icons": [
         {

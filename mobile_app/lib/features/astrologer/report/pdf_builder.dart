@@ -1,8 +1,9 @@
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:path_provider/path_provider.dart';
+import 'package:path_provider/path_provider.dart' if (dart.library.html) '';
 import '../../../core/numerology/numerology_engine.dart';
 import 'astro_report_screen.dart';
 
