@@ -1,9 +1,8 @@
-import 'dart:io' if (dart.library.html) 'dart:html' as html;
-import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:path_provider/path_provider.dart' if (dart.library.html) '';
+import 'pdf_file_utils.dart';
 import '../../../core/numerology/numerology_engine.dart';
 import 'astro_report_screen.dart';
 
@@ -183,11 +182,10 @@ class PdfReportBuilder {
         build: (ctx) => _yearPage(s, natal, dob)));
     }
 
-    final dir  = await getTemporaryDirectory();
+    final bytes = await doc.save();
     final safe = clientName.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_');
-    final path = '${dir.path}/Aastrosphere_${safe}_Report.pdf';
-    await File(path).writeAsBytes(await doc.save());
-    return path;
+    final fileName = 'Aastrosphere_${safe}_Report.pdf';
+    return await savePdfBytes(bytes, fileName);
   }
 
   // ── Section title ─────────────────────────────────────────────────────────
