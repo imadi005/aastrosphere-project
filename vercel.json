@@ -4,10 +4,6 @@
     {
       "src": "backend/server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "web_build/**/*",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -16,19 +12,15 @@
       "dest": "backend/server.js"
     },
     {
-      "src": "/app/flutter_bootstrap.js",
-      "dest": "/web_build/flutter_bootstrap.js"
-    },
-    {
-      "src": "/app/main.dart.js(.*)",
-      "dest": "/web_build/main.dart.js$1"
-    },
-    {
-      "src": "/app/(.*)",
+      "src": "/app/(.+)",
       "dest": "/web_build/$1"
     },
     {
       "src": "/app",
+      "dest": "/web_build/index.html"
+    },
+    {
+      "src": "/app/",
       "dest": "/web_build/index.html"
     }
   ]
