@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/theme_provider.dart';
@@ -32,6 +33,10 @@ void main() async {
     ));
   }
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Web: persist session across browser refreshes
+  if (kIsWeb) {
+    await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+  }
   final container = ProviderContainer();
   MidnightRefreshService.init(container);
   await NotificationService.init();
