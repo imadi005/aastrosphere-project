@@ -20,6 +20,7 @@ class TodayScreen extends ConsumerStatefulWidget {
 class _TodayScreenState extends ConsumerState<TodayScreen> {
   bool _notificationsScheduled = false;
   String _lastScheduledDate = '';
+  String _lastLoadedDate = '';
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +30,17 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
 
-    // Schedule notifications when data loads (once per day, resets at midnight)
+    // Refresh data when date changes (midnight / app reopen next day)
     final todayDate = DateTime.now().toIso8601String().substring(0, 10);
+    if (_lastLoadedDate.isNotEmpty && _lastLoadedDate != todayDate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.invalidate(todayDataProvider);
+      });
+    }
+
+    // Schedule notifications when data loads (once per day, resets at midnight)
     todayAsync.whenData((data) {
+      _lastLoadedDate = todayDate;
       if (_lastScheduledDate != todayDate) {
         _lastScheduledDate = todayDate;
         _notificationsScheduled = true;
