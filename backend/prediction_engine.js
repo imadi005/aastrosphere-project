@@ -497,7 +497,7 @@ export function generateDailyPrediction(ctx) {
     do_short: userContent.do,        // 3–4 short items (2–4 words each)
     avoid_short: userContent.avoid,  // 2–3 short items (2–4 words each)
     // KEPT — long insight stays for the "Full insight" detail screen only
-    insight,
+    insight: userContent.insight,
     what_to_do: (guidance.do || []).slice(0, 4),
     what_to_avoid: (guidance.avoid || []).slice(0, 4),
     yoga_messages: yogaInsights,
