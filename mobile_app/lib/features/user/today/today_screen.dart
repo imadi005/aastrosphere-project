@@ -90,6 +90,7 @@ class _TodayView extends StatelessWidget {
     final now = DateTime.now();
 
     final rating = data['rating'] as String? ?? 'caution';
+    final ratingLabel = data['rating_label'] as String? ?? '';
     final quote = data['quote'] as String? ?? '';
     final insight = data['insight'] as String? ?? '';
     final toDo = (data['what_to_do'] as List? ?? []).cast<String>();
@@ -130,7 +131,7 @@ class _TodayView extends StatelessWidget {
             // ── 3. Day card — quote + insight (expandable) ───────
             _DayCard(
               quote: quote, insight: insight,
-              rating: rating, dailyNum: dailyNum,
+              rating: rating, ratingLabel: ratingLabel, dailyNum: dailyNum,
               isDark: isDark, gold: gold,
               layers: data['layers'] as Map<String, dynamic>?,
             ),
@@ -277,12 +278,13 @@ class _YogaPills extends StatelessWidget {
 // ─── 3. Day card ──────────────────────────────────────────────────────────────
 class _DayCard extends StatefulWidget {
   final String quote, insight, rating;
+  final String ratingLabel;
   final int dailyNum;
   final bool isDark;
   final Color gold;
   final Map<String, dynamic>? layers;
   const _DayCard({required this.quote, required this.insight, required this.rating,
-      required this.dailyNum, required this.isDark, required this.gold, this.layers});
+      this.ratingLabel = '', required this.dailyNum, required this.isDark, required this.gold, this.layers});
 
   @override
   State<_DayCard> createState() => _DayCardState();
@@ -306,6 +308,8 @@ class _DayCardState extends State<_DayCard> {
       case 'caution': ratingColor = const Color(0xFFF59E0B); ratingLabel = 'CAUTION';
       default: ratingColor = widget.gold; ratingLabel = 'STEADY';
     }
+    // Varied label from API (color stays from rating above)
+    if (widget.ratingLabel.isNotEmpty) ratingLabel = widget.ratingLabel.toUpperCase();
 
     return AstroCard(
       padding: const EdgeInsets.all(20),
