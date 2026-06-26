@@ -25,6 +25,7 @@ import { getDayDefinition } from './day_definition_library.js';
 import { getDayScore } from './day_score_library.js';
 import { getPriorityAction } from './priority_action_library.js';
 import { buildUserDailyContent } from './user_daily_content.js';
+import { buildPriority } from './priority_composer.js';
 
 import { DEEP_PERIOD_TEXTS_GENERATED } from './deep_library_generated.js';
 
@@ -364,8 +365,8 @@ function getChartModifiers(nums, freq, basic, destiny, natalNums = []) {
 // ─── Primary action — chart-specific, not from generic guidance list ─────────
 // Based on active yogas + maha+antar+daily combination
 export function getPrimaryAction(ctx) {
-  // Use new vast library — all 81 maha+daily combos + yoga overrides
-  return getPriorityAction(ctx);
+  // 4-layer composer — maha + antar + monthly + daily (plain English, 6561 combos)
+  return buildPriority(ctx.maha, ctx.antar, ctx.monthly, ctx.daily);
 }
 
 // Legacy kept for reference
