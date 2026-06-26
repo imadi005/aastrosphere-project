@@ -24,6 +24,7 @@ import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_libr
 import { getDayDefinition } from './day_definition_library.js';
 import { getDayScore } from './day_score_library.js';
 import { getPriorityAction } from './priority_action_library.js';
+import { buildUserDailyContent } from './user_daily_content.js';
 
 import { DEEP_PERIOD_TEXTS_GENERATED } from './deep_library_generated.js';
 
@@ -482,10 +483,20 @@ export function generateDailyPrediction(ctx) {
 
   const dayScore = getDayScore({ ...ctx, rating });
 
+  // ── Plain-English content for the Today card (simple language, no jargon) ──
+  const userContent = buildUserDailyContent(daily, rating, dayOfYear);
+
   return {
     quote,
     rating,
     day_score: dayScore,
+    // NEW — plain, short, user-facing (use these on the Today card)
+    tag: userContent.tag,            // short, varies day to day
+    summary: userContent.summary,    // 1–2 line plain summary (replaces long para on card)
+    priority: userContent.priority,  // one clear plain line
+    do_short: userContent.do,        // 3–4 short items (2–4 words each)
+    avoid_short: userContent.avoid,  // 2–3 short items (2–4 words each)
+    // KEPT — long insight stays for the "Full insight" detail screen only
     insight,
     what_to_do: (guidance.do || []).slice(0, 4),
     what_to_avoid: (guidance.avoid || []).slice(0, 4),
