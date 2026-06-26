@@ -219,65 +219,79 @@ const ENEMY = {
 };
 
 // ── Main export ────────────────────────────────────────────────────────────────
+// Score band each rating must stay inside — guarantees score and rating never contradict.
+const RATING_BANDS = {
+  favorable: [72, 95],
+  good:      [60, 80],
+  caution:   [40, 58],
+  avoid:     [22, 40],
+};
+
 export function getDayScore(ctx) {
-  const { maha, antar, monthly, daily, basic, destiny, yogas = [], freqMap = {} } = ctx;
+  const { maha, antar, monthly, daily, basic, destiny, yogas = [], freqMap = {}, rating } = ctx;
   const natalNums = Object.keys(freqMap).map(Number);
 
-  // Base: start at 60
-  let score = 60;
-
-  // Daily vs Basic (most important — personality alignment)
-  if (FRIENDLY[basic]?.includes(daily)) score += 15;
-  else if (ENEMY[basic]?.includes(daily)) score -= 15;
-  else score += 5; // neutral
-
-  // Daily vs Destiny
-  if (FRIENDLY[destiny]?.includes(daily)) score += 8;
-  else if (ENEMY[destiny]?.includes(daily)) score -= 8;
-
-  // Daily vs Maha (current life period energy)
-  if (FRIENDLY[maha]?.includes(daily)) score += 8;
-  else if (ENEMY[maha]?.includes(daily)) score -= 8;
-
-  // Daily vs Antar
-  if (FRIENDLY[antar]?.includes(daily)) score += 5;
-  else if (ENEMY[antar]?.includes(daily)) score -= 5;
-
-  // Natal boost: daily absent from natal = fresh positive energy
-  if (!natalNums.includes(daily)) score += 6;
-  // Daily matches basic = amplification
-  if (daily === basic) score += 5;
-  if (daily === destiny) score += 3;
-
-  // Accident risk days always lower
   const isAccident = (daily === 4 && [9].includes(maha)) ||
                      (daily === 9 && [4].includes(maha)) ||
                      (daily === 4 && [9].includes(antar)) ||
                      (daily === 9 && [4].includes(antar));
-  if (isAccident) score -= 20;
 
-  // Yoga modifiers (selective — not all yogas count daily)
-  for (const yoga of yogas) {
-    // Only count yogas that change based on daily energy
-    if (yoga.id === 'financial_bandhan' && [4,8].includes(daily)) score -= 8;
-    if (yoga.id === 'bandhan' && [4,8].includes(daily)) score -= 6;
-    if (yoga.id === 'easy_money' && [5,7].includes(daily)) score += 10;
-    if (yoga.id === 'raj_yoga' && [1,9].includes(daily)) score += 10;
-    if (yoga.id === 'uplifting_319' && [3,1,9].includes(daily)) score += 8;
-    if (yoga.id === 'high_intuition' && [7,2].includes(daily)) score += 6;
-    if (yoga.id === 'vipreet_raj' && [4,8].includes(daily)) score += 5;
+  let score;
+
+  if (rating && RATING_BASE[rating] !== undefined) {
+    // ── Rating provided (Today card): anchor the score TO the rating so they agree ──
+    // The rating already reflects the full 6-layer chart. We only nudge within its band.
+    score = RATING_BASE[rating];
+    if (!natalNums.includes(daily)) score += 3;   // absent daily = fresh energy
+    if (daily === basic) score += 3;              // amplification
+    if (daily === destiny) score += 2;
+    if (isAccident) score -= 12;
+    for (const yoga of yogas) {
+      if (yoga.id === 'financial_bandhan' && [4,8].includes(daily)) score -= 5;
+      if (yoga.id === 'bandhan' && [4,8].includes(daily)) score -= 4;
+      if (yoga.id === 'easy_money' && [5,7].includes(daily)) score += 6;
+      if (yoga.id === 'raj_yoga' && [1,9].includes(daily)) score += 6;
+      if (yoga.id === 'uplifting_319' && [3,1,9].includes(daily)) score += 5;
+      if (yoga.id === 'high_intuition' && [7,2].includes(daily)) score += 4;
+      if (yoga.id === 'vipreet_raj' && [4,8].includes(daily)) score += 3;
+    }
+    const [lo, hi] = RATING_BANDS[rating];
+    score = Math.min(hi, Math.max(lo, Math.round(score)));
+  } else {
+    // ── No rating (internal accident scanner): compute independently for day-to-day spread ──
+    score = 60;
+    if (FRIENDLY[basic]?.includes(daily)) score += 15;
+    else if (ENEMY[basic]?.includes(daily)) score -= 15;
+    else score += 5;
+    if (FRIENDLY[destiny]?.includes(daily)) score += 8;
+    else if (ENEMY[destiny]?.includes(daily)) score -= 8;
+    if (FRIENDLY[maha]?.includes(daily)) score += 8;
+    else if (ENEMY[maha]?.includes(daily)) score -= 8;
+    if (FRIENDLY[antar]?.includes(daily)) score += 5;
+    else if (ENEMY[antar]?.includes(daily)) score -= 5;
+    if (!natalNums.includes(daily)) score += 6;
+    if (daily === basic) score += 5;
+    if (daily === destiny) score += 3;
+    if (isAccident) score -= 20;
+    for (const yoga of yogas) {
+      if (yoga.id === 'financial_bandhan' && [4,8].includes(daily)) score -= 8;
+      if (yoga.id === 'bandhan' && [4,8].includes(daily)) score -= 6;
+      if (yoga.id === 'easy_money' && [5,7].includes(daily)) score += 10;
+      if (yoga.id === 'raj_yoga' && [1,9].includes(daily)) score += 10;
+      if (yoga.id === 'uplifting_319' && [3,1,9].includes(daily)) score += 8;
+      if (yoga.id === 'high_intuition' && [7,2].includes(daily)) score += 6;
+      if (yoga.id === 'vipreet_raj' && [4,8].includes(daily)) score += 5;
+    }
+    score = Math.min(96, Math.max(22, Math.round(score)));
   }
 
-  // Clamp 22-96 — never perfect, never hopeless
-  score = Math.min(96, Math.max(22, Math.round(score)));
-
-  // Label
+  // Label derived from the SAME final score — consistent everywhere.
   let label, color;
-  if (score >= 80) { label = 'Strong day'; color = 'success'; }
-  else if (score >= 65) { label = 'Good day'; color = 'good'; }
-  else if (score >= 50) { label = 'Steady day'; color = 'neutral'; }
+  if (score >= 72) { label = 'Strong day'; color = 'success'; }
+  else if (score >= 58) { label = 'Good day'; color = 'good'; }
+  else if (score >= 45) { label = 'Steady day'; color = 'neutral'; }
   else if (score >= 35) { label = 'Careful day'; color = 'caution'; }
-  else { label = 'Rest day'; color = 'avoid'; }
+  else { label = 'Take it easy'; color = 'avoid'; }
 
   // Good for / Bad for tags — from maha+daily combo
   const key = `${maha}_${daily}`;
