@@ -57,29 +57,36 @@ const DAY_PRIORITY = {
 
 // ─── Short DO items (2–4 words each) ─────────────────────────────────────────
 const DAY_DO = {
-  1: ["Take the lead", "Make the call", "Start it today", "Speak up"],
-  2: ["Reach out", "Listen well", "Create something", "Be honest"],
-  3: ["Plan ahead", "Decide calmly", "Give advice", "Write it down"],
-  4: ["Verify everything", "Research first", "Ask questions", "Stay flexible"],
-  5: ["Close the deal", "Negotiate", "Send the message", "Check the numbers"],
-  6: ["Connect warmly", "Enjoy the moment", "Be generous", "Make it nice"],
-  7: ["Trust your gut", "Take the meeting", "Stay calm", "Let it happen"],
-  8: ["Keep working", "Stay consistent", "Finish tasks", "Be patient"],
-  9: ["Take action", "Move fast", "Face it head-on", "Get moving"],
+  1: ["Take the lead", "Make the call", "Start it today", "Speak up", "Decide and act", "Go first"],
+  2: ["Reach out", "Listen well", "Create something", "Be honest", "Call a friend", "Show you care"],
+  3: ["Plan ahead", "Decide calmly", "Give advice", "Write it down", "Think it through", "Make the choice"],
+  4: ["Verify everything", "Research first", "Ask questions", "Stay flexible", "Double-check", "Read the details"],
+  5: ["Close the deal", "Negotiate", "Send the message", "Check the numbers", "Make the pitch", "Talk it out"],
+  6: ["Connect warmly", "Enjoy the moment", "Be generous", "Make it nice", "Spend time together", "Create something"],
+  7: ["Trust your gut", "Take the meeting", "Stay calm", "Let it happen", "Follow instinct", "Keep it quiet"],
+  8: ["Keep working", "Stay consistent", "Finish tasks", "Be patient", "Stick to routine", "Push through"],
+  9: ["Take action", "Move fast", "Face it head-on", "Get moving", "Exercise", "Tackle it now"],
 };
 
 // ─── Short AVOID items (2–4 words each) ──────────────────────────────────────
 const DAY_AVOID = {
-  1: ["Ego trips", "Forcing others", "Overconfidence"],
-  2: ["Money from emotion", "Taking things personally", "Overthinking feelings"],
-  3: ["Cutting corners", "Rushing decisions", "Ignoring your gut"],
-  4: ["Big purchases", "Quick commitments", "Trusting blindly"],
-  5: ["Overthinking", "Greedy moves", "Skipping details"],
-  6: ["Overspending", "Harsh words", "Overindulging"],
-  7: ["Forcing outcomes", "Over-analyzing", "Chasing too hard"],
-  8: ["Shortcuts", "Impatience", "Giving up early"],
-  9: ["Picking fights", "Rash decisions", "Reckless speed"],
+  1: ["Ego trips", "Forcing others", "Overconfidence", "Going it alone", "Ignoring advice"],
+  2: ["Money from emotion", "Taking it personally", "Overthinking feelings", "Isolating yourself", "Mood swings"],
+  3: ["Cutting corners", "Rushing decisions", "Ignoring your gut", "Lecturing others", "Over-promising"],
+  4: ["Big purchases", "Quick commitments", "Trusting blindly", "Signing anything", "Easy-looking deals"],
+  5: ["Overthinking", "Greedy moves", "Skipping details", "Rushing money", "Risky bets"],
+  6: ["Overspending", "Harsh words", "Overindulging", "Forcing closeness", "Emotional buys"],
+  7: ["Forcing outcomes", "Over-analyzing", "Chasing too hard", "Ignoring instinct", "Sudden flips"],
+  8: ["Shortcuts", "Impatience", "Giving up early", "Overloading", "Breaking routine"],
+  9: ["Picking fights", "Rash decisions", "Reckless speed", "Acting on anger", "Rushing physically"],
 };
+
+// Rotate a subset so the same number doesn't always show identical chips.
+function rotate(arr, n, start) {
+  const out = [];
+  for (let i = 0; i < n && i < arr.length; i++) out.push(arr[(start + i) % arr.length]);
+  return out;
+}
 
 // ─── Plain full insight (for the "Full insight" detail — simple, no jargon) ───
 const DAY_INSIGHT = {
@@ -126,7 +133,7 @@ export function buildUserDailyContent(daily, rating, dayOfYear = 0) {
     summary: summaryFor(daily, rating),    // plain 1–2 line day summary
     insight: buildPlainInsight(daily, rating), // plain full insight (no jargon)
     priority: DAY_PRIORITY[daily] || DAY_PRIORITY[1], // one clear line
-    do: DAY_DO[daily] || DAY_DO[1],        // 3–4 short items
-    avoid: DAY_AVOID[daily] || DAY_AVOID[1], // 2–3 short items
+    do: rotate(DAY_DO[daily] || DAY_DO[1], 4, dayOfYear),     // 4 short items, rotate by date
+    avoid: rotate(DAY_AVOID[daily] || DAY_AVOID[1], 3, dayOfYear), // 3 short items, rotate by date
   };
 }
