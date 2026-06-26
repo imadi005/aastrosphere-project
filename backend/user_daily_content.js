@@ -101,6 +101,20 @@ export function buildPlainInsight(daily, rating) {
   return base;
 }
 
+// ─── Varied phrasings for the rating badge (so "favorable" isn't the only word) ─
+// Underlying rating stays the same (drives color); only the shown text rotates.
+const RATING_LABELS = {
+  favorable: ["Great day", "Strong day", "Day's with you", "Go for it", "Good energy", "On your side", "Bright day", "Smooth day"],
+  good:      ["Good day", "Solid day", "Decent day", "Mostly good", "Steady & up", "Fair day"],
+  caution:   ["Mixed day", "Go steady", "Take it slow", "Be mindful", "Stay careful", "Handle with care"],
+  avoid:     ["Slow day", "Take it easy", "Low-key day", "Quiet day", "Keep it light", "Rest & recharge"],
+};
+
+function ratingLabelFor(rating, dayOfYear) {
+  const pool = RATING_LABELS[rating] || RATING_LABELS.caution;
+  return pool[dayOfYear % pool.length];
+}
+
 // ─── Main builder — returns everything the Today card needs, in plain English ─
 export function buildUserDailyContent(daily, rating, dayOfYear = 0) {
   const tags = DAY_TAGS[daily] || DAY_TAGS[1];
@@ -108,6 +122,7 @@ export function buildUserDailyContent(daily, rating, dayOfYear = 0) {
 
   return {
     tag,                                   // short, varies day to day
+    rating_label: ratingLabelFor(rating, dayOfYear), // varied badge text (e.g. "Strong day")
     summary: summaryFor(daily, rating),    // plain 1–2 line day summary
     insight: buildPlainInsight(daily, rating), // plain full insight (no jargon)
     priority: DAY_PRIORITY[daily] || DAY_PRIORITY[1], // one clear line

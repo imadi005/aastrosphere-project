@@ -489,6 +489,7 @@ export function generateDailyPrediction(ctx) {
   return {
     quote,
     rating,
+    rating_label: userContent.rating_label, // varied badge text (color still from `rating`)
     day_score: dayScore,
     // NEW — plain, short, user-facing (use these on the Today card)
     tag: userContent.tag,            // short, varies day to day
