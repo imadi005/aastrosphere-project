@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
-import '../../../core/providers/today_provider.dart';
 import '../../../core/services/notification_service.dart';
 import '../../auth/providers/user_provider.dart';
 
@@ -18,7 +17,6 @@ class TodayScreen extends ConsumerStatefulWidget {
 }
 
 class _TodayScreenState extends ConsumerState<TodayScreen> {
-  bool _notificationsScheduled = false;
   String _lastScheduledDate = '';
   String _lastLoadedDate = '';
 
@@ -43,7 +41,6 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       _lastLoadedDate = todayDate;
       if (_lastScheduledDate != todayDate) {
         _lastScheduledDate = todayDate;
-        _notificationsScheduled = true;
         _scheduleNotifications(data);
       }
     });
@@ -86,7 +83,6 @@ class _TodayView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final now = DateTime.now();
 
     final rating = data['rating'] as String? ?? 'caution';
@@ -95,14 +91,10 @@ class _TodayView extends StatelessWidget {
     final insight = data['insight'] as String? ?? '';
     final toDo = (data['what_to_do'] as List? ?? []).cast<String>();
     final avoid = (data['what_to_avoid'] as List? ?? []).cast<String>();
-    final dayScoreData = data['day_score'] as Map<String, dynamic>?;
     final characteristics = (data['characteristics'] as List? ?? []);
     final primaryAction = data['primary_action'] as String?;
     final primaryAvoid = data['primary_avoid'] as String?;
     final structuralYogas = (data['structural_yogas'] as List? ?? []);
-    final comboYogas = (data['combo_yogas'] as List? ?? []);
-    final bestHours = (data['best_hours'] as List? ?? []);
-    final cautionHours = (data['caution_hours'] as List? ?? []);
     final allHours = (data['all_hours'] as List? ?? []);
     final currentHour = data['current_hour'] as int? ?? now.hour;
     final dailyNum = data['daily_number'] as int? ?? 0;
@@ -123,13 +115,11 @@ class _TodayView extends StatelessWidget {
             _GreetingRow(name: name, date: now, isDark: isDark, gold: gold),
             const SizedBox(height: 16),
 
-            // ── 2. Yoga pills ────────────────────────────────────
             if (structuralYogas.isNotEmpty) ...[
               _YogaPills(yogas: structuralYogas, gold: gold),
               const SizedBox(height: 16),
             ],
 
-            // ── 3. Day card — quote + insight (expandable) ───────
             _DayCard(
               quote: quote, insight: insight,
               rating: rating, ratingLabel: ratingLabel, dailyNum: dailyNum,
@@ -138,40 +128,45 @@ class _TodayView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // ── 4b. Accident risk warning ────────────────────────
-            if (dailyAccidentRisk != null || accidentRiskHours.isNotEmpty)
-              _AccidentWarningCard(
-                dailyRisk: dailyAccidentRisk,
-                riskHours: accidentRiskHours,
-                isDark: isDark,
-              ),
-            if (dailyAccidentRisk != null || accidentRiskHours.isNotEmpty)
-              const SizedBox(height: 16),
-
-            // ── 5. Today's one action ────────────────────────────
-            if (primaryAction != null || primaryAvoid != null)
+            if (primaryAction != null || primaryAvoid != null) ...[
               _OneActionCard(
                 action: primaryAction,
                 avoid: primaryAvoid,
                 isDark: isDark, gold: gold,
               ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
 
-            // ── 6. Full guidance — expandable ───────────────────
+            if (characteristics.isNotEmpty) ...[
+              _DayCharacterCard(
+                items: characteristics,
+                isDark: isDark,
+                gold: gold,
+              ),
+              const SizedBox(height: 16),
+            ],
+
             _GuidanceCard(toDo: toDo, avoid: avoid, isDark: isDark, gold: gold),
             const SizedBox(height: 16),
 
+            if (dailyAccidentRisk != null || accidentRiskHours.isNotEmpty) ...[
+              _AccidentWarningCard(
+                dailyRisk: dailyAccidentRisk,
+                riskHours: accidentRiskHours,
+                isDark: isDark,
+              ),
+              const SizedBox(height: 16),
+            ],
 
-            const SizedBox(height: 16),
-
-            // ── 8. Today's Character (replaces the score) ─────────
-            if (characteristics.isNotEmpty)
-              _DayCharacterCard(items: characteristics, isDark: isDark, gold: gold),
-            const SizedBox(height: 16),
-
-            // ── 9. Your Hours — now + day parts (no graph) ────────
-            if (allHours.isNotEmpty)
-              _HoursCard(allHours: allHours, currentHour: DateTime.now().hour, isDark: isDark, gold: gold),
+            if (allHours.isNotEmpty) ...[
+              _HoursCard(
+                allHours: allHours,
+                currentHour: currentHour,
+                isDark: isDark,
+                gold: gold,
+              ),
+              const SizedBox(height: 16),
+            ],
             const SizedBox(height: 10),
 
 
@@ -717,71 +712,6 @@ class _DayCharacterCard extends StatelessWidget {
     );
   }
 }
-
-// ─── Day Score Card ───────────────────────────────────────────────────────────
-class _DayScoreCard extends StatelessWidget {
-  final Map<String, dynamic> data;
-  final bool isDark;
-  final Color gold;
-  const _DayScoreCard({required this.data, required this.isDark, required this.gold});
-
-  @override
-  Widget build(BuildContext context) {
-    final score    = data['score'] as int? ?? 65;
-    final label    = data['label'] as String? ?? 'Good day';
-    final colorKey = data['color'] as String? ?? 'neutral';
-    final goodFor  = (data['good_for'] as List? ?? []).cast<String>();
-    final badFor   = (data['bad_for'] as List? ?? []).cast<String>();
-
-    final primary   = isDark ? AppColors.textPrimaryDark  : AppColors.textPrimaryLight;
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final border    = isDark ? AppColors.borderDark : AppColors.borderLight;
-
-    final Color scoreColor;
-    switch (colorKey) {
-      case 'success': scoreColor = isDark ? AppColors.successDark : AppColors.success;
-      case 'good':    scoreColor = isDark ? AppColors.successDark : AppColors.success;
-      case 'caution': scoreColor = const Color(0xFFF59E0B);
-      case 'avoid':   scoreColor = isDark ? AppColors.dangerDark : AppColors.danger;
-      default:        scoreColor = gold;
-    }
-
-    return AstroCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Score row
-        Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-          Text('$score', style: GoogleFonts.cormorantGaramond(
-              fontSize: 52, fontWeight: FontWeight.w600,
-              color: scoreColor, height: 1)),
-          const SizedBox(width: 4),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text('/100', style: GoogleFonts.dmSans(
-                fontSize: 13, color: secondary))),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const SizedBox(height: 10),
-            Text(label, style: GoogleFonts.dmSans(
-                fontSize: 14, fontWeight: FontWeight.w600, color: primary)),
-          ])),
-        ]),
-        const SizedBox(height: 6),
-        // Score bar
-        ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: LinearProgressIndicator(
-            value: score / 100,
-            minHeight: 4,
-            backgroundColor: border,
-            valueColor: AlwaysStoppedAnimation<Color>(scoreColor.withOpacity(0.7)),
-          ),
-        ),
-      ]),
-    );
-  }
-}
-
 
 // ─── Energy Wave Painter ──────────────────────────────────────────────────────
 class _EnergyWavePainter extends CustomPainter {
