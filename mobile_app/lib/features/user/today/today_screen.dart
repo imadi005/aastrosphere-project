@@ -168,12 +168,6 @@ class _TodayView extends StatelessWidget {
               _DayScoreCard(data: dayScoreData, isDark: isDark, gold: gold),
             const SizedBox(height: 10),
 
-            // ── 9. Hour section — heatmap + current + next 3 ──────
-            _HourSection(
-              allHours: allHours,
-              currentHour: DateTime.now().hour,
-              isDark: isDark, gold: gold,
-            ),
 
           ],
         ),
@@ -679,49 +673,6 @@ class _DayScoreCard extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation<Color>(scoreColor.withOpacity(0.7)),
           ),
         ),
-        const SizedBox(height: 14),
-        Divider(height: 1, color: border),
-        const SizedBox(height: 12),
-        // Good for / Bad for
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // Good for
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('GOOD FOR', style: GoogleFonts.dmSans(
-                fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.8,
-                color: isDark ? AppColors.successDark : AppColors.success)),
-            const SizedBox(height: 8),
-            ...goodFor.map((g) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(children: [
-                Container(width: 4, height: 4,
-                    decoration: BoxDecoration(shape: BoxShape.circle,
-                        color: (isDark ? AppColors.successDark : AppColors.success).withOpacity(0.7))),
-                const SizedBox(width: 7),
-                Expanded(child: Text(g, style: GoogleFonts.dmSans(
-                    fontSize: 12, color: primary.withOpacity(0.8)))),
-              ]),
-            )),
-          ])),
-          Container(width: 0.5, color: border, margin: const EdgeInsets.symmetric(horizontal: 12)),
-          // Bad for
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('NOT IDEAL FOR', style: GoogleFonts.dmSans(
-                fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.8,
-                color: const Color(0xFFF59E0B))),
-            const SizedBox(height: 8),
-            ...badFor.map((b) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(children: [
-                Container(width: 4, height: 4,
-                    decoration: BoxDecoration(shape: BoxShape.circle,
-                        color: const Color(0xFFF59E0B).withOpacity(0.7))),
-                const SizedBox(width: 7),
-                Expanded(child: Text(b, style: GoogleFonts.dmSans(
-                    fontSize: 12, color: primary.withOpacity(0.8)))),
-              ]),
-            )),
-          ])),
-        ]),
       ]),
     );
   }
