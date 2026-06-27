@@ -96,6 +96,7 @@ class _TodayView extends StatelessWidget {
     final toDo = (data['what_to_do'] as List? ?? []).cast<String>();
     final avoid = (data['what_to_avoid'] as List? ?? []).cast<String>();
     final dayScoreData = data['day_score'] as Map<String, dynamic>?;
+    final characteristics = (data['characteristics'] as List? ?? []);
     final primaryAction = data['primary_action'] as String?;
     final primaryAvoid = data['primary_avoid'] as String?;
     final structuralYogas = (data['structural_yogas'] as List? ?? []);
@@ -163,9 +164,9 @@ class _TodayView extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ── 8. Day Score card ────────────────────────────────
-            if (dayScoreData != null)
-              _DayScoreCard(data: dayScoreData, isDark: isDark, gold: gold),
+            // ── 8. Today's Character (replaces the score) ─────────
+            if (characteristics.isNotEmpty)
+              _DayCharacterCard(items: characteristics, isDark: isDark, gold: gold),
             const SizedBox(height: 10),
 
 
@@ -613,6 +614,104 @@ class _Dot extends StatelessWidget {
     decoration: BoxDecoration(shape: BoxShape.circle, color: color));
 }
 
+
+// ─── Today's Character Card ───────────────────────────────────────────────────
+class _DayCharacterCard extends StatelessWidget {
+  final List<dynamic> items;
+  final bool isDark;
+  final Color gold;
+  const _DayCharacterCard({required this.items, required this.isDark, required this.gold});
+
+  Color _tone(String t) {
+    switch (t) {
+      case 'good':   return isDark ? AppColors.successDark : AppColors.success;
+      case 'gentle': return const Color(0xFFF59E0B);
+      default:       return gold;
+    }
+  }
+  IconData _icon(String c) {
+    switch (c) {
+      case 'phase':        return Icons.air;
+      case 'personal':     return Icons.person_outline;
+      case 'money':        return Icons.payments_outlined;
+      case 'energy':       return Icons.bolt_outlined;
+      case 'care':         return Icons.spa_outlined;
+      case 'luck':         return Icons.auto_awesome_outlined;
+      case 'relationship': return Icons.favorite_outline;
+      default:             return Icons.wb_twilight_outlined;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) return const SizedBox.shrink();
+    final primary = items.first as Map<String, dynamic>;
+    final rest = items.skip(1).toList();
+    final textPrimary   = isDark ? AppColors.textPrimaryDark   : AppColors.textPrimaryLight;
+    final textSecondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final pTone = _tone(primary['tone'] as String? ?? 'neutral');
+
+    return AstroCard(
+      padding: const EdgeInsets.all(18),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text("TODAY'S CHARACTER", style: GoogleFonts.dmSans(
+            fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1.2, color: gold)),
+        const SizedBox(height: 14),
+
+        // Primary characteristic — prominent
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: pTone.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: pTone.withOpacity(0.18), width: 0.6),
+          ),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(color: pTone.withOpacity(0.14), borderRadius: BorderRadius.circular(11)),
+              child: Icon(_icon(primary['category'] as String? ?? 'core'), size: 20, color: pTone),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(primary['label'] as String? ?? '', style: GoogleFonts.dmSans(
+                  fontSize: 15.5, fontWeight: FontWeight.w700, color: textPrimary)),
+              const SizedBox(height: 3),
+              Text(primary['text'] as String? ?? '', style: GoogleFonts.dmSans(
+                  fontSize: 12.5, height: 1.45, color: textSecondary)),
+            ])),
+          ]),
+        ),
+
+        if (rest.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          ...rest.map((raw) {
+            final c = raw as Map<String, dynamic>;
+            final t = _tone(c['tone'] as String? ?? 'neutral');
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                  width: 28, height: 28,
+                  decoration: BoxDecoration(color: t.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                  child: Icon(_icon(c['category'] as String? ?? 'core'), size: 14, color: t),
+                ),
+                const SizedBox(width: 11),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(c['label'] as String? ?? '', style: GoogleFonts.dmSans(
+                      fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
+                  const SizedBox(height: 2),
+                  Text(c['text'] as String? ?? '', style: GoogleFonts.dmSans(
+                      fontSize: 11.5, height: 1.4, color: textSecondary)),
+                ])),
+              ]),
+            );
+          }),
+        ],
+      ]),
+    );
+  }
+}
 
 // ─── Day Score Card ───────────────────────────────────────────────────────────
 class _DayScoreCard extends StatelessWidget {

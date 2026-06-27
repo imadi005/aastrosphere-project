@@ -35,6 +35,7 @@ import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
 import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis, buildFullChartForChat, smartParseDob } from './ask_engine.js';
 import { buildScanContext } from './event_scanner.js';
+import { buildDayCharacteristics } from './day_characteristics.js';
 import { DEEP_NUMBER_PROFILES, DEEP_COMBINATIONS as DEEP_COMBINATION_LIBRARY } from './deep_library.js';
 
 const app = express();
@@ -260,6 +261,7 @@ app.post('/api/today', (req, res) => {
       rating: daily.rating,
       rating_label: daily.rating_label,
       tag: daily.tag,
+      characteristics: buildDayCharacteristics(ctx),
       summary: daily.summary,
       priority: daily.priority,
       do_short: daily.do_short,
