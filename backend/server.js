@@ -98,12 +98,12 @@ function buildChartData(dob, targetDate, targetHour = null) {
     hourly: hourlyNum,
     natalNums,
   });
-  const dayScore = getDayScore({
-    basic, destiny,
-    maha: maha.number, antar: antar.number,
-    monthly: monthly.number, daily: dailyNum,
-    natalNums,
-  });
+  // Day score — use the SAME path as the Today screen so the two always match.
+  // (Daily number from buildChartContext matches dailyNum above; this guarantees
+  //  identical score + rating between the Chart 'Day Analysis' and the Today screen.)
+  const _scoreCtx = buildChartContext(dob, targetDate);
+  const _scorePred = generateDailyPrediction(_scoreCtx);
+  const dayScore = _scorePred.day_score.score;
 
   return {
     basic, basicPlanet: PLANET_NAMES[basic],

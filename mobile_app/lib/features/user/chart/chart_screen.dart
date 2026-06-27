@@ -682,10 +682,11 @@ class _DayAnalysisSection extends StatelessWidget {
     // Score color
     Color scoreColor;
     String scoreLabel;
-    if (dayScore >= 70) { scoreColor = successColor; scoreLabel = 'Strong day'; }
-    else if (dayScore >= 55) { scoreColor = gold; scoreLabel = 'Steady day'; }
-    else if (dayScore >= 40) { scoreColor = const Color(0xFFF59E0B); scoreLabel = 'Mixed day'; }
-    else { scoreColor = dangerColor; scoreLabel = 'Difficult day'; }
+    if (dayScore >= 72) { scoreColor = successColor; scoreLabel = 'Strong day'; }
+    else if (dayScore >= 58) { scoreColor = successColor; scoreLabel = 'Good day'; }
+    else if (dayScore >= 45) { scoreColor = gold; scoreLabel = 'Steady day'; }
+    else if (dayScore >= 35) { scoreColor = const Color(0xFFF59E0B); scoreLabel = 'Careful day'; }
+    else { scoreColor = dangerColor; scoreLabel = 'Take it easy'; }
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       // Day score bar
