@@ -1960,10 +1960,76 @@ class _HoursCardState extends State<_HoursCard> {
     final primary   = widget.isDark ? AppColors.textPrimaryDark  : AppColors.textPrimaryLight;
     final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final border    = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
+    final gold = widget.gold;
+
+    final now = _hourAt(widget.currentHour);
+    final nowCls = now?['classification'] as String? ?? 'neutral';
+    final nowColor = _c(nowCls);
+    final nowGood = (now?['good_for'] as List? ?? []).cast<String>();
+    final nowAction = now?['best_action'] as String? ?? '';
+    final nowLine = nowAction.isNotEmpty
+        ? nowAction
+        : (nowGood.isNotEmpty ? 'Good for ${nowGood.first}' : 'A steady stretch');
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       SectionLabel('Hour by Hour'),
       const SizedBox(height: 10),
+
+      // ── RIGHT NOW — hero card ──
+      if (now != null)
+        GestureDetector(
+          onTap: () => _showDetail(context, now),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                colors: [gold.withOpacity(widget.isDark ? 0.16 : 0.11), gold.withOpacity(0.02)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: gold.withOpacity(0.28), width: 0.8),
+            ),
+            child: Row(children: [
+              Container(
+                width: 52, height: 52,
+                decoration: BoxDecoration(color: gold.withOpacity(0.16), borderRadius: BorderRadius.circular(15)),
+                child: Icon(Icons.access_time_rounded, size: 25, color: gold),
+              ),
+              const SizedBox(width: 14),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Text('RIGHT NOW', style: GoogleFonts.dmSans(
+                      fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1.3, color: gold)),
+                  const SizedBox(width: 8),
+                  Text(_fmt(widget.currentHour), style: GoogleFonts.dmSans(
+                      fontSize: 11, fontWeight: FontWeight.w600, color: secondary)),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                    decoration: BoxDecoration(color: nowColor.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+                    child: Text(_word(nowCls), style: GoogleFonts.dmSans(
+                        fontSize: 10, fontWeight: FontWeight.w700, color: nowColor)),
+                  ),
+                ]),
+                const SizedBox(height: 6),
+                Text(nowLine, maxLines: 2, overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.dmSans(fontSize: 13.5, height: 1.4, fontWeight: FontWeight.w500, color: primary)),
+                const SizedBox(height: 4),
+                Row(children: [
+                  Text('Tap for details', style: GoogleFonts.dmSans(fontSize: 10.5, color: gold.withOpacity(0.9))),
+                  Icon(Icons.chevron_right, size: 14, color: gold.withOpacity(0.9)),
+                ]),
+              ])),
+            ]),
+          ),
+        ),
+      const SizedBox(height: 16),
+
+      Text('THE REST OF YOUR DAY', style: GoogleFonts.dmSans(
+          fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: secondary)),
+      const SizedBox(height: 8),
+
+      // ── Day-part accordion ──
       AstroCard(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Column(children: List.generate(_parts.length, (i) {
@@ -1973,31 +2039,38 @@ class _HoursCardState extends State<_HoursCard> {
           if (hrs.isEmpty) return const SizedBox.shrink();
           final isOpen = _open == i;
           final pColor = _partColor(a, b);
+          final range = '${_fmt(a)} – ${_fmt(b)}';
 
           return Column(children: [
             if (i != 0) Divider(height: 1, color: border, indent: 14, endIndent: 14),
-            // Header
             InkWell(
               onTap: () => setState(() => _open = isOpen ? null : i),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                 child: Row(children: [
-                  Icon(_icons[i], size: 19, color: pColor),
-                  const SizedBox(width: 13),
-                  Text(name, style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600, color: primary)),
-                  const SizedBox(width: 8),
-                  Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: pColor)),
+                  Container(
+                    width: 34, height: 34,
+                    decoration: BoxDecoration(color: pColor.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+                    child: Icon(_icons[i], size: 17, color: pColor),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(name, style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600, color: primary)),
+                    const SizedBox(height: 1),
+                    Text(range, style: GoogleFonts.dmSans(fontSize: 10.5, color: secondary)),
+                  ]),
                   const Spacer(),
-                  Text('${hrs.length} hrs', style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
-                  const SizedBox(width: 6),
+                  Container(width: 7, height: 7, decoration: BoxDecoration(shape: BoxShape.circle, color: pColor)),
+                  const SizedBox(width: 10),
                   AnimatedRotation(turns: isOpen ? 0.5 : 0, duration: const Duration(milliseconds: 180),
                       child: Icon(Icons.expand_more, size: 20, color: secondary)),
                 ]),
               ),
             ),
-            // Hours
-            if (isOpen)
-              Padding(
+            AnimatedCrossFade(
+              duration: const Duration(milliseconds: 180),
+              crossFadeState: isOpen ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              firstChild: Padding(
                 padding: const EdgeInsets.only(left: 14, right: 8, bottom: 8),
                 child: Column(children: hrs.map((h) {
                   final hr = h['hour'] as int;
@@ -2012,18 +2085,20 @@ class _HoursCardState extends State<_HoursCard> {
                       margin: const EdgeInsets.only(bottom: 2),
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
                       decoration: BoxDecoration(
-                        color: isNow ? widget.gold.withOpacity(0.06) : Colors.transparent,
+                        color: isNow ? gold.withOpacity(0.07) : Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
+                        border: isNow ? Border.all(color: gold.withOpacity(0.25), width: 0.6) : null,
                       ),
                       child: Row(children: [
                         Container(width: 7, height: 7, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
                         const SizedBox(width: 11),
-                        SizedBox(width: 52, child: Text(_fmt(hr),
+                        SizedBox(width: 50, child: Text(_fmt(hr),
                             style: GoogleFonts.dmSans(fontSize: 12.5,
                                 fontWeight: isNow ? FontWeight.w700 : FontWeight.w500, color: primary))),
-                        if (isNow) ...[
-                          Text('now ', style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w600, color: widget.gold)),
-                        ],
+                        if (isNow)
+                          Padding(padding: const EdgeInsets.only(right: 6),
+                            child: Text('now', style: GoogleFonts.dmSans(
+                                fontSize: 9, fontWeight: FontWeight.w700, color: gold))),
                         Expanded(child: Text(good.isNotEmpty ? good.first : 'steady',
                             maxLines: 1, overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.dmSans(fontSize: 12, color: secondary))),
@@ -2033,6 +2108,8 @@ class _HoursCardState extends State<_HoursCard> {
                   );
                 }).toList()),
               ),
+              secondChild: const SizedBox(width: double.infinity),
+            ),
           ]);
         })),
       ),
