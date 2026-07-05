@@ -14,5 +14,7 @@ class NotificationService {
     required int id, required String title,
     required String body, required DateTime scheduledTime,
   }) async {}
+  static Future<void> scheduleFocusReminders({required String task}) async {}
+  static Future<void> cancelFocusReminders() async {}
   static Future<void> cancelAll() async {}
 }

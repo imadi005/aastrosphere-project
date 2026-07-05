@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/providers/today_provider.dart';
+import '../me/me_screen.dart';
 
 class InsightsScreen extends ConsumerStatefulWidget {
   const InsightsScreen({super.key});
@@ -49,14 +50,18 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen>
             indicatorWeight: 1.5,
             indicatorSize: TabBarIndicatorSize.label,
             dividerColor: border,
-            tabs: const [Tab(text: 'WEEKLY'), Tab(text: 'MONTHLY'), Tab(text: 'YEARLY')],
+            tabs: const [
+              Tab(text: 'WHO YOU ARE'),
+              Tab(text: 'THIS MONTH'),
+              Tab(text: 'THIS YEAR'),
+            ],
           ),
         ),
         Expanded(
           child: TabBarView(
             controller: _tab,
             children: [
-              _WeeklyTab(isDark: isDark, gold: gold),
+              _WhoYouAreTab(isDark: isDark, gold: gold),
               _MonthlyTab(isDark: isDark, gold: gold),
               _YearlyTab(isDark: isDark, gold: gold),
             ],
@@ -68,6 +73,51 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen>
 }
 
 // ─── WEEKLY ───────────────────────────────────────────────────────────────────
+class _WhoYouAreTab extends ConsumerWidget {
+  final bool isDark;
+  final Color gold;
+  const _WhoYouAreTab({required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(smartProfileProvider);
+    final deepAsync = ref.watch(deepInsightsProvider);
+
+    return userAsync.when(
+      loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),
+      error: (_, __) => _RetryView(onRetry: () => ref.refresh(smartProfileProvider), gold: gold, isDark: isDark),
+      data: (user) {
+        if (user == null) {
+          return _RetryView(onRetry: () => ref.refresh(smartProfileProvider), gold: gold, isDark: isDark);
+        }
+        return deepAsync.when(
+          loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),
+          error: (_, __) => _RetryView(onRetry: () => ref.refresh(deepInsightsProvider), gold: gold, isDark: isDark),
+          data: (data) => RefreshIndicator(
+            onRefresh: () async {
+              ref.refresh(smartProfileProvider);
+              ref.refresh(deepInsightsProvider);
+            },
+            color: gold,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ProfileHeader(user: user, isDark: isDark, gold: gold),
+                  const SizedBox(height: 24),
+                  MeContent(data: data, isDark: isDark, gold: gold),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _WeeklyTab extends ConsumerWidget {
   final bool isDark;
   final Color gold;

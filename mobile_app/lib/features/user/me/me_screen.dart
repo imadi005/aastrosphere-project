@@ -28,12 +28,12 @@ class MeScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
           child: deepAsync.when(
             loading: () => Column(children: [
-              _ProfileHeader(user: user, isDark: isDark, gold: gold),
+              ProfileHeader(user: user, isDark: isDark, gold: gold),
               const SizedBox(height: 48),
               CircularProgressIndicator(strokeWidth: 1.5, color: gold),
             ]),
             error: (_, __) => Column(children: [
-              _ProfileHeader(user: user, isDark: isDark, gold: gold),
+              ProfileHeader(user: user, isDark: isDark, gold: gold),
               const SizedBox(height: 24),
               Text('Could not load profile insights',
                   style: GoogleFonts.dmSans(fontSize: 13,
@@ -42,9 +42,9 @@ class MeScreen extends ConsumerWidget {
             data: (deep) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _ProfileHeader(user: user, isDark: isDark, gold: gold),
+                ProfileHeader(user: user, isDark: isDark, gold: gold),
                 const SizedBox(height: 24),
-                _MeContent(data: deep, isDark: isDark, gold: gold),
+                MeContent(data: deep, isDark: isDark, gold: gold),
                 const SizedBox(height: 24),
                 AskAstrologerCard(isDark: isDark, gold: gold),
                 const SizedBox(height: 32),
@@ -58,11 +58,11 @@ class MeScreen extends ConsumerWidget {
   }
 }
 
-class _MeContent extends StatelessWidget {
+class MeContent extends StatelessWidget {
   final Map<String, dynamic> data;
   final bool isDark;
   final Color gold;
-  const _MeContent({required this.data, required this.isDark, required this.gold});
+  const MeContent({super.key, required this.data, required this.isDark, required this.gold});
 
   @override
   Widget build(BuildContext context) {
@@ -351,11 +351,11 @@ class _PatternRow extends StatelessWidget {
 }
 
 // ─── Profile header ───────────────────────────────────────────────────────────
-class _ProfileHeader extends StatelessWidget {
+class ProfileHeader extends StatelessWidget {
   final dynamic user;
   final bool isDark;
   final Color gold;
-  const _ProfileHeader({required this.user, required this.isDark, required this.gold});
+  const ProfileHeader({super.key, required this.user, required this.isDark, required this.gold});
 
   @override
   Widget build(BuildContext context) {

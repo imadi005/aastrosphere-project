@@ -4,6 +4,7 @@ import '../../../core/services/analytics_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/services/notification_service.dart';
@@ -1082,18 +1083,120 @@ class _HourChip extends StatelessWidget {
 
 
 // ─── 5. One action card ───────────────────────────────────────────────────────
-class _OneActionCard extends StatelessWidget {
+class _OneActionCard extends StatefulWidget {
   final String? action, avoid;
   final bool isDark;
   final Color gold;
   const _OneActionCard({this.action, this.avoid, required this.isDark, required this.gold});
 
   @override
+  State<_OneActionCard> createState() => _OneActionCardState();
+}
+
+class _OneActionCardState extends State<_OneActionCard> {
+  static const _dateKey = 'today_focus_date';
+  static const _taskKey = 'today_focus_task';
+  static const _lockedKey = 'today_focus_locked';
+  static const _completedKey = 'today_focus_completed';
+
+  late final TextEditingController _controller;
+  bool _loaded = false;
+  bool _locked = false;
+  bool _completed = false;
+
+  String get _todayKey => DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: _defaultTask);
+    _loadFocus();
+  }
+
+  @override
+  void didUpdateWidget(covariant _OneActionCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_locked && oldWidget.action != widget.action && _controller.text.trim().isEmpty) {
+      _controller.text = _defaultTask;
+    }
+  }
+
+  String get _defaultTask {
+    final action = widget.action?.trim();
+    if (action != null && action.isNotEmpty) return action;
+    return 'Finish one important task';
+  }
+
+  Future<void> _loadFocus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedDate = prefs.getString(_dateKey);
+    if (!mounted) return;
+
+    if (savedDate == _todayKey) {
+      final savedTask = prefs.getString(_taskKey);
+      setState(() {
+        _locked = prefs.getBool(_lockedKey) ?? false;
+        _completed = prefs.getBool(_completedKey) ?? false;
+        if (savedTask != null && savedTask.trim().isNotEmpty) {
+          _controller.text = savedTask;
+        }
+        _loaded = true;
+      });
+    } else {
+      setState(() {
+        _controller.text = _defaultTask;
+        _locked = false;
+        _completed = false;
+        _loaded = true;
+      });
+    }
+  }
+
+  Future<void> _lockFocus() async {
+    final task = _controller.text.trim().isEmpty ? _defaultTask : _controller.text.trim();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_dateKey, _todayKey);
+    await prefs.setString(_taskKey, task);
+    await prefs.setBool(_lockedKey, true);
+    await prefs.setBool(_completedKey, false);
+    await NotificationService.scheduleFocusReminders(task: task);
+    if (!mounted) return;
+    setState(() {
+      _controller.text = task;
+      _locked = true;
+      _completed = false;
+    });
+  }
+
+  Future<void> _markCompleted(bool completed) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_dateKey, _todayKey);
+    await prefs.setBool(_completedKey, completed);
+    if (completed) {
+      await NotificationService.cancelFocusReminders();
+    } else {
+      await NotificationService.scheduleFocusReminders(task: _controller.text.trim());
+    }
+    if (!mounted) return;
+    setState(() => _completed = completed);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final successColor = isDark ? AppColors.successDark : AppColors.success;
-    final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
-    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final successColor = widget.isDark ? AppColors.successDark : AppColors.success;
+    final dangerColor = widget.isDark ? AppColors.dangerDark : AppColors.danger;
+    final primary = widget.isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final secondary = widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border = widget.isDark ? AppColors.borderDark : AppColors.borderLight;
+    final fieldFill = widget.isDark
+        ? AppColors.bgSubtleDark.withOpacity(0.65)
+        : AppColors.bgSubtleLight.withOpacity(0.8);
 
     return AstroCard(
       padding: const EdgeInsets.all(16),
@@ -1101,42 +1204,143 @@ class _OneActionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('TODAY\'S PRIORITY', style: GoogleFonts.dmSans(
-              fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: gold)),
+              fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: widget.gold)),
           const SizedBox(height: 12),
-          if (action != null) ...[
+          if (!_loaded)
+            LinearProgressIndicator(
+              minHeight: 2,
+              backgroundColor: border,
+              valueColor: AlwaysStoppedAnimation<Color>(widget.gold),
+            )
+          else ...[
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
                 margin: const EdgeInsets.only(top: 2),
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                     color: successColor.withOpacity(0.1), shape: BoxShape.circle),
-                child: Icon(Icons.check, size: 10, color: successColor),
+                child: Icon(_completed ? Icons.done_all : Icons.check, size: 11, color: successColor),
               ),
               const SizedBox(width: 10),
-              Expanded(child: Text(action!,
-                  style: GoogleFonts.dmSans(fontSize: 13, color:
-                  isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-                      height: 1.5))),
+              Expanded(child: _locked
+                  ? Text(_controller.text,
+                      style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600,
+                          color: primary, height: 1.45))
+                  : TextField(
+                      controller: _controller,
+                      minLines: 1,
+                      maxLines: 3,
+                      textCapitalization: TextCapitalization.sentences,
+                      style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600,
+                          color: primary, height: 1.4),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        filled: true,
+                        fillColor: fieldFill,
+                        hintText: 'Choose one focus for today',
+                        hintStyle: GoogleFonts.dmSans(fontSize: 13, color: secondary),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: widget.gold, width: 1.2),
+                        ),
+                      ),
+                    )),
             ]),
-          ],
-          if (action != null && avoid != null) ...[
             const SizedBox(height: 10),
-            Divider(color: border, thickness: 0.5),
-            const SizedBox(height: 10),
-          ],
-          if (avoid != null) ...[
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+
+            if (!_locked)
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton.icon(
+                  onPressed: _lockFocus,
+                  icon: Icon(Icons.lock_outline, size: 13, color: widget.gold.withOpacity(0.78)),
+                  label: Text('Lock in',
+                      style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: widget.gold.withOpacity(0.86),
+                    side: BorderSide(color: widget.gold.withOpacity(0.28), width: 0.8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    minimumSize: const Size(0, 32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    backgroundColor: widget.gold.withOpacity(0.04),
+                  ),
+                ),
+              )
+            else ...[
               Container(
-                margin: const EdgeInsets.only(top: 2),
-                padding: const EdgeInsets.all(5),
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                    color: dangerColor.withOpacity(0.1), shape: BoxShape.circle),
-                child: Icon(Icons.close, size: 10, color: dangerColor),
+                  color: successColor.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: successColor.withOpacity(0.22), width: 0.6),
+                ),
+                child: Text(
+                  _completed
+                      ? 'Beautiful. Today\'s focus is complete.'
+                      : 'Locked in. Don\'t worry, we\'ll remind you through the day and help you finish it.',
+                  style: GoogleFonts.dmSans(fontSize: 12.5, color: primary.withOpacity(0.82), height: 1.45),
+                ),
               ),
-              const SizedBox(width: 10),
-              Expanded(child: Text(avoid!,
-                  style: GoogleFonts.dmSans(fontSize: 13, color: secondary, height: 1.5))),
-            ]),
+              const SizedBox(height: 10),
+              Row(children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _completed ? null : () => _markCompleted(true),
+                    icon: Icon(_completed ? Icons.check_circle : Icons.check_circle_outline, size: 16),
+                    label: Text(_completed ? 'Completed' : 'Done',
+                        style: GoogleFonts.dmSans(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: successColor,
+                      side: BorderSide(color: successColor.withOpacity(0.45)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _markCompleted(false),
+                    icon: const Icon(Icons.refresh, size: 16),
+                    label: Text('Not yet',
+                        style: GoogleFonts.dmSans(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: secondary,
+                      side: BorderSide(color: border),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
+              ]),
+            ],
+
+            if (widget.avoid != null) ...[
+              const SizedBox(height: 10),
+              Divider(color: border, thickness: 0.5),
+              const SizedBox(height: 10),
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 2),
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                      color: dangerColor.withOpacity(0.1), shape: BoxShape.circle),
+                  child: Icon(Icons.close, size: 10, color: dangerColor),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Text(widget.avoid!,
+                    style: GoogleFonts.dmSans(fontSize: 13, color: secondary, height: 1.5))),
+              ]),
+            ],
           ],
         ],
       ),

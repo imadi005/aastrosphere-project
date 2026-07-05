@@ -16,7 +16,6 @@ import '../user/insights/insights_screen.dart';
 import '../user/circle/circle_screen.dart';
 import '../user/chart/chart_screen.dart';
 import '../ask/ask_screen.dart';
-import '../user/me/me_screen.dart';
 
 // Astrologer screens
 import '../astrologer/chart/astro_chart_screen.dart';
@@ -57,7 +56,6 @@ class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObser
     AskScreen(),
     CircleScreen(),
     ChartScreen(),
-    MeScreen(),
   ];
 
   @override
@@ -85,7 +83,6 @@ class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObser
     BottomNavigationBarItem(icon: Icon(Icons.auto_awesome_outlined), activeIcon: Icon(Icons.auto_awesome), label: 'Ask'),
     BottomNavigationBarItem(icon: Icon(Icons.people_outline), activeIcon: Icon(Icons.people), label: 'Circle'),
     BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view), label: 'Chart'),
-    BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Me'),
   ];
 
   @override
@@ -144,7 +141,6 @@ class _AstrologerShell extends ConsumerWidget {
     ChartScreen(),
     InsightsScreen(),
     AskScreen(),
-    MeScreen(),
   ];
 
   static const _meItems = [
@@ -152,7 +148,6 @@ class _AstrologerShell extends ConsumerWidget {
     BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view), label: 'Chart'),
     BottomNavigationBarItem(icon: Icon(Icons.auto_awesome_outlined), activeIcon: Icon(Icons.auto_awesome), label: 'Insights'),
     BottomNavigationBarItem(icon: Icon(Icons.auto_awesome_outlined), activeIcon: Icon(Icons.auto_awesome), label: 'Ask'),
-    BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Me'),
   ];
 
   @override
