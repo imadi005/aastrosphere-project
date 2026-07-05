@@ -24,6 +24,7 @@ class _AstroChartScreenState extends ConsumerState<AstroChartScreen> {
   // Date/hour selection for "any date" chart
   DateTime? _selectedDate;   // null = today
   int? _selectedHour;
+  final Set<String> _visibleChartLayers = {'maha', 'antar', 'monthly', 'daily', 'hourly'};
 
   @override
   void dispose() { _nameCtrl.dispose(); super.dispose(); }
@@ -198,6 +199,14 @@ class _AstroChartScreenState extends ConsumerState<AstroChartScreen> {
               yogaData: _yogaData,
               isDark: isDark, gold: gold,
               selectedDate: _selectedDate, selectedHour: _selectedHour,
+              visibleLayers: _visibleChartLayers,
+              onToggleLayer: (layer) => setState(() {
+                if (_visibleChartLayers.contains(layer)) {
+                  _visibleChartLayers.remove(layer);
+                } else {
+                  _visibleChartLayers.add(layer);
+                }
+              }),
               onPickDate: () => _pickChartDate(activeDob, isDark, gold),
               onClearDate: () { setState(() { _selectedDate = null; _selectedHour = null; }); _loadChart(activeDob); },
             )),
@@ -260,11 +269,14 @@ class _ChartBody extends StatelessWidget {
   final Map<String, dynamic>? yogaData;
   final bool isDark; final Color gold;
   final DateTime? selectedDate; final int? selectedHour;
+  final Set<String> visibleLayers;
+  final ValueChanged<String> onToggleLayer;
   final VoidCallback onPickDate; final VoidCallback onClearDate;
 
   const _ChartBody({required this.dob, required this.chartData, required this.yogaData,
       required this.isDark, required this.gold, required this.selectedDate,
-      required this.selectedHour, required this.onPickDate, required this.onClearDate});
+      required this.selectedHour, required this.visibleLayers, required this.onToggleLayer,
+      required this.onPickDate, required this.onClearDate});
 
   String _fmtDate(DateTime d) { const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return '${d.day} ${m[d.month-1]} ${d.year}'; }
   String _fmtIso(dynamic v) {
@@ -336,26 +348,52 @@ class _ChartBody extends StatelessWidget {
           const SizedBox(width: 6),
           _NPill(label: 'DESTINY', number: destiny, color: gold.withOpacity(0.75), isDark: isDark),
           const SizedBox(width: 6),
-          _NPill(label: 'MAHA', number: mahaNum, color: gold, isDark: isDark, hi: true),
+          GestureDetector(
+            onTap: () => onToggleLayer('maha'),
+            child: _NPill(label: 'MAHA', number: mahaNum,
+                color: visibleLayers.contains('maha') ? gold : secondary.withOpacity(0.55),
+                isDark: isDark, hi: visibleLayers.contains('maha')),
+          ),
           const SizedBox(width: 6),
-          _NPill(label: 'ANTAR', number: antarNum, color: isDark ? AppColors.successDark : AppColors.success, isDark: isDark),
+          GestureDetector(
+            onTap: () => onToggleLayer('antar'),
+            child: _NPill(label: 'ANTAR', number: antarNum,
+                color: visibleLayers.contains('antar') ? (isDark ? AppColors.successDark : AppColors.success) : secondary.withOpacity(0.55),
+                isDark: isDark, hi: visibleLayers.contains('antar')),
+          ),
           const SizedBox(width: 6),
-          _NPill(label: 'MONTHLY', number: monthlyNum, color: const Color(0xFF6366F1), isDark: isDark),
+          GestureDetector(
+            onTap: () => onToggleLayer('monthly'),
+            child: _NPill(label: 'MONTHLY', number: monthlyNum,
+                color: visibleLayers.contains('monthly') ? const Color(0xFF6366F1) : secondary.withOpacity(0.55),
+                isDark: isDark, hi: visibleLayers.contains('monthly')),
+          ),
           const SizedBox(width: 6),
-          _NPill(label: 'DAILY', number: dailyNum, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight, isDark: isDark),
+          GestureDetector(
+            onTap: () => onToggleLayer('daily'),
+            child: _NPill(label: 'DAILY', number: dailyNum,
+                color: visibleLayers.contains('daily') ? const Color(0xFF06B6D4) : secondary.withOpacity(0.55),
+                isDark: isDark, hi: visibleLayers.contains('daily')),
+          ),
           if (hourlyNum > 0) ...[const SizedBox(width: 6),
-            _NPill(label: 'HOURLY', number: hourlyNum, color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight, isDark: isDark)],
+            GestureDetector(
+              onTap: () => onToggleLayer('hourly'),
+              child: _NPill(label: 'HOURLY', number: hourlyNum,
+                  color: visibleLayers.contains('hourly') ? const Color(0xFFF59E0B) : secondary.withOpacity(0.55),
+                  isDark: isDark, hi: visibleLayers.contains('hourly')),
+            )],
         ])),
         const SizedBox(height: 18),
 
         // ── Grid — uses API response with daily/hourly injected ─────────────
         if (grid.isNotEmpty) ...[
-          _GridWidget(grid: grid, isDark: isDark, gold: gold),
+          _GridWidget(grid: grid, visibleLayers: visibleLayers, isDark: isDark, gold: gold),
           const SizedBox(height: 10),
           _GridLegend(
             maha: mahaNum, antar: antarNum, monthly: monthlyNum,
             daily: dailyNum > 0 ? dailyNum : null,
             hourly: hourlyNum > 0 ? hourlyNum : null,
+            visibleLayers: visibleLayers,
             isDark: isDark, gold: gold,
           ),
         ],
@@ -407,7 +445,10 @@ class _SecLabel extends StatelessWidget {
 
 class _NPill extends StatelessWidget {
   final String label; final int number; final Color color; final bool isDark; final bool hi;
-  const _NPill({required this.label, required this.number, required this.color, required this.isDark, this.hi = false});
+  final bool active;
+  final VoidCallback? onTap;
+  const _NPill({required this.label, required this.number, required this.color,
+      required this.isDark, this.hi = false, this.active = true, this.onTap});
   @override Widget build(BuildContext context) {
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     return Container(padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
@@ -473,9 +514,10 @@ class _YCard extends StatelessWidget {
 // ─── Grid Widget (same as user chart) ────────────────────────────────────────
 class _GridWidget extends StatelessWidget {
   final List<dynamic> grid;
+  final Set<String> visibleLayers;
   final bool isDark;
   final Color gold;
-  const _GridWidget({required this.grid, required this.isDark, required this.gold});
+  const _GridWidget({required this.grid, required this.visibleLayers, required this.isDark, required this.gold});
 
   @override
   Widget build(BuildContext context) {
@@ -500,7 +542,7 @@ class _GridWidget extends StatelessWidget {
               right: col == 2 ? BorderSide.none : BorderSide(color: border, width: 0.5),
               bottom: row == 2 ? BorderSide.none : BorderSide(color: border, width: 0.5),
             )),
-            child: _GridCellWidget(cell: cell, planet: planet, isDark: isDark, gold: gold),
+            child: _GridCellWidget(cell: cell, visibleLayers: visibleLayers, planet: planet, isDark: isDark, gold: gold),
           ));
         }),
       ))),
@@ -510,17 +552,23 @@ class _GridWidget extends StatelessWidget {
 
 class _GridCellWidget extends StatelessWidget {
   final List<dynamic> cell;
+  final Set<String> visibleLayers;
   final String planet;
   final bool isDark;
   final Color gold;
-  const _GridCellWidget({required this.cell, required this.planet, required this.isDark, required this.gold});
+  const _GridCellWidget({required this.cell, required this.visibleLayers, required this.planet, required this.isDark, required this.gold});
 
   @override
   Widget build(BuildContext context) {
     final textTertiary = isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight;
     final successColor = isDark ? AppColors.successDark : AppColors.success;
+    final visibleCell = cell.where((item) {
+      final m = item as Map<String, dynamic>;
+      final highlight = m['highlight'] as String? ?? '';
+      return highlight.isEmpty || visibleLayers.contains(highlight);
+    }).toList();
 
-    if (cell.isEmpty) {
+    if (visibleCell.isEmpty) {
       return Center(child: Text('—', style: GoogleFonts.dmSans(fontSize: 18, color: textTertiary)));
     }
     return Padding(
@@ -529,7 +577,7 @@ class _GridCellWidget extends StatelessWidget {
         Wrap(
           alignment: WrapAlignment.center,
           spacing: 2,
-          children: cell.map((item) {
+          children: visibleCell.map((item) {
             final m = item as Map<String, dynamic>;
             final highlight = m['highlight'] as String? ?? '';
             Color numColor = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
@@ -553,22 +601,23 @@ class _GridCellWidget extends StatelessWidget {
 class _GridLegend extends StatelessWidget {
   final int maha, antar, monthly;
   final int? daily, hourly;
+  final Set<String> visibleLayers;
   final bool isDark;
   final Color gold;
   const _GridLegend({required this.maha, required this.antar, required this.monthly,
-      this.daily, this.hourly, required this.isDark, required this.gold});
+      this.daily, this.hourly, required this.visibleLayers, required this.isDark, required this.gold});
 
   @override
   Widget build(BuildContext context) {
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final successColor = isDark ? AppColors.successDark : AppColors.success;
     final items = <Map<String, dynamic>>[
-      {'label': 'Maha', 'number': maha, 'color': gold},
-      {'label': 'Antar', 'number': antar, 'color': successColor},
-      {'label': 'Monthly', 'number': monthly, 'color': const Color(0xFF6366F1)},
-      if (daily != null) {'label': 'Daily', 'number': daily, 'color': const Color(0xFF06B6D4)},
-      if (hourly != null) {'label': 'Hourly', 'number': hourly, 'color': const Color(0xFFF59E0B)},
-    ];
+      {'layer': 'maha', 'label': 'Maha', 'number': maha, 'color': gold},
+      {'layer': 'antar', 'label': 'Antar', 'number': antar, 'color': successColor},
+      {'layer': 'monthly', 'label': 'Monthly', 'number': monthly, 'color': const Color(0xFF6366F1)},
+      if (daily != null) {'layer': 'daily', 'label': 'Daily', 'number': daily, 'color': const Color(0xFF06B6D4)},
+      if (hourly != null) {'layer': 'hourly', 'label': 'Hourly', 'number': hourly, 'color': const Color(0xFFF59E0B)},
+    ].where((item) => visibleLayers.contains(item['layer'] as String)).toList();
     return Wrap(spacing: 12, runSpacing: 6,
       children: items.map((item) => Row(mainAxisSize: MainAxisSize.min, children: [
         Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: item['color'] as Color)),
