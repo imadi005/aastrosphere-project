@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart' as http;
+import 'package:workmanager/workmanager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -29,6 +32,72 @@ void notificationTapBackground(NotificationResponse response) {
   _handleFocusNotificationResponse(response);
 }
 
+const _kNotifDobKey = 'notif_dob';
+const _kDailyTask = 'aastro_daily_snapshot';
+const _kApiBase = 'https://aastrosphere-project.vercel.app';
+
+/// Background task — runs every morning, fetches FRESH /api/today and fires
+/// the daily notification with that day's real content (never stale).
+@pragma('vm:entry-point')
+void dailySnapshotDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    if (task != _kDailyTask) return true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dob = prefs.getString(_kNotifDobKey);
+      if (dob == null || dob.isEmpty) return true;
+
+      final now = DateTime.now();
+      final clientDate =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      final resp = await http
+          .post(
+            Uri.parse('$_kApiBase/api/today'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'dob': dob,
+              'client_date': clientDate,
+              'client_hour': now.hour,
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
+      if (resp.statusCode != 200) return false; // retry via backoff
+
+      final data = jsonDecode(resp.body) as Map<String, dynamic>;
+      final quote = data['quote'] as String? ?? '';
+      final rating = data['rating'] as String? ?? 'caution';
+      final label = data['rating_label'] as String? ?? 'Your day at a glance';
+      if (quote.isEmpty) return true;
+
+      final plugin = FlutterLocalNotificationsPlugin();
+      await plugin.initialize(const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(),
+      ));
+      final emoji =
+          rating == 'favorable' ? '✨' : rating == 'caution' ? '⚠️' : '🔮';
+      await plugin.show(
+        1,
+        '$emoji $label',
+        '"$quote"',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'aastrosphere_daily', 'Daily Predictions',
+            channelDescription: 'Daily numerology predictions and alerts',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+          iOS: DarwinNotificationDetails(),
+        ),
+      );
+      return true;
+    } catch (_) {
+      return false; // retry via backoff
+    }
+  });
+}
+
 class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
@@ -55,6 +124,7 @@ class NotificationService {
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
           ?.requestNotificationsPermission();
+      await _registerDailyWorker();
     }
     _initialized = true;
   }
@@ -69,24 +139,41 @@ class NotificationService {
     if (!_initialized) await init();
     await _plugin.cancel(1);
 
+    // Same-day fallback ONLY: if today's 8 AM hasn't passed yet, schedule it
+    // with TODAY's (accurate) content as a one-shot. Never schedule tomorrow
+    // with today's content — the background worker fetches fresh data each
+    // morning and fires the notification itself.
     final now = DateTime.now();
-    // Schedule for 8 AM today (or tomorrow if already past 8)
-    var scheduled = DateTime(now.year, now.month, now.day, 8, 0);
-    if (now.isAfter(scheduled)) {
-      scheduled = scheduled.add(const Duration(days: 1));
-    }
+    final todayEight = DateTime(now.year, now.month, now.day, 8, 0);
+    if (now.isAfter(todayEight)) return;
 
     final emoji = rating == 'favorable' ? '✨' : rating == 'caution' ? '⚠️' : '🔮';
-    final title = '$emoji $dailyQuality';
-    final body = '"$quote"';
-
     await _scheduleAt(
       id: 1,
-      title: title,
-      body: body,
-      scheduledTime: scheduled,
-      daily: true,
+      title: '$emoji $dailyQuality',
+      body: '"$quote"',
+      scheduledTime: todayEight,
+      daily: false,
     );
+  }
+
+  static Future<void> _registerDailyWorker() async {
+    try {
+      await Workmanager().initialize(dailySnapshotDispatcher);
+      final now = DateTime.now();
+      var next = DateTime(now.year, now.month, now.day, 7, 55);
+      if (!next.isAfter(now)) next = next.add(const Duration(days: 1));
+      await Workmanager().registerPeriodicTask(
+        _kDailyTask,
+        _kDailyTask,
+        frequency: const Duration(hours: 24),
+        initialDelay: next.difference(now),
+        existingWorkPolicy: ExistingWorkPolicy.keep,
+        constraints: Constraints(networkType: NetworkType.connected),
+        backoffPolicy: BackoffPolicy.linear,
+        backoffPolicyDelay: const Duration(minutes: 15),
+      );
+    } catch (_) {}
   }
 
   static Future<void> scheduleAccidentWarnings({

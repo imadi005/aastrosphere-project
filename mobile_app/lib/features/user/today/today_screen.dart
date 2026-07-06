@@ -221,7 +221,8 @@ class _GreetingRow extends StatelessWidget {
       final quote = data['quote'] as String? ?? '';
       final rating = data['rating'] as String? ?? 'caution';
       final layers = data['layers'] as Map<String, dynamic>?;
-      final dailyQuality = layers?['daily'] as String? ?? 'Today';
+      final dailyQuality = data['rating_label'] as String? ??
+          (layers?['daily'] as String? ?? 'Today');
       final accidentRiskHours = (data['accident_risk_hours'] as List? ?? [])
           .cast<Map<String, dynamic>>();
       await NotificationService.scheduleDailySnapshot(

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../providers/role_provider.dart';
 import '../../features/auth/providers/user_provider.dart';
@@ -25,7 +26,10 @@ final smartProfileProvider = FutureProvider.autoDispose<UserProfile?>((ref) asyn
 final todayDataProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(smartProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  return ApiService.getToday(_dobToIso(user.dob));
+  final iso = _dobToIso(user.dob);
+  // Persist dob so the background notification worker can fetch fresh data
+  SharedPreferences.getInstance().then((p) => p.setString('notif_dob', iso));
+  return ApiService.getToday(iso);
 });
 
 final lifeInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
