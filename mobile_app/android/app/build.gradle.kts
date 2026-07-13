@@ -18,7 +18,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mobile_app"
+    namespace = "com.aastrosphere.app"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -33,8 +33,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.mobile_app"
+        // Real package name — permanent once uploaded to Play Store, do not change again.
+        applicationId = "com.aastrosphere.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         
