@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAuQs_hP3hEIE8YnuBfqnx5Ek8EfzNX2Mo',
-    appId: '1:554790488195:android:2a1e448b814fbdd3b2b3b6',
+    appId: '1:554790488195:android:7e50e4c88ebfd263b2b3b6',
     messagingSenderId: '554790488195',
     projectId: 'aastrosphere-mobile',
     storageBucket: 'aastrosphere-mobile.firebasestorage.app',
