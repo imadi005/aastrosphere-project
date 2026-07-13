@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/numerology/numerology_engine.dart';
+import '../../../core/services/api_service.dart';
 import '../providers/astro_client_provider.dart';
 import '../../auth/providers/user_provider.dart';
 
@@ -56,7 +57,38 @@ class _TimelineBodyState extends State<_TimelineBody> with SingleTickerProviderS
   int _antarPast = 3, _antarFuture = 10;
   int _monthlyPast = 3, _monthlyFuture = 12;
 
-  @override void initState() { super.initState(); _tab = TabController(length: 3, vsync: this); }
+  // All dasha math now comes from the backend — the client never computes
+  // maha/antar/monthly locally, so there is one source of truth.
+  late Future<Map<String, dynamic>> _summaryFuture;
+  late Future<List<dynamic>> _mahaFuture_;
+  late Future<List<dynamic>> _antarFuture_;
+  late Future<List<dynamic>> _monthlyFutureList;
+
+  @override
+  void initState() {
+    super.initState();
+    _tab = TabController(length: 3, vsync: this);
+    _summaryFuture = ApiService.getTimelineSummary(widget.dob.toIso8601String());
+    _refreshMaha();
+    _refreshAntar();
+    _refreshMonthly();
+  }
+
+  void _refreshMaha() {
+    _mahaFuture_ = ApiService.getMahadashaTimeline(widget.dob.toIso8601String(),
+        pastYears: _mahaPast, futureYears: _mahaFuture);
+  }
+
+  void _refreshAntar() {
+    _antarFuture_ = ApiService.getAntardashaTimeline(widget.dob.toIso8601String(),
+        pastYears: _antarPast, futureYears: _antarFuture);
+  }
+
+  void _refreshMonthly() {
+    _monthlyFutureList = ApiService.getMonthlyDashaTimeline(widget.dob.toIso8601String(),
+        pastMonths: _monthlyPast, futureMonths: _monthlyFuture);
+  }
+
   @override void dispose() { _tab.dispose(); super.dispose(); }
 
   String _fmtDate(DateTime d) {
@@ -69,9 +101,6 @@ class _TimelineBodyState extends State<_TimelineBody> with SingleTickerProviderS
     final isDark = widget.isDark; final gold = widget.gold;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final currentMaha = NumerologyEngine.currentMahadasha(widget.dob);
-    final currentAntar = NumerologyEngine.currentAntardasha(widget.dob);
-    final currentMonthly = NumerologyEngine.currentMonthlyDasha(widget.dob);
     final green = isDark ? AppColors.successDark : AppColors.success;
     final indigo = const Color(0xFF6366F1);
 
@@ -81,15 +110,28 @@ class _TimelineBodyState extends State<_TimelineBody> with SingleTickerProviderS
         Padding(padding: const EdgeInsets.fromLTRB(16,12,16,8),
           child: Text('Timeline', style: GoogleFonts.cormorantGaramond(fontSize: 22, color: gold, fontWeight: FontWeight.w400))),
 
-        // Current summary strip
+        // Current summary strip — fetched from the backend (single source of truth)
         Padding(padding: const EdgeInsets.fromLTRB(16,0,16,10),
-          child: Row(children: [
-            _PeriodPill(number: currentMaha.number, label: 'Maha', end: currentMaha.end, color: gold),
-            const SizedBox(width: 8),
-            _PeriodPill(number: currentAntar.number, label: 'Antar', end: currentAntar.end, color: green),
-            const SizedBox(width: 8),
-            _PeriodPill(number: currentMonthly.number, label: 'Monthly', end: currentMonthly.end, color: indigo),
-          ])),
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: _summaryFuture,
+            builder: (context, snap) {
+              if (!snap.hasData) {
+                return SizedBox(height: 34, child: Center(
+                    child: SizedBox(width: 16, height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: gold))));
+              }
+              final maha = DashaResult.fromJson(snap.data!['maha'] as Map<String, dynamic>);
+              final antar = DashaResult.fromJson(snap.data!['antar'] as Map<String, dynamic>);
+              final monthly = DashaResult.fromJson(snap.data!['monthly'] as Map<String, dynamic>);
+              return Row(children: [
+                _PeriodPill(number: maha.number, label: 'Maha', end: maha.end, color: gold),
+                const SizedBox(width: 8),
+                _PeriodPill(number: antar.number, label: 'Antar', end: antar.end, color: green),
+                const SizedBox(width: 8),
+                _PeriodPill(number: monthly.number, label: 'Monthly', end: monthly.end, color: indigo),
+              ]);
+            },
+          )),
 
         TabBar(
           controller: _tab,
@@ -105,22 +147,30 @@ class _TimelineBodyState extends State<_TimelineBody> with SingleTickerProviderS
           Column(children: [
             _RangeBar(pastVal: _mahaPast, futureVal: _mahaFuture, isDark: isDark, gold: gold,
               pastOpts: const [3,5,10,15,20,30,50], futureOpts: const [5,10,20,30,50,80,100],
-              onChanged: (p,f) => setState(() { _mahaPast = p; _mahaFuture = f; })),
-            Expanded(child: _DashaList(
-              dob: widget.dob, isDark: isDark, gold: gold, color: gold,
-              items: NumerologyEngine.mahadashaTimeline(widget.dob, pastYears: _mahaPast, futureYears: _mahaFuture),
-              tabType: 'maha',
+              onChanged: (p,f) => setState(() { _mahaPast = p; _mahaFuture = f; _refreshMaha(); })),
+            Expanded(child: FutureBuilder<List<dynamic>>(
+              future: _mahaFuture_,
+              builder: (context, snap) {
+                if (!snap.hasData) return Center(child: CircularProgressIndicator(color: gold));
+                final items = snap.data!.map((j) => DashaResult.fromJson(j as Map<String, dynamic>)).toList();
+                return _DashaList(dob: widget.dob, isDark: isDark, gold: gold, color: gold,
+                    items: items, tabType: 'maha');
+              },
             )),
           ]),
           // ── ANTAR ─────────────────────────────────────────────────────────
           Column(children: [
             _RangeBar(pastVal: _antarPast, futureVal: _antarFuture, isDark: isDark, gold: gold,
               pastOpts: const [1,3,5,10,15,20], futureOpts: const [3,5,10,20,30,50],
-              onChanged: (p,f) => setState(() { _antarPast = p; _antarFuture = f; })),
-            Expanded(child: _DashaList(
-              dob: widget.dob, isDark: isDark, gold: gold, color: green,
-              items: NumerologyEngine.antardashaTimeline(widget.dob, pastYears: _antarPast, futureYears: _antarFuture),
-              tabType: 'antar',
+              onChanged: (p,f) => setState(() { _antarPast = p; _antarFuture = f; _refreshAntar(); })),
+            Expanded(child: FutureBuilder<List<dynamic>>(
+              future: _antarFuture_,
+              builder: (context, snap) {
+                if (!snap.hasData) return Center(child: CircularProgressIndicator(color: gold));
+                final items = snap.data!.map((j) => DashaResult.fromJson(j as Map<String, dynamic>)).toList();
+                return _DashaList(dob: widget.dob, isDark: isDark, gold: gold, color: green,
+                    items: items, tabType: 'antar');
+              },
             )),
           ]),
           // ── MONTHLY ───────────────────────────────────────────────────────
@@ -128,11 +178,15 @@ class _TimelineBodyState extends State<_TimelineBody> with SingleTickerProviderS
             _RangeBar(pastVal: _monthlyPast, futureVal: _monthlyFuture, isDark: isDark, gold: gold,
               pastOpts: const [1,2,3,6], futureOpts: const [6,12,18,24],
               pastLabel: 'mo', futureLabel: 'mo',
-              onChanged: (p,f) => setState(() { _monthlyPast = p; _monthlyFuture = f; })),
-            Expanded(child: _DashaList(
-              dob: widget.dob, isDark: isDark, gold: gold, color: indigo,
-              items: NumerologyEngine.monthlyTimeline(widget.dob, pastMonths: _monthlyPast, futureMonths: _monthlyFuture),
-              tabType: 'monthly',
+              onChanged: (p,f) => setState(() { _monthlyPast = p; _monthlyFuture = f; _refreshMonthly(); })),
+            Expanded(child: FutureBuilder<List<dynamic>>(
+              future: _monthlyFutureList,
+              builder: (context, snap) {
+                if (!snap.hasData) return Center(child: CircularProgressIndicator(color: gold));
+                final items = snap.data!.map((j) => DashaResult.fromJson(j as Map<String, dynamic>)).toList();
+                return _DashaList(dob: widget.dob, isDark: isDark, gold: gold, color: indigo,
+                    items: items, tabType: 'monthly');
+              },
             )),
           ]),
         ])),
@@ -242,13 +296,31 @@ class _DashaCard extends StatefulWidget {
 
 class _DashaCardState extends State<_DashaCard> {
   bool _open = false;
+  Future<Map<String, dynamic>>? _gridFuture;
+
+  DateTime get _midpoint {
+    final d = widget.item;
+    return d.start.add(Duration(days: d.end.difference(d.start).inDays ~/ 2));
+  }
+
+  void _ensureGridLoaded() {
+    _gridFuture ??= ApiService.getTimelineGrid(widget.dob.toIso8601String(), _midpoint);
+  }
 
   @override void initState() {
     super.initState();
-    if (widget.item.isCurrent) _open = true;
+    if (widget.item.isCurrent) {
+      _open = true;
+      _ensureGridLoaded();
+    }
   }
 
-  void _toggle() => setState(() => _open = !_open);
+  void _toggle() {
+    setState(() {
+      _open = !_open;
+      if (_open) _ensureGridLoaded();
+    });
+  }
 
   String _fmtDate(DateTime d) {
     const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -265,78 +337,10 @@ class _DashaCardState extends State<_DashaCard> {
     return yrs == 1 ? '1 yr' : '$yrs yrs';
   }
 
-  // Get maha number active at a given date
-  int _mahaAt(DateTime date) {
-    final basic = NumerologyEngine.basicNumber(widget.dob.day);
-    final cycle = NumerologyEngine.buildDashaCycle(basic);
-    DateTime cur = DateTime(widget.dob.year, widget.dob.month, widget.dob.day);
-    int idx = 0;
-    while (idx < 200) {
-      final dasha = cycle[idx % 9];
-      final dur = NumerologyEngine.dashaDurations[dasha]!;
-      final end = DateTime(cur.year + dur, cur.month, cur.day);
-      if (!date.isBefore(cur) && date.isBefore(end)) return dasha;
-      cur = end; idx++;
-    }
-    return basic;
-  }
-
-  // Get antar number active at a given date
-  int _antarAt(DateTime date) {
-    final basic = NumerologyEngine.basicNumber(widget.dob.day);
-    final month = widget.dob.month;
-    final day = widget.dob.day;
-    final bdayThisYear = DateTime(date.year, month, day);
-    final antarYear = date.isBefore(bdayThisYear) ? date.year - 1 : date.year;
-    final weekday = DateTime(antarYear, month, day).weekday % 7;
-    final weekdayVal = NumerologyEngine.weekdayValues[weekday]!;
-    final yearLast2 = antarYear % 100;
-    final raw = basic + month + yearLast2 + weekdayVal;
-    return NumerologyEngine.reduceToSingle(raw);
-  }
-
-  // Build grid for this period — uses mid-point of the period
-  List<List<GridCell>> _buildPeriodGrid() {
-    final d = widget.item;
-    // Use midpoint of the period so we get accurate maha/antar for that time
-    final mid = d.start.add(Duration(days: d.end.difference(d.start).inDays ~/ 2));
-    switch (widget.tabType) {
-      case 'maha':
-        return NumerologyEngine.buildGrid(widget.dob,
-            mahaOverride: d.number, antarOverride: _antarAt(mid), monthlyOverride: null);
-      case 'antar':
-        return NumerologyEngine.buildGrid(widget.dob,
-            mahaOverride: _mahaAt(mid), antarOverride: d.number, monthlyOverride: null);
-      case 'monthly':
-      default:
-        return NumerologyEngine.buildGrid(widget.dob,
-            mahaOverride: _mahaAt(mid), antarOverride: _antarAt(mid), monthlyOverride: d.number);
-    }
-  }
-
-  // Compute maha + antar active at midpoint of this period
-  Map<String, int> _periodNumbers() {
-    final d = widget.item;
-    final mid = d.start.add(Duration(days: d.end.difference(d.start).inDays ~/ 2));
-    final int maha, antar, monthly;
-    switch (widget.tabType) {
-      case 'maha':
-        maha = d.number; antar = _antarAt(mid); monthly = 0;
-        break;
-      case 'antar':
-        maha = _mahaAt(mid); antar = d.number; monthly = 0;
-        break;
-      case 'monthly':
-      default:
-        maha = _mahaAt(mid); antar = _antarAt(mid); monthly = d.number;
-    }
-    return {'maha': maha, 'antar': antar, 'monthly': monthly};
-  }
-
-  // Build real insights from actual combinations
-  List<_InsightLine> _insights() {
-    final nums = _periodNumbers();
-    final int maha = nums['maha']!, antar = nums['antar']!, monthly = nums['monthly']!;
+  // Build real insights from actual combinations — maha/antar/monthly are
+  // passed in from the backend's grid response (single source of truth);
+  // this widget no longer computes dasha periods itself.
+  List<_InsightLine> _insights(int maha, int antar, int monthly) {
     final basic = NumerologyEngine.basicNumber(widget.dob.day);
     final destiny = NumerologyEngine.destinyNumber(widget.dob);
     final natalNums = NumerologyEngine.chartDigits(widget.dob).toSet();
@@ -515,17 +519,36 @@ class _DashaCardState extends State<_DashaCard> {
               ]),
             ])),
 
-            // Expanded content
+            // Expanded content — grid + insights fetched from the backend
             AnimatedSize(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOut,
-              child: _open ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Divider(height: 1, color: border),
-                Padding(padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-                  child: _InsightCards(insights: _insights(), isDark: isDark, gold: gold)),
-                Padding(padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
-                  child: _PeriodGrid(grid: _buildPeriodGrid(), isDark: isDark, gold: gold, color: color, tabType: widget.tabType, dashaNum: d.number)),
-              ]) : const SizedBox.shrink()),
+              child: _open
+                  ? FutureBuilder<Map<String, dynamic>>(
+                      future: _gridFuture,
+                      builder: (context, snap) {
+                        if (!snap.hasData) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            child: Center(child: SizedBox(width: 18, height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: gold))),
+                          );
+                        }
+                        final (grid, maha, antar, monthly) =
+                            GridCell.gridFromApiResponse(snap.data!);
+                        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Divider(height: 1, color: border),
+                          Padding(padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                            child: _InsightCards(
+                                insights: _insights(maha, antar, monthly),
+                                isDark: isDark, gold: gold)),
+                          Padding(padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+                            child: _PeriodGrid(grid: grid, isDark: isDark, gold: gold,
+                                color: color, tabType: widget.tabType, dashaNum: d.number)),
+                        ]);
+                      },
+                    )
+                  : const SizedBox.shrink()),
           ]),
         ),
       ),

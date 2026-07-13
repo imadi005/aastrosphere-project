@@ -61,6 +61,47 @@ class ApiService {
         'client_date': clientDate,
       });
 
+  // ─── TIMELINE (astrologer) — server is the single source of truth for
+  //     maha/antar/monthly + the frequency grid, so the client never computes
+  //     this itself and can't drift from the backend's math ─────────────────
+  static Future<Map<String, dynamic>> getTimelineSummary(String dob) =>
+      _post('/api/timeline-summary', {'dob': dob});
+
+  static Future<List<dynamic>> getMahadashaTimeline(String dob,
+      {int pastYears = 20, int futureYears = 50}) async {
+    final r = await _post('/api/dashas', {
+      'dob': dob, 'type': 'mahadasha',
+      'pastYears': pastYears, 'futureYears': futureYears,
+    });
+    return r['timeline'] as List<dynamic>? ?? [];
+  }
+
+  static Future<List<dynamic>> getAntardashaTimeline(String dob,
+      {int pastYears = 5, int futureYears = 10}) async {
+    final r = await _post('/api/dashas', {
+      'dob': dob, 'type': 'antardasha',
+      'pastYears': pastYears, 'futureYears': futureYears,
+    });
+    return r['timeline'] as List<dynamic>? ?? [];
+  }
+
+  static Future<List<dynamic>> getMonthlyDashaTimeline(String dob,
+      {int pastMonths = 3, int futureMonths = 12}) async {
+    final r = await _post('/api/dashas', {
+      'dob': dob, 'type': 'monthly',
+      'pastMonths': pastMonths, 'futureMonths': futureMonths,
+    });
+    return r['timeline'] as List<dynamic>? ?? [];
+  }
+
+  /// The 3x3 frequency grid at a specific moment — maha/antar/monthly are
+  /// derived server-side from [atDate], never computed on the client.
+  static Future<Map<String, dynamic>> getTimelineGrid(String dob, DateTime atDate) =>
+      _post('/api/timeline-grid', {
+        'dob': dob,
+        'at_date': atDate.toIso8601String(),
+      });
+
   // ─── CHART ────────────────────────────────────────────────────────────
   static Future<Map<String, dynamic>> getChart(String dob, [int? clientHour]) =>
       _post('/api/chart', {

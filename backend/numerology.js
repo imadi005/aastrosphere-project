@@ -267,6 +267,90 @@ export function currentMonthlyDasha(dob, targetDate = null) {
   }
 }
 
+export function monthlyTimeline(dob, pastMonths = 3, futureMonths = 12) {
+  const d = new Date(dob);
+  const basic = basicNumber(d.getDate());
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  const today = new Date();
+  const results = [];
+
+  const pastCutoff = new Date(today.getTime() - pastMonths * 30 * 86400000);
+  const futureCutoff = new Date(today.getTime() + futureMonths * 30 * 86400000);
+
+  const startYear = today.getFullYear() - Math.floor(pastMonths / 12) - 2;
+  const endYear = today.getFullYear() + Math.floor(futureMonths / 12) + 2;
+
+  for (let yr = startYear; yr <= endYear; yr++) {
+    const antarStart = new Date(yr, month - 1, day);
+    if (antarStart > futureCutoff) break;
+
+    // Antar number for this birthday year
+    const weekday = antarStart.getDay(); // 0=Sun..6=Sat, matches Dart's weekday%7
+    const weekdayVal = WEEKDAY_VALUES[weekday];
+    const yearLast2 = yr % 100;
+    const raw = basic + month + yearLast2 + weekdayVal;
+    const antarNum = reduceToSingle(raw);
+
+    const antarEnd = new Date(yr + 1, month - 1, day);
+
+    const cycle = buildDashaCycle(antarNum);
+    let current = new Date(antarStart);
+    let index = 0;
+
+    while (current < antarEnd && index < 200) {
+      const dasha = cycle[index % 9];
+      const durationDays = MONTHLY_DURATIONS[dasha];
+      let end = new Date(current.getTime() + durationDays * 86400000);
+      if (end > antarEnd) end = antarEnd;
+
+      if (end > pastCutoff && current < futureCutoff) {
+        const isCurrent = today >= current && today < end;
+        results.push({
+          number: dasha,
+          planet: PLANET_NAMES[dasha],
+          start: current.toISOString(),
+          end: end.toISOString(),
+          isCurrent,
+          isPast: end < today && !isCurrent,
+        });
+      }
+      current = end;
+      index++;
+      if (current.getTime() === antarEnd.getTime()) break;
+    }
+  }
+  return results;
+}
+
+// Build the 3x3 numerology grid for a specific moment in time. Deriving maha/antar/
+// monthly directly from `atDate` (rather than accepting client-computed overrides)
+// means there is exactly ONE place this math happens — no risk of client/server drift.
+export function buildGridData(dob, atDate) {
+  const maha = currentMahadasha(dob, atDate).number;
+  const antar = currentAntardasha(dob, atDate).number;
+  const monthly = currentMonthlyDasha(dob, atDate).number;
+  const freqMap = buildFrequencyMap(dob, maha, antar, monthly);
+
+  const cells = Array.from({ length: 3 }, () => Array.from({ length: 3 }, () => null));
+  Object.entries(freqMap).forEach(([numStr, count]) => {
+    const num = parseInt(numStr);
+    const pos = NUMBER_POSITION_MAP[num];
+    if (!pos) return;
+    const [row, col] = pos;
+    const highlights = [];
+    if (num === maha) highlights.push('maha');
+    if (num === antar) highlights.push('antar');
+    if (num === monthly) highlights.push('monthly');
+    cells[row][col] = { number: num, count, highlights, planet: PLANET_NAMES[num] };
+  });
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+    if (!cells[r][c]) cells[r][c] = { number: 0, count: 0, highlights: [], planet: '' };
+  }
+
+  return { maha, antar, monthly, cells };
+}
+
 export function dailyDasha(dob, date) {
   // Daily = Monthly + day_lord_of_that_day (12hr weekday values)
   const monthly = currentMonthlyDasha(dob, date);

@@ -9,9 +9,9 @@ import {
 import {
   basicNumber, destinyNumber, supportiveNumbers, chartDigits,
   currentMahadasha, currentAntardasha, currentMonthlyDasha,
-  mahadashaTimeline, antardashaTimeline,
+  mahadashaTimeline, antardashaTimeline, monthlyTimeline,
   dailyDasha, hourlyDasha, allHourlyDashas,
-  buildGrid, buildFrequencyMap, getDayRating,
+  buildGrid, buildFrequencyMap, buildGridData, getDayRating,
   compatibility, karmicDebt, nameNumerology,
   PLANET_NAMES, LUCKY_INFO
 } from './numerology.js';
@@ -290,13 +290,46 @@ app.post('/api/today', (req, res) => {
 // ─── /api/dashas ──────────────────────────────────────────────
 app.post('/api/dashas', (req, res) => {
   try {
-    const { dob, type, pastYears, futureYears } = req.body;
+    const { dob, type, pastYears, futureYears, pastMonths, futureMonths } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
 
     if (type === 'antardasha') {
       return res.json({ timeline: antardashaTimeline(dob, pastYears || 5, futureYears || 10) });
     }
+    if (type === 'monthly') {
+      return res.json({ timeline: monthlyTimeline(dob, pastMonths || 3, futureMonths || 12) });
+    }
     res.json({ timeline: mahadashaTimeline(dob, pastYears || 20, futureYears || 50) });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── /api/timeline-summary — current maha + antar + monthly, for the pills at
+//     the top of the astrologer Timeline screen ────────────────────────────
+app.post('/api/timeline-summary', (req, res) => {
+  try {
+    const { dob } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+    res.json({
+      maha: currentMahadasha(dob),
+      antar: currentAntardasha(dob),
+      monthly: currentMonthlyDasha(dob),
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── /api/timeline-grid — the 3x3 frequency grid for any point in time.
+//     maha/antar/monthly are derived server-side from `at_date` — the client
+//     never computes or overrides these numbers, so there is one source of
+//     truth for the math (fixes the astrologer Timeline grid undercount bug). ─
+app.post('/api/timeline-grid', (req, res) => {
+  try {
+    const { dob, at_date } = req.body;
+    if (!dob || !at_date) return res.status(400).json({ error: 'dob and at_date required' });
+    res.json(buildGridData(dob, at_date));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

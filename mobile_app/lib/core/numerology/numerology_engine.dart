@@ -518,6 +518,17 @@ class DashaResult {
     this.isCurrent = false,
     this.isPast = false,
   });
+
+  /// Parses a timeline entry returned by the backend (/api/dashas,
+  /// /api/timeline-summary) — keeps this the ONE place JSON is decoded.
+  factory DashaResult.fromJson(Map<String, dynamic> j) => DashaResult(
+        number: j['number'] as int,
+        planet: j['planet'] as String? ?? '',
+        start: DateTime.parse(j['start'] as String),
+        end: DateTime.parse(j['end'] as String),
+        isCurrent: j['isCurrent'] as bool? ?? false,
+        isPast: j['isPast'] as bool? ?? false,
+      );
 }
 
 class GridCell {
@@ -537,6 +548,29 @@ class GridCell {
   bool get isMaha => highlights.contains(GridHighlight.maha);
   bool get isAntar => highlights.contains(GridHighlight.antar);
   bool get isMonthly => highlights.contains(GridHighlight.monthly);
+
+  factory GridCell.fromJson(Map<String, dynamic> j) => GridCell(
+        number: j['number'] as int? ?? 0,
+        count: j['count'] as int? ?? 0,
+        highlights: (j['highlights'] as List? ?? [])
+            .map((h) => h == 'maha'
+                ? GridHighlight.maha
+                : h == 'antar'
+                    ? GridHighlight.antar
+                    : GridHighlight.monthly)
+            .toList(),
+        planet: j['planet'] as String? ?? '',
+      );
+
+  /// Parses the full /api/timeline-grid response into a 3x3 grid + the
+  /// maha/antar/monthly numbers the server resolved for that moment.
+  static (List<List<GridCell>>, int, int, int) gridFromApiResponse(Map<String, dynamic> j) {
+    final rawCells = j['cells'] as List;
+    final grid = rawCells
+        .map((row) => (row as List).map((c) => GridCell.fromJson(c as Map<String, dynamic>)).toList())
+        .toList();
+    return (grid, j['maha'] as int, j['antar'] as int, j['monthly'] as int);
+  }
 }
 
 enum GridHighlight { maha, antar, monthly }
