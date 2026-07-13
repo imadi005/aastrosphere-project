@@ -31,7 +31,7 @@ android {
         
         // --- YEH LINE UPDATE HUI HAI ---
         // Google Places API (google_places_flutter) ke liye minSdk 21+ zaroori hai
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         // -------------------------------
         
         targetSdk = 34

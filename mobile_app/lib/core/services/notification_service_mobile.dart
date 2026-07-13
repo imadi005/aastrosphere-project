@@ -168,7 +168,7 @@ class NotificationService {
         _kDailyTask,
         frequency: const Duration(hours: 24),
         initialDelay: next.difference(now),
-        existingWorkPolicy: ExistingWorkPolicy.keep,
+        existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
         constraints: Constraints(networkType: NetworkType.connected),
         backoffPolicy: BackoffPolicy.linear,
         backoffPolicyDelay: const Duration(minutes: 15),
