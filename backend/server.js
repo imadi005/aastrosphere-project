@@ -36,6 +36,8 @@ import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
 import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis, buildFullChartForChat, smartParseDob } from './ask_engine.js';
 import { buildScanContext } from './event_scanner.js';
 import { buildDayCharacteristics } from './day_characteristics.js';
+import { requireAuth, requireCredits, FREE_TRIAL_CREDITS } from './authMiddleware.js';
+import { getDb } from './firebaseAdmin.js';
 import { DEEP_NUMBER_PROFILES, DEEP_COMBINATIONS as DEEP_COMBINATION_LIBRARY } from './deep_library.js';
 
 const app = express();
@@ -288,6 +290,25 @@ app.post('/api/today', (req, res) => {
 });
 
 // ─── /api/dashas ──────────────────────────────────────────────
+// ─── /api/user/credits — check balance without spending a credit ──────────
+app.post('/api/user/credits', requireAuth, async (req, res) => {
+  try {
+    const db = getDb();
+    const snap = await db.collection('users').doc(req.uid).get();
+    if (!snap.exists) {
+      return res.json({ credits: FREE_TRIAL_CREDITS, subscriptionActive: false });
+    }
+    const data = snap.data();
+    const expiresAt = data.subscriptionExpiresAt?.toMillis?.() ?? 0;
+    res.json({
+      credits: data.credits ?? 0,
+      subscriptionActive: (data.subscriptionActive === true) && expiresAt > Date.now(),
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post('/api/dashas', (req, res) => {
   try {
     const { dob, type, pastYears, futureYears, pastMonths, futureMonths } = req.body;
@@ -892,7 +913,7 @@ app.post('/api/insights/life', (req, res) => {
 });
 
 // ─── /api/ask ─────────────────────────────────────────────────────────────────
-app.post('/api/ask', async (req, res) => {
+app.post('/api/ask', requireAuth, requireCredits, async (req, res) => {
   try {
     const { dob, messages, client_date } = req.body;
     if (!dob || !messages || !messages.length) {
@@ -1014,6 +1035,8 @@ Active yogas: ${otherChart.yogas || 'none detected'}
       answer,
       question_type: questionType,
       other_dob_detected: otherDob,
+      credits_remaining: req.creditsRemaining,
+      via_subscription: req.viaSubscription,
     });
   } catch (e) {
     res.status(500).json({ error: e.message });

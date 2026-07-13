@@ -197,6 +197,26 @@ I'm your personal astro guide. Ask me anything about:
         _scrollToBottom();
         _saveHistory(); // persist to Firestore
       }
+    } on OutOfCreditsException catch (e) {
+      if (mounted) {
+        setState(() {
+          _messages.add(ChatMessage(
+            role: 'assistant',
+            content: '✨ **${e.message}**\n\nHead to your profile to top up or subscribe.',
+          ));
+          _loading = false;
+        });
+      }
+    } on NotAuthenticatedException catch (e) {
+      if (mounted) {
+        setState(() {
+          _messages.add(ChatMessage(
+            role: 'assistant',
+            content: '🔒 ${e.message}',
+          ));
+          _loading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {

@@ -1,5 +1,18 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+
+/// Thrown when the backend returns 402 (out of question credits).
+class OutOfCreditsException implements Exception {
+  final String message;
+  OutOfCreditsException(this.message);
+}
+
+/// Thrown when the backend returns 401 (missing/expired sign-in session).
+class NotAuthenticatedException implements Exception {
+  final String message;
+  NotAuthenticatedException(this.message);
+}
 
 class ApiService {
   static const String _base = 'https://aastrosphere-project.vercel.app';
@@ -13,6 +26,51 @@ class ApiService {
 
   static int get clientHour => DateTime.now().hour;
   static int get _clientHour => clientHour;
+
+  /// Like _post, but attaches the signed-in user's Firebase ID token and
+  /// translates 401/402 into typed exceptions the UI can handle specifically
+  /// (e.g. "you're out of questions" vs a generic connection error).
+  static Future<Map<String, dynamic>> _authedPost(
+      String endpoint, Map<String, dynamic> body) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw NotAuthenticatedException('Please sign in to continue.');
+    }
+    final token = await user.getIdToken();
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$_base$endpoint'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 30));
+
+      final decoded = response.body.isNotEmpty
+          ? jsonDecode(response.body) as Map<String, dynamic>
+          : <String, dynamic>{};
+
+      if (response.statusCode == 200) return decoded;
+      if (response.statusCode == 401) {
+        throw NotAuthenticatedException(
+            decoded['error'] as String? ?? 'Please sign in again.');
+      }
+      if (response.statusCode == 402) {
+        throw OutOfCreditsException(decoded['message'] as String? ??
+            "You're out of questions. Buy a pack or subscribe to keep asking.");
+      }
+      throw Exception('API error ${response.statusCode}: ${response.body}');
+    } on OutOfCreditsException {
+      rethrow;
+    } on NotAuthenticatedException {
+      rethrow;
+    } catch (e) {
+      throw Exception('Connection Failed: $e');
+    }
+  }
 
   static Future<Map<String, dynamic>> _post(
       String endpoint, Map<String, dynamic> body) async {
@@ -146,11 +204,16 @@ class ApiService {
     required List<Map<String, dynamic>> messages,
     String? clientDate,
   }) =>
-      _post('/api/ask', {
+      _authedPost('/api/ask', {
         'dob': dob,
         'messages': messages,
         'client_date': clientDate ?? clientDate,
       });
+
+  /// Current question-credit balance / subscription status, without
+  /// spending a credit. Safe to call whenever, e.g. to show a badge.
+  static Future<Map<String, dynamic>> getCredits() =>
+      _authedPost('/api/user/credits', {});
 
   static Future<Map<String, dynamic>> checkName(String name, String dob) =>
       _post('/api/name', {'name': name, 'dob': dob});
