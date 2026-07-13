@@ -22,6 +22,14 @@ import { getAuth, getDb, FieldValue } from './firebaseAdmin.js';
 
 export const FREE_TRIAL_CREDITS = 3;
 
+// Test/dev accounts that bypass credits entirely — never rate-limited, never
+// charged. Set via Vercel env var TEST_ACCOUNT_UIDS = "uid1,uid2,..." — never
+// hardcode UIDs here, so this list isn't visible in the public repo.
+const TEST_UIDS = (process.env.TEST_ACCOUNT_UIDS || '')
+  .split(',')
+  .map(u => u.trim())
+  .filter(Boolean);
+
 /**
  * Verifies the Firebase ID token in the Authorization header.
  * On success, sets req.uid. On failure, responds 401 and does not call next().
@@ -50,6 +58,12 @@ export async function requireAuth(req, res, next) {
  * Uses a Firestore transaction so concurrent requests can't double-spend.
  */
 export async function requireCredits(req, res, next) {
+  // Test/dev accounts skip credits entirely — no Firestore read/write needed.
+  if (TEST_UIDS.includes(req.uid)) {
+    req.creditsRemaining = 'unlimited';
+    req.viaSubscription = true;
+    return next();
+  }
   try {
     const db = getDb();
     const ref = db.collection('users').doc(req.uid);
