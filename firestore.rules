@@ -1,0 +1,87 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AASTROSPHERE — FIRESTORE SECURITY RULES
+//
+// Written to match the app's actual read/write patterns (verified against
+// the client code, not guessed). Deploy via:
+//   Firebase Console → Firestore Database → Rules → paste this → Publish
+// or: firebase deploy --only firestore:rules  (if using the Firebase CLI)
+//
+// CRITICAL: the `credits`, `subscriptionActive`, and `subscriptionExpiresAt`
+// fields on users/{uid} are written ONLY by the backend (Admin SDK via
+// authMiddleware.js), which bypasses these rules entirely. These rules
+// explicitly BLOCK the client from ever writing those three fields — without
+// this, any signed-in user could open Firestore directly and grant
+// themselves unlimited credits, completely bypassing the paid-question
+// enforcement built into /api/ask.
+// ═══════════════════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── users/{uid} — profile + credits/subscription (credits locked) ──────
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null && request.auth.uid == uid
+                    && !('credits' in request.resource.data)
+                    && !('subscriptionActive' in request.resource.data)
+                    && !('subscriptionExpiresAt' in request.resource.data);
+
+      allow update: if request.auth != null && request.auth.uid == uid
+                    && !request.resource.data.diff(resource.data).affectedKeys()
+                          .hasAny(['credits', 'subscriptionActive', 'subscriptionExpiresAt']);
+
+      allow delete: if false;
+
+      // Owner-only subcollections (friends, chat_history, etc.)
+      match /{subcollection}/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // ── astrologers/{uid} — astrologer's own profile only ──────────────────
+    match /astrologers/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── consultations/{id} — user submits, only astrologers can answer ─────
+    match /consultations/{id} {
+      // Owner can read their own; any verified astrologer can read all
+      // (they need to see the pending queue to answer requests).
+      allow read: if request.auth != null && (
+                    resource.data.uid == request.auth.uid ||
+                    exists(/databases/$(database)/documents/astrologers/$(request.auth.uid))
+                  );
+
+      // A user may only create a request for themselves, unanswered.
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.status == 'pending'
+                    && request.resource.data.answers == null;
+
+      // Only astrologers may update (to answer) — and only the answer fields,
+      // never the original request (uid, questions, utr, etc.).
+      allow update: if request.auth != null
+                    && exists(/databases/$(database)/documents/astrologers/$(request.auth.uid))
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(['answers', 'status', 'answered_at']);
+
+      allow delete: if false;
+    }
+
+    // ── astro_reports/{id} — astrologer-authored client reports ────────────
+    match /astro_reports/{id} {
+      allow read, update, delete: if request.auth != null
+                    && resource.data.astrologer_uid == request.auth.uid;
+      allow create: if request.auth != null
+                    && request.resource.data.astrologer_uid == request.auth.uid;
+    }
+
+    // ── Everything else — denied by default ─────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
