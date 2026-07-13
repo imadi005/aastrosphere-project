@@ -335,20 +335,24 @@ class NumerologyEngine {
     DateTime dob, {
     int? mahaOverride,
     int? antarOverride,
+    int? monthlyOverride,
   }) {
     final digits = chartDigits(dob);
     final maha = mahaOverride ?? currentMahadasha(dob).number;
     final antar = antarOverride ?? currentAntardasha(dob).number;
-    final monthly = currentMonthlyDasha(dob).number;
+    final monthly = monthlyOverride ?? currentMonthlyDasha(dob).number;
 
     final map = <int, int>{};
     for (final d in digits) {
       if (d != 0) map[d] = (map[d] ?? 0) + 1;
     }
 
-    // Add maha, antar, monthly
+    // Add maha, antar, monthly — each active layer counts as its OWN occurrence,
+    // even if it lands on the same number as another layer. Natal + Maha + Antar
+    // all landing on 8, for example, is a genuine triple-emphasis (888), not a
+    // duplicate to be skipped. Do NOT guard these with != checks.
     map[maha] = (map[maha] ?? 0) + 1;
-    if (antar != maha) map[antar] = (map[antar] ?? 0) + 1;
+    map[antar] = (map[antar] ?? 0) + 1;
     map[monthly] = (map[monthly] ?? 0) + 1;
 
     return map;
@@ -364,7 +368,8 @@ class NumerologyEngine {
     final maha = mahaOverride ?? currentMahadasha(dob).number;
     final antar = antarOverride ?? currentAntardasha(dob).number;
     final monthly = monthlyOverride ?? currentMonthlyDasha(dob).number;
-    final freqMap = buildFrequencyMap(dob, mahaOverride: maha, antarOverride: antar);
+    final freqMap = buildFrequencyMap(dob,
+        mahaOverride: maha, antarOverride: antar, monthlyOverride: monthly);
 
     final grid = List.generate(3, (_) => List.generate(3, (_) => const GridCell(number: 0, highlights: [])));
 
