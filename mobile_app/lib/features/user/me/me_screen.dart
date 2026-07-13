@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
-import '../../consult/consult_screen.dart';
 import '../../ask/ask_screen.dart';
 import '../../../core/providers/today_provider.dart';
 import '../../auth/providers/user_provider.dart';
@@ -46,7 +45,10 @@ class MeScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 MeContent(data: deep, isDark: isDark, gold: gold),
                 const SizedBox(height: 24),
-                AskAstrologerCard(isDark: isDark, gold: gold),
+                // NOTE: "Ask the Astrologer" (5 questions · ₹200) entry point removed —
+                // pricing is being redesigned around the chatbot (per-question tiers:
+                // 1@₹30, 3@₹70, 5@₹100 + question splitting/sorting). The ConsultScreen
+                // and astrologer-side answer flow are left intact for reuse/rework.
                 const SizedBox(height: 32),
                 _SignOutButton(isDark: isDark),
               ],
