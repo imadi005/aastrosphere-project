@@ -15,6 +15,7 @@ import {
 } from './deep_library.js';
 
 import { classifyHourDeep } from './hour_library.js';
+import { analyzeColumnYogas } from './column_yogas.js';
 import { DAILY_QUOTES } from './quotes_library.js';
 import {
   getPersonalizedGuidance, assessFullDayRating,
@@ -220,10 +221,15 @@ function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destin
     // If path is blocked — no Raj Yoga, don't push anything
   }
 
-  // ── SUN-KETU RAJ YOGA (1+7 without 8) ────────────────────────────────────
-  // Absence of 8 checked against NATAL only (Maha 8 should not cancel this)
-  if (natalNums.includes(1) && natalNums.includes(7) && !natalNums.includes(8)) {
-    yogas.push({ id: 'sun_ketu_raj', name: 'Continuous Luck', positive: true });
+  // ── SUN-KETU RAJ YOGA (1+7 without 8) / DEFAMATION (1+8 without 7) /
+  //    MISFORTUNE (7+8 without 1) / HIGH INTUITION (1+7+8) / COLUMN 1 (3-6-2) ──
+  // Sourced from column_yogas.js — the single implementation shared with the
+  // astrologer-side tools. Uses the FULL annual (natal+maha+antar+monthly)
+  // view for every presence/absence check, so a dasha completing a missing
+  // slot correctly shifts to the all-three reading instead of also still
+  // firing the old "missing number" yoga alongside it.
+  for (const cy of analyzeColumnYogas(annualFreq)) {
+    yogas.push({ id: cy.id, name: cy.name, positive: cy.positive, description: cy.description });
   }
 
   // ── EASY MONEY (5+7) ──────────────────────────────────────────────────────
@@ -266,23 +272,11 @@ function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destin
     yogas.push({ id: 'stable_luxury', name: 'Stable Luxury', positive: true });
   }
 
-  // ── HIGH INTUITION (1+7+8) ────────────────────────────────────────────────
-  // All three must be in annual chart
-  if (annualNums.includes(1) && annualNums.includes(7) && annualNums.includes(8)) {
-    yogas.push({ id: 'high_intuition', name: 'High Intuition', positive: true });
-  }
-
-  // ── DEFAMATION RISK (1+8 without 7) ──────────────────────────────────────
-  // Absence of 7 checked against NATAL only
-  if (natalNums.includes(1) && natalNums.includes(8) && !natalNums.includes(7)) {
-    yogas.push({ id: 'defamation_risk', name: 'Reputation Caution', positive: false });
-  }
-
-  // ── MISFORTUNE (7+8 without 1) ────────────────────────────────────────────
-  // Absence of 1 checked against NATAL only
-  if (natalNums.includes(7) && natalNums.includes(8) && !natalNums.includes(1)) {
-    yogas.push({ id: 'misfortune_78', name: 'Heavy Energy Period', positive: false });
-  }
+  // NOTE: High Intuition (1+7+8), Defamation Risk (1+8 no 7), Misfortune (7+8
+  // no 1), and Sun-Ketu Raj Yoga (1+7 no 8) are now sourced from the shared
+  // analyzeColumnYogas() call above — using the full annual view for every
+  // check, so a dasha completing the trio correctly overrides the
+  // individual "missing number" reading instead of both firing at once.
 
   // ── COMBO DESCRIPTION HELPER ──────────────────────────────────────────────
   // Gets the best available clean description for a combo key

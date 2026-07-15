@@ -8,6 +8,7 @@ import {
   currentMonthlyDasha, dailyDasha, hourlyDasha, buildGrid,
   buildFrequencyMap, PLANET_NAMES
 } from './numerology.js';
+import { analyzeColumnYogas } from './column_yogas.js';
 
 // ─── Planet descriptions ──────────────────────────────────────
 export const PLANET_DESC = {
@@ -436,19 +437,19 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
     detected.push({ yoga: 'Vipreet Raj Yoga', description: 'Rollercoaster but can overcome adversity if addictions avoided.' });
   }
 
-  // 1-7 (without 8) — Raj Yoga
-  if (nums.includes(1) && nums.includes(7) && !nums.includes(8)) {
-    detected.push({ yoga: 'Sun-Ketu Raj Yoga (1-7)', description: 'Highly lucky, love affairs, early career success.', isPositive: true });
-  }
-
-  // 7-8 without 1 — Misfortune
-  if (nums.includes(7) && nums.includes(8) && !nums.includes(1)) {
-    detected.push({ yoga: 'Ketu-Saturn Misfortune (7-8)', description: 'Luck delayed, bad luck in negative Dasha.', isNegative: true });
-  }
-
-  // 1-8 without 7 — Defamation
-  if (nums.includes(1) && nums.includes(8) && !nums.includes(7)) {
-    detected.push({ yoga: 'Sun-Saturn Defamation (1-8)', description: 'Risk of insults, legal issues, strained father relationship.', isNegative: true });
+  // ── COLUMN 1 (3-6-2) and COLUMN 2 (1-7-8) ─────────────────────────────────
+  // Sourced from column_yogas.js — shared with prediction_engine.js so this
+  // logic can never drift between the astrologer tools and the chatbot.
+  // Every presence/absence check uses the full combined (natal+dasha) view,
+  // so a dasha completing a missing slot correctly shows the all-three
+  // reading instead of also still showing the old "missing number" one.
+  for (const cy of analyzeColumnYogas(freqMap)) {
+    detected.push({
+      yoga: cy.name,
+      description: cy.description,
+      isPositive: cy.positive,
+      isNegative: !cy.positive,
+    });
   }
 
   // 6-7-5 Stable Luxury

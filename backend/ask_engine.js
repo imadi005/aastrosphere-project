@@ -139,13 +139,17 @@ function describeYogas(yogas) {
     vipreet_raj: 'Vipreet Raj Yoga: hardship periods reverse into unexpected success. The worse it feels, the bigger the reversal.',
     raj_yoga: 'Raj Yoga: authority and recognition supported. Bold career/visibility moves backed.',
     spiritual: 'Spiritual Yoga: deep intuition and philosophical understanding elevated.',
-    high_intuition: 'High Intuition Yoga: gut instinct is accurate — trust first reads.',
     uplifting_319: 'Uplifting 319 Yoga: courage, wisdom and authority combine — leadership supported.',
     bandhan: 'Bandhan Yoga: feeling trapped or constrained. Navigate the constraint, do not fight it.',
     accident_prone: 'Accident-prone combination in natal: physical caution always recommended.',
+    stable_luxury: 'Stable Luxury (6+7+5): maintains status and lifestyle even through hard times.',
   };
+  // Column 1 (3-6-2) and Column 2 (1-7-8) yogas carry their own rich,
+  // dasha-aware description from column_yogas.js -- use that directly rather
+  // than a separate hardcoded copy, so the chatbot and the astrologer tools
+  // never drift out of sync with each other.
   return yogas.filter(y => !y.combo_key).map(y =>
-    `- ${YOGA_DESC[y.id] || y.id}${y.positive ? '' : ' [shadow side active]'}`
+    `- ${y.description || YOGA_DESC[y.id] || y.id}${y.positive ? '' : ' [shadow side active]'}`
   ).join('\n');
 }
 
