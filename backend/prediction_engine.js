@@ -419,7 +419,7 @@ function _getPrimaryActionLegacy(ctx) {
     5: { do: "Negotiate, pitch, or close the business conversation they've been putting off.", avoid: "Letting the sharp mind run into overthinking and anxiety tonight." },
     6: { do: "Express genuine appreciation to someone who deserves it — it lands unusually well today.", avoid: "Harsh words when frustrated. Their tongue carries extra weight today." },
     7: { do: "Trust your gut over the spreadsheet today — intuition is outperforming analysis.", avoid: "Forcing outcomes. What needs to arrive will, when you stop pushing." },
-    8: { do: "Do the one hard thing they've been postponing. Today's effort compounds.", avoid: "Shortcuts. Saturn is watching every one of them today." },
+    8: { do: "Do the one hard thing you've been postponing. Today's effort compounds.", avoid: "Shortcuts. Saturn is watching every one of them today." },
     9: { do: "Make the bold move that requires courage. The energy is behind you today.", avoid: "Starting fights that aren't worth the cost." },
   };
 
