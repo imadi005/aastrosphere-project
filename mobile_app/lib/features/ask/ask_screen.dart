@@ -217,7 +217,22 @@ I'm your personal astro guide. Ask me anything about:
           _loading = false;
         });
       }
+    } on ServerErrorException catch (e) {
+      if (mounted) {
+        setState(() {
+          _messages.add(ChatMessage(
+            role: 'assistant',
+            content: '⚠️ **${e.message}**',
+          ));
+          _loading = false;
+        });
+      }
     } catch (e) {
+      // Anything not already categorized above (SocketException etc. handled
+      // in ApiService) genuinely looks like a connectivity issue by this
+      // point -- but log the raw error too, in case something new slips
+      // through uncategorized.
+      debugPrint('AskScreen: unhandled error type reached generic catch — $e');
       if (mounted) {
         setState(() {
           _messages.add(ChatMessage(

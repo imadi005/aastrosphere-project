@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,6 +15,14 @@ class OutOfCreditsException implements Exception {
 class NotAuthenticatedException implements Exception {
   final String message;
   NotAuthenticatedException(this.message);
+}
+
+/// Thrown for real backend/server failures (500s, bad responses, timeouts) —
+/// kept distinct from genuine connectivity issues so the UI never blames
+/// "no internet" for a problem that's actually on the server.
+class ServerErrorException implements Exception {
+  final String message;
+  ServerErrorException(this.message);
 }
 
 class ApiService {
@@ -62,13 +73,25 @@ class ApiService {
         throw OutOfCreditsException(decoded['message'] as String? ??
             "You're out of questions. Buy a pack or subscribe to keep asking.");
       }
-      throw Exception('API error ${response.statusCode}: ${response.body}');
+      throw ServerErrorException('The server returned an error (${response.statusCode}). Please try again in a moment.');
     } on OutOfCreditsException {
       rethrow;
     } on NotAuthenticatedException {
       rethrow;
+    } on SocketException catch (e) {
+      debugPrint('ApiService: genuine network failure — $e');
+      throw Exception('No internet connection. Check your network and try again.');
+    } on TimeoutException catch (e) {
+      debugPrint('ApiService: request timed out — $e');
+      throw ServerErrorException('The server took too long to respond. Please try again.');
     } catch (e) {
-      throw Exception('Connection Failed: $e');
+      // Anything else (JSON parse failure, unexpected shape, etc.) is a
+      // server/response problem, NOT a connectivity problem — never label
+      // this as "no internet", since that sends debugging in the wrong
+      // direction. Logged here so `flutter logs` / a connected debugger
+      // shows the real cause even though the user only sees a friendly message.
+      debugPrint('ApiService: unexpected error in _authedPost — $e');
+      throw ServerErrorException('Something went wrong on our end. Please try again.');
     }
   }
 
@@ -86,9 +109,16 @@ class ApiService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
       }
-      throw Exception('API error ${response.statusCode}: ${response.body}');
+      throw ServerErrorException('The server returned an error (${response.statusCode}). Please try again in a moment.');
+    } on SocketException catch (e) {
+      debugPrint('ApiService: genuine network failure — $e');
+      throw Exception('No internet connection. Check your network and try again.');
+    } on TimeoutException catch (e) {
+      debugPrint('ApiService: request timed out — $e');
+      throw ServerErrorException('The server took too long to respond. Please try again.');
     } catch (e) {
-      throw Exception('Connection Failed: $e');
+      debugPrint('ApiService: unexpected error in _post — $e');
+      throw ServerErrorException('Something went wrong on our end. Please try again.');
     }
   }
 
