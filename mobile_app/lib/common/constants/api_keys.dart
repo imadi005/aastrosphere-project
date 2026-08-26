@@ -1,1 +1,2 @@
-const String kGooglePlacesApiKey = "AIzaSyDF1d4KucIICyKEsYFpCpdplcbgOQD3spk";
+const String kGooglePlacesApiKey = "AIzaSyBNtlmvShhaltXpco974KS0D0BrlDsqsWw";
+

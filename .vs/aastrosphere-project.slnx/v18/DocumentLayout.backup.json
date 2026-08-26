@@ -1,12 +1,317 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\Asus\\aastrosphere-project\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\signup_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\auth\\screens\\signup_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\common\\constants\\api_keys.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\common\\constants\\api_keys.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\repository\\auth_repository.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\auth\\repository\\auth_repository.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\splash\\screens\\splash_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\splash\\screens\\splash_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\login_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\auth\\screens\\login_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\android\\app\\src\\main\\AndroidManifest.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\android\\app\\src\\main\\AndroidManifest.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\astrologer_signup_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\auth\\screens\\astrologer_signup_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\otp_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\auth\\screens\\otp_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\common\\utils\\utils.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\common\\utils\\utils.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\main.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\main.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\android\\app\\build.gradle.kts||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\android\\app\\build.gradle.kts||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\pubspec.yaml||{06C066C6-04A2-4E5D-8202-439FD4234EF1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\pubspec.yaml||{06C066C6-04A2-4E5D-8202-439FD4234EF1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\home\\screens\\astrologer_dashboard.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\home\\screens\\astrologer_dashboard.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\home\\screens\\user_dashboard.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\home\\screens\\user_dashboard.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\home\\screens\\home_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\home\\screens\\home_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\common\\widgets\\auth_wrapper.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\common\\widgets\\auth_wrapper.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\role_selection_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:mobile_app\\lib\\features\\auth\\screens\\role_selection_screen.dart||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Asus\\aastrosphere-project\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": []
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AndroidManifest.xml",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\android\\app\\src\\main\\AndroidManifest.xml",
+              "RelativeDocumentMoniker": "mobile_app\\android\\app\\src\\main\\AndroidManifest.xml",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\android\\app\\src\\main\\AndroidManifest.xml",
+              "RelativeToolTip": "mobile_app\\android\\app\\src\\main\\AndroidManifest.xml",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAACUAAABcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-11-14T15:42:07.575Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "login_screen.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\login_screen.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\auth\\screens\\login_screen.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\login_screen.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\auth\\screens\\login_screen.dart",
+              "ViewState": "AgIAAMEAAAAAAAAAAAAAALwAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-14T15:17:36.996Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "signup_screen.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\signup_screen.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\auth\\screens\\signup_screen.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\signup_screen.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\auth\\screens\\signup_screen.dart",
+              "ViewState": "AgIAACoBAAAAAAAAAAAqwD4BAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:46:41.111Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "auth_repository.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\repository\\auth_repository.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\auth\\repository\\auth_repository.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\repository\\auth_repository.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\auth\\repository\\auth_repository.dart",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:01:43.195Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "api_keys.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\common\\constants\\api_keys.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\common\\constants\\api_keys.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\common\\constants\\api_keys.dart",
+              "RelativeToolTip": "mobile_app\\lib\\common\\constants\\api_keys.dart",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:45:51.265Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "splash_screen.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\splash\\screens\\splash_screen.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\splash\\screens\\splash_screen.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\splash\\screens\\splash_screen.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\splash\\screens\\splash_screen.dart",
+              "ViewState": "AgIAAJ4AAAAAAAAAAAAqwLMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T20:57:14.752Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "astrologer_signup_screen.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\astrologer_signup_screen.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\auth\\screens\\astrologer_signup_screen.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\astrologer_signup_screen.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\auth\\screens\\astrologer_signup_screen.dart",
+              "ViewState": "AgIAAOcAAAAAAAAAAAAAwPsAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:04:51.165Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "otp_screen.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\otp_screen.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\auth\\screens\\otp_screen.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\otp_screen.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\auth\\screens\\otp_screen.dart",
+              "ViewState": "AgIAAJ8AAAAAAAAAAAAAwLUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:05:28.536Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "utils.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\common\\utils\\utils.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\common\\utils\\utils.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\common\\utils\\utils.dart",
+              "RelativeToolTip": "mobile_app\\lib\\common\\utils\\utils.dart",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-14T15:13:18.554Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "home_screen.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\home\\screens\\home_screen.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\home\\screens\\home_screen.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\home\\screens\\home_screen.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\home\\screens\\home_screen.dart",
+              "ViewState": "AgIAAEMAAAAAAAAAAAAAwFkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:25:43.573Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "user_dashboard.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\home\\screens\\user_dashboard.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\home\\screens\\user_dashboard.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\home\\screens\\user_dashboard.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\home\\screens\\user_dashboard.dart",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:26:36.378Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "astrologer_dashboard.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\home\\screens\\astrologer_dashboard.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\home\\screens\\astrologer_dashboard.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\home\\screens\\astrologer_dashboard.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\home\\screens\\astrologer_dashboard.dart",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:26:54.827Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "build.gradle.kts",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\android\\app\\build.gradle.kts",
+              "RelativeDocumentMoniker": "mobile_app\\android\\app\\build.gradle.kts",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\android\\app\\build.gradle.kts",
+              "RelativeToolTip": "mobile_app\\android\\app\\build.gradle.kts",
+              "ViewState": "AgIAABwAAAAAAAAAAAAAwDQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:43:38.336Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "main.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\main.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\main.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\main.dart",
+              "RelativeToolTip": "mobile_app\\lib\\main.dart",
+              "ViewState": "AgIAAEMAAAAAAAAAAAAAwE0AAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-11T21:18:27.337Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "pubspec.yaml",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\pubspec.yaml",
+              "RelativeDocumentMoniker": "mobile_app\\pubspec.yaml",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\pubspec.yaml",
+              "RelativeToolTip": "mobile_app\\pubspec.yaml",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAwCgAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003775|",
+              "WhenOpened": "2025-11-11T21:17:46.673Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "auth_wrapper.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\common\\widgets\\auth_wrapper.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\common\\widgets\\auth_wrapper.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\common\\widgets\\auth_wrapper.dart",
+              "RelativeToolTip": "mobile_app\\lib\\common\\widgets\\auth_wrapper.dart",
+              "ViewState": "AgIAABEAAAAAAAAAAAAAwCcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-13T21:03:32.424Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "role_selection_screen.dart",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\role_selection_screen.dart",
+              "RelativeDocumentMoniker": "mobile_app\\lib\\features\\auth\\screens\\role_selection_screen.dart",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\mobile_app\\lib\\features\\auth\\screens\\role_selection_screen.dart",
+              "RelativeToolTip": "mobile_app\\lib\\features\\auth\\screens\\role_selection_screen.dart",
+              "ViewState": "AgIAAIIAAAAAAAAAAAAAAIgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-11T21:20:10.478Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": ".gitignore",
+              "DocumentMoniker": "C:\\Users\\Asus\\aastrosphere-project\\.gitignore",
+              "RelativeDocumentMoniker": ".gitignore",
+              "ToolTip": "C:\\Users\\Asus\\aastrosphere-project\\.gitignore",
+              "RelativeToolTip": ".gitignore",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-11T21:06:23.62Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
