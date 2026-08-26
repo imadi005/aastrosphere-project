@@ -192,19 +192,22 @@ class ApiService {
       });
 
   // ─── CHART ────────────────────────────────────────────────────────────
-  static Future<Map<String, dynamic>> getChart(String dob, [int? clientHour]) =>
+  static Future<Map<String, dynamic>> getChart(String dob,
+          [int? clientHour, String? lang]) =>
       _post('/api/chart', {
         'dob': dob,
         'client_date': clientDate,
         'client_hour': clientHour ?? _clientHour,
+        if (lang != null) 'lang': lang,
       });
 
   static Future<Map<String, dynamic>> getChartForDate(
-          String dob, String date, int? hour) =>
+          String dob, String date, int? hour, [String? lang]) =>
       _post('/api/chart/date', {
         'dob': dob,
         'date': date,
         if (hour != null) 'hour': hour,
+        if (lang != null) 'lang': lang,
       });
 
   // ─── STATIC — don't need date ────────────────────────────────────────

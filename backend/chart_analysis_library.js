@@ -17,12 +17,16 @@ const PLANET_RELS = {
 };
 function rel(a,b){const r=PLANET_RELS[a];if(!r)return'n';if(r.f.includes(b))return'f';if(r.e.includes(b))return'e';return'n';}
 
-// ─── Planet names ─────────────────────────────────────────────────────────────
-const PNAMES = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'Ketu',8:'Saturn',9:'Mars'};
+// ─── Neutral archetype labels (user-facing — no planet/Vedic terminology) ─────
+const PNAMES = {1:'Confidence',2:'Emotion',3:'Wisdom',4:'Change',5:'Intellect',6:'Harmony',7:'Insight',8:'Discipline',9:'Drive'};
+
+import { PNAMES_I18N, STATIC_FINDINGS_I18N, DYNAMIC_TEMPLATES_I18N } from './chart_analysis_library_i18n.js';
 
 // ─── COMPREHENSIVE combination analysis ───────────────────────────────────────
-export function analyzeDayChart({ basic, destiny, maha, antar, monthly, daily, hourly, natalNums }) {
+export function analyzeDayChart({ basic, destiny, maha, antar, monthly, daily, hourly, natalNums, lang }) {
   const findings = [];
+  const NAMES = (lang && PNAMES_I18N[lang]) || PNAMES;
+  const DT = (lang && DYNAMIC_TEMPLATES_I18N[lang]) || null;
 
     // ── 1. ACCIDENT & PHYSICAL RISK ─────────────────────────────────────────────
   // Book-accurate: ALL 6 layers checked simultaneously
@@ -54,111 +58,123 @@ export function analyzeDayChart({ basic, destiny, maha, antar, monthly, daily, h
   const count4 = Object.values(has4).filter(Boolean).length;
   const count9 = Object.values(has9).filter(Boolean).length;
 
-  // Condition 1: Rahu(4) + Mars(9) in maha + daily (period-day cross)
+  // Condition 1: Change(4) + Drive(9) in maha + daily (period-day cross)
   if (has4.maha && has9.daily) {
     findings.push({ type: 'accident', level: 'high', label: 'High Accident Risk', detail: 'High accident risk today. Stay alert, drive carefully, avoid risky physical activities.' });
   }
-  // Condition 2: Mars(9) + Rahu(4) in maha + daily
+  // Condition 2: Drive(9) + Change(4) in maha + daily
   else if (has9.maha && has4.daily) {
     findings.push({ type: 'accident', level: 'high', label: 'High Accident Risk', detail: 'High accident risk today. Slow down — impulsive moves lead to physical damage.' });
   }
-  // Condition 3: Rahu(4) in antar + Mars(9) in daily
+  // Condition 3: Change(4) in antar + Drive(9) in daily
   else if (has4.antar && has9.daily) {
     findings.push({ type: 'accident', level: 'high', label: 'Accident Risk', detail: 'High accident risk today. Physical caution essential — avoid rushing.' });
   }
-  // Condition 4: Mars(9) in antar + Rahu(4) in daily
+  // Condition 4: Drive(9) in antar + Change(4) in daily
   else if (has9.antar && has4.daily) {
     findings.push({ type: 'accident', level: 'high', label: 'Accident Risk', detail: 'High accident risk today. Sudden situations can cause physical harm — stay alert.' });
   }
-  // Condition 5: Rahu(4) monthly + Mars(9) daily + must be confirmed by BOTH maha AND natal
+  // Condition 5: Change(4) monthly + Drive(9) daily + must be confirmed by BOTH maha AND natal
   else if (has4.monthly && has9.daily && has4.maha && has9.natal) {
     findings.push({ type: 'accident', level: 'medium', label: 'Physical Caution', detail: 'Accident risk today. Extra care with driving, physical tasks, and machinery.' });
   }
-  // Condition 6: Mars(9) monthly + Rahu(4) daily + must be confirmed by BOTH maha AND natal
+  // Condition 6: Drive(9) monthly + Change(4) daily + must be confirmed by BOTH maha AND natal
   else if (has9.monthly && has4.daily && has9.maha && has4.natal) {
     findings.push({ type: 'accident', level: 'medium', label: 'Physical Caution', detail: 'Accident risk today. Verify before acting — impulsive decisions cause physical damage.' });
   }
-  // Condition 7: Rahu(4) hour + Mars(9) day + confirmed by maha OR antar (not just natal)
+  // Condition 7: Change(4) hour + Drive(9) day + confirmed by maha OR antar (not just natal)
   else if (has4.hourly && has9.daily && (has4.maha || has4.antar || has9.maha || has9.antar)) {
     findings.push({ type: 'accident', level: 'high', label: 'Accident Risk This Hour', detail: 'High accident risk this hour. Avoid speeding, sharp tools, and anything requiring precision right now.' });
   }
-  // Condition 8: Mars(9) hour + Rahu(4) day + confirmed by maha OR antar
+  // Condition 8: Drive(9) hour + Change(4) day + confirmed by maha OR antar
   else if (has9.hourly && has4.daily && (has4.maha || has4.antar || has9.maha || has9.antar)) {
     findings.push({ type: 'accident', level: 'high', label: 'Accident Risk This Hour', detail: 'High accident risk this hour. Slow down — impulsive moves cause physical damage right now.' });
   }
-  // Condition 9: Double Rahu hour+day + Mars confirmed in maha AND natal
+  // Condition 9: Double Change hour+day + Drive confirmed in maha AND natal
   else if (has4.hourly && has4.daily && has9.maha && has9.natal) {
-    findings.push({ type: 'accident', level: 'high', label: 'Double Rahu — High Risk', detail: 'Very high accident risk this hour. Do not rush. Double-check everything before you act.' });
+    findings.push({ type: 'accident', level: 'high', label: 'Double Change — High Risk', detail: 'Very high accident risk this hour. Do not rush. Double-check everything before you act.' });
   }
 
-  // ── Additional Mars-dominant combinations (from real accident data) ────────
-  // Triple Mars: monthly=9 + daily=9 + hourly=9 + Rahu in natal/destiny
+  // ── Additional Drive-dominant combinations (from real accident data) ───────
+  // Triple Drive: monthly=9 + daily=9 + hourly=9 + Change in natal/destiny
   if (!findings.some(f => f.type==='accident')) {
     if (has9.monthly && has9.daily && hourly !== null && has9.hourly && (has4.natal || has4.destiny)) {
-      findings.push({ type: 'accident', level: 'high', label: 'Triple Mars Active', detail: 'High accident risk. Mars energy is running across three layers simultaneously — physical recklessness is at its peak. Slow down.' });
+      findings.push({ type: 'accident', level: 'high', label: 'Triple Drive Active', detail: 'High accident risk. Drive energy is running across three layers simultaneously — physical recklessness is at its peak. Slow down.' });
     }
-    // Double Mars (daily+hourly) + Rahu in destiny or natal
+    // Double Drive (daily+hourly) + Change in destiny or natal
     else if (has9.daily && hourly !== null && has9.hourly && (has4.destiny || has4.maha || has4.antar)) {
-      findings.push({ type: 'accident', level: 'high', label: 'Mars Hour + Mars Day', detail: 'High accident risk this hour. Aggressive energy meets instability — avoid speeding, sharp tools, and impulsive physical action.' });
+      findings.push({ type: 'accident', level: 'high', label: 'Drive Hour + Drive Day', detail: 'High accident risk this hour. Aggressive energy meets instability — avoid speeding, sharp tools, and impulsive physical action.' });
     }
-    // Double Mars (monthly+daily) + Rahu natal + no hourly data
+    // Double Drive (monthly+daily) + Change natal + no hourly data
     else if (has9.monthly && has9.daily && has4.natal && hourly === null) {
-      findings.push({ type: 'accident', level: 'medium', label: 'Double Mars Day', detail: 'Elevated accident risk today. Physical energy is running very high across multiple layers — take extra care.' });
+      findings.push({ type: 'accident', level: 'medium', label: 'Double Drive Day', detail: 'Elevated accident risk today. Physical energy is running very high across multiple layers — take extra care.' });
     }
-    // Rahu destiny + double Mars (any 2 of monthly/daily/hourly)
+    // Change destiny + double Drive (any 2 of monthly/daily/hourly)
     else if (has4.destiny && has4.natal && [has9.monthly, has9.daily, has9.hourly].filter(Boolean).length >= 2) {
-      findings.push({ type: 'accident', level: 'medium', label: 'Rahu + Double Mars', detail: 'Accident-prone combination today. Your Rahu destiny amplifies the Mars energy — physical caution strongly recommended.' });
+      findings.push({ type: 'accident', level: 'medium', label: 'Change + Double Drive', detail: 'Accident-prone combination today. Your Change destiny amplifies the Drive energy — physical caution strongly recommended.' });
     }
   }
 
 
 // ── 2. FINANCIAL RISK ─────────────────────────────────────────────────────
   if (daily === 4 || monthly === 4) {
-    const layer = daily === 4 ? 'today' : 'this month';
-    findings.push({ type: 'financial', level: daily === 4 ? 'high' : 'medium', label: 'Financial Caution', detail: `Rahu energy active ${layer}. Avoid financial commitments — verify every opportunity twice. What looks like a sure thing may not be.` });
+    const isToday = daily === 4;
+    findings.push(DT?.financialCautionLayer
+      ? { type: 'financial', level: isToday ? 'high' : 'medium', _dyn: true, ...DT.financialCautionLayer(isToday) }
+      : { type: 'financial', level: isToday ? 'high' : 'medium', _dyn: true, label: 'Financial Caution', detail: `Change energy active ${isToday ? 'today' : 'this month'}. Avoid financial commitments — verify every opportunity twice. What looks like a sure thing may not be.` });
   }
-  if (natalNums.includes(4) && daily === 5) findings.push({ type: 'financial', level: 'medium', label: 'Spending Impulse', detail: 'Rahu in your natal chart on a Mercury day. Financial Bandhan tendency peaks — the urge to spend is strong and potentially impulsive.' });
-  if (basic === 4 && maha === 5) findings.push({ type: 'financial', level: 'medium', label: 'Financial Period Caution', detail: 'Rahu natal in Mercury period. Business opportunities may look more certain than they are.' });
-  if (daily === 4 && antar === 5) findings.push({ type: 'financial', level: 'medium', label: 'Financial Caution', detail: 'Rahu day in Mercury chapter. Sharp financial instinct today but verification is essential.' });
+  if (natalNums.includes(4) && daily === 5) findings.push({ type: 'financial', level: 'medium', label: 'Spending Impulse', detail: 'Change in your natal chart on an Intellect day. Impulsive spending tendency peaks — the urge to spend is strong and potentially impulsive.' });
+  if (basic === 4 && maha === 5) findings.push({ type: 'financial', level: 'medium', label: 'Financial Period Caution', detail: 'Change natal in an Intellect period. Business opportunities may look more certain than they are.' });
+  if (daily === 4 && antar === 5) findings.push({ type: 'financial', level: 'medium', label: 'Financial Caution', detail: 'Change day in an Intellect chapter. Sharp financial instinct today but verification is essential.' });
 
   // ── 3. HEALTH RISKS ───────────────────────────────────────────────────────
-  if (daily === 9 && basic === 6) findings.push({ type: 'health', level: 'medium', label: 'Blood Pressure Watch', detail: 'Mars day for a Venus natal. Energy is running high — blood pressure and hormonal balance need monitoring.' });
-  if (daily === 8 && basic === 2) findings.push({ type: 'health', level: 'medium', label: 'Mental Load Watch', detail: 'Saturn day for a Moon natal. Emotional heaviness can peak — prioritize sleep and avoid over-committing.' });
-  if (maha === 9 && basic === 2) findings.push({ type: 'health', level: 'medium', label: 'Ongoing Health Watch', detail: 'Mars period for a Moon natal. Physical energy is elevated but emotional regulation needs attention throughout this period.' });
-  if (daily === 8 && maha === 8) findings.push({ type: 'health', level: 'medium', label: 'Physical Fatigue Risk', detail: 'Double Saturn. The body is under maximum karmic pressure today. Rest is as important as effort.' });
-  if (natalNums.includes(9) && natalNums.includes(4)) findings.push({ type: 'health', level: 'medium', label: 'Ongoing Stress Pattern', detail: 'Mars and Rahu both in your natal chart. Anxiety, blood pressure, and accident risk are lifelong areas to monitor.' });
+  if (daily === 9 && basic === 6) findings.push({ type: 'health', level: 'medium', label: 'Blood Pressure Watch', detail: 'Drive day for a Harmony natal. Energy is running high — blood pressure and hormonal balance need monitoring.' });
+  if (daily === 8 && basic === 2) findings.push({ type: 'health', level: 'medium', label: 'Mental Load Watch', detail: 'Discipline day for an Emotion natal. Emotional heaviness can peak — prioritize sleep and avoid over-committing.' });
+  if (maha === 9 && basic === 2) findings.push({ type: 'health', level: 'medium', label: 'Ongoing Health Watch', detail: 'Drive period for an Emotion natal. Physical energy is elevated but emotional regulation needs attention throughout this period.' });
+  if (daily === 8 && maha === 8) findings.push({ type: 'health', level: 'medium', label: 'Physical Fatigue Risk', detail: 'Double Discipline. The body is under maximum pressure today. Rest is as important as effort.' });
+  if (natalNums.includes(9) && natalNums.includes(4)) findings.push({ type: 'health', level: 'medium', label: 'Ongoing Stress Pattern', detail: 'Drive and Change both in your natal chart. Anxiety, blood pressure, and accident risk are lifelong areas to monitor.' });
 
   // ── 4. LEGAL & ANGER RISKS ────────────────────────────────────────────────
-  if (daily === 9 && daily === maha) findings.push({ type: 'legal', level: 'high', label: 'Anger Risk', detail: 'Double Mars energy — explosive reactions possible. Legal risks from anger-driven decisions. Pause before reacting.' });
-  if (daily === 4 && basic === 9) findings.push({ type: 'legal', level: 'high', label: 'Legal Caution', detail: 'Rahu day for a Mars natal. This is the combination associated with legal risks from impulsive confrontational action.' });
-  if (daily === 9 && basic === 4) findings.push({ type: 'legal', level: 'high', label: 'Legal Caution', detail: 'Mars day for a Rahu natal. Explosive energy meets an unstable foundation. Legal and physical risks both elevated.' });
-  if (maha === 4 && daily === 9) findings.push({ type: 'legal', level: 'high', label: 'Legal Caution', detail: 'Mars day in Rahu period. This specific combination is linked to legal risks from aggressive impulsive action.' });
-  if (daily === 9 && antar === 4) findings.push({ type: 'legal', level: 'medium', label: 'Anger Caution', detail: 'Mars day in Rahu chapter. Frustration levels are elevated — confrontations can escalate beyond intention.' });
+  if (daily === 9 && daily === maha) findings.push({ type: 'legal', level: 'high', label: 'Anger Risk', detail: 'Double Drive energy — explosive reactions possible. Legal risks from anger-driven decisions. Pause before reacting.' });
+  if (daily === 4 && basic === 9) findings.push({ type: 'legal', level: 'high', label: 'Legal Caution', detail: 'Change day for a Drive natal. This is the combination associated with legal risks from impulsive confrontational action.' });
+  if (daily === 9 && basic === 4) findings.push({ type: 'legal', level: 'high', label: 'Legal Caution', detail: 'Drive day for a Change natal. Explosive energy meets an unstable foundation. Legal and physical risks both elevated.' });
+  if (maha === 4 && daily === 9) findings.push({ type: 'legal', level: 'high', label: 'Legal Caution', detail: 'Drive day in a Change period. This specific combination is linked to legal risks from aggressive impulsive action.' });
+  if (daily === 9 && antar === 4) findings.push({ type: 'legal', level: 'medium', label: 'Anger Caution', detail: 'Drive day in a Change chapter. Frustration levels are elevated — confrontations can escalate beyond intention.' });
 
   // ── 5. RELATIONSHIP TENSIONS ──────────────────────────────────────────────
-  if (daily === 9 && basic === 2) findings.push({ type: 'relationship', level: 'high', label: 'Relationship Volatility', detail: 'Mars day for a Moon natal. The combination that produces the most emotionally intense and potentially explosive relationship moments.' });
-  if (daily === 6 && maha === 9) findings.push({ type: 'relationship', level: 'medium', label: 'Sharp Tongue Risk', detail: 'Venus day in Mars period. Words said in frustration today carry unusual weight and last longer than usual.' });
-  if (rel(basic, daily) === 'e') findings.push({ type: 'relationship', level: 'medium', label: 'Friction Day', detail: `Your natal planet (${PNAMES[basic]}) and today's energy (${PNAMES[daily]}) are in natural opposition. Navigate interpersonal situations with extra care.` });
+  if (daily === 9 && basic === 2) findings.push({ type: 'relationship', level: 'high', label: 'Relationship Volatility', detail: 'Drive day for an Emotion natal. The combination that produces the most emotionally intense and potentially explosive relationship moments.' });
+  if (daily === 6 && maha === 9) findings.push({ type: 'relationship', level: 'medium', label: 'Sharp Tongue Risk', detail: 'Harmony day in a Drive period. Words said in frustration today carry unusual weight and last longer than usual.' });
+  if (rel(basic, daily) === 'e') findings.push(DT?.frictionDay
+    ? { type: 'relationship', level: 'medium', _dyn: true, ...DT.frictionDay(NAMES[basic], NAMES[daily]) }
+    : { type: 'relationship', level: 'medium', _dyn: true, label: 'Friction Day', detail: `Your natal energy (${NAMES[basic]}) and today's energy (${NAMES[daily]}) are in natural opposition. Navigate interpersonal situations with extra care.` });
 
   // ── 6. POSITIVE COMBINATIONS ──────────────────────────────────────────────
-  if (rel(basic, daily) === 'f' && rel(daily, basic) === 'f') findings.push({ type: 'opportunity', level: 'high', label: 'Peak Day', detail: `${PNAMES[basic]} (your natal) and ${PNAMES[daily]} (today) are mutual friends. This is one of your naturally strongest days.` });
-  if (daily === 5 && natalNums.includes(7)) findings.push({ type: 'opportunity', level: 'high', label: 'Easy Money Active', detail: 'Mercury day with Ketu in your chart. Financial luck is structurally active today. Act on what presents itself.' });
-  if (daily === 7 && natalNums.includes(5)) findings.push({ type: 'opportunity', level: 'high', label: 'Financial Fortune', detail: 'Ketu day with Mercury in your chart. The Easy Money combination — unexpected financial opportunities are available.' });
-  if (daily === 1 && maha === 7) findings.push({ type: 'opportunity', level: 'high', label: 'Lucky Authority', detail: 'Sun day in Ketu period. Bold moves are backed by quiet fortune today. Make the ask.' });
-  if (daily === 7 && maha === 1) findings.push({ type: 'opportunity', level: 'high', label: 'Fortune Backs Initiative', detail: 'Ketu day in Sun period. What you initiate today has unusual fortune behind it.' });
-  if (rel(maha, daily) === 'f' && rel(antar, daily) === 'f') findings.push({ type: 'opportunity', level: 'high', label: 'Triple Alignment', detail: `${PNAMES[maha]} period + ${PNAMES[antar]} chapter + ${PNAMES[daily]} day all in friendly alignment. Rare triple-layer support today.` });
-  if (basic === daily) findings.push({ type: 'opportunity', level: 'high', label: 'Your Day', detail: `Today's energy (${PNAMES[daily]}) matches your natal number. This is one of your naturally powerful days.` });
-  if (destiny === daily) findings.push({ type: 'opportunity', level: 'high', label: 'Destiny Day', detail: `Today's energy aligns with your destiny number (${PNAMES[destiny]}). The life path is supported today.` });
+  if (rel(basic, daily) === 'f' && rel(daily, basic) === 'f') findings.push(DT?.peakDay
+    ? { type: 'opportunity', level: 'high', _dyn: true, ...DT.peakDay(NAMES[basic], NAMES[daily]) }
+    : { type: 'opportunity', level: 'high', _dyn: true, label: 'Peak Day', detail: `${NAMES[basic]} (your natal) and ${NAMES[daily]} (today) are mutual friends. This is one of your naturally strongest days.` });
+  if (daily === 5 && natalNums.includes(7)) findings.push({ type: 'opportunity', level: 'high', label: 'Easy Money Active', detail: 'Intellect day with Insight in your chart. Financial luck is structurally active today. Act on what presents itself.' });
+  if (daily === 7 && natalNums.includes(5)) findings.push({ type: 'opportunity', level: 'high', label: 'Financial Fortune', detail: 'Insight day with Intellect in your chart. The Easy Money combination — unexpected financial opportunities are available.' });
+  if (daily === 1 && maha === 7) findings.push({ type: 'opportunity', level: 'high', label: 'Lucky Authority', detail: 'Confidence day in an Insight period. Bold moves are backed by quiet fortune today. Make the ask.' });
+  if (daily === 7 && maha === 1) findings.push({ type: 'opportunity', level: 'high', label: 'Fortune Backs Initiative', detail: 'Insight day in a Confidence period. What you initiate today has unusual fortune behind it.' });
+  if (rel(maha, daily) === 'f' && rel(antar, daily) === 'f') findings.push(DT?.tripleAlignment
+    ? { type: 'opportunity', level: 'high', _dyn: true, ...DT.tripleAlignment(NAMES[maha], NAMES[antar], NAMES[daily]) }
+    : { type: 'opportunity', level: 'high', _dyn: true, label: 'Triple Alignment', detail: `${NAMES[maha]} period + ${NAMES[antar]} chapter + ${NAMES[daily]} day all in friendly alignment. Rare triple-layer support today.` });
+  if (basic === daily) findings.push(DT?.yourDay
+    ? { type: 'opportunity', level: 'high', _dyn: true, ...DT.yourDay(NAMES[daily]) }
+    : { type: 'opportunity', level: 'high', _dyn: true, label: 'Your Day', detail: `Today's energy (${NAMES[daily]}) matches your natal number. This is one of your naturally powerful days.` });
+  if (destiny === daily) findings.push(DT?.destinyDay
+    ? { type: 'opportunity', level: 'high', _dyn: true, ...DT.destinyDay(NAMES[destiny]) }
+    : { type: 'opportunity', level: 'high', _dyn: true, label: 'Destiny Day', detail: `Today's energy aligns with your destiny number (${NAMES[destiny]}). The life path is supported today.` });
 
   // ── 7. SPIRITUAL / INTUITION ──────────────────────────────────────────────
-  if (daily === 7 && natalNums.includes(7)) findings.push({ type: 'spiritual', level: 'high', label: 'Double Ketu', detail: 'Ketu in both natal and day. Maximum intuition and spiritual depth available. Trust instinct completely.' });
-  if (daily === 3 && basic === 3) findings.push({ type: 'spiritual', level: 'high', label: 'Double Jupiter', detail: 'Jupiter in both natal and day. Clearest wisdom and sound judgment of the cycle available today.' });
-  if (daily === 2 && maha === 2) findings.push({ type: 'spiritual', level: 'medium', label: 'Deep Emotional Day', detail: 'Double Moon energy. Creative and emotional depth at its peak. What is felt today is felt completely.' });
+  if (daily === 7 && natalNums.includes(7)) findings.push({ type: 'spiritual', level: 'high', label: 'Double Insight', detail: 'Insight in both natal and day. Maximum intuition and inner depth available. Trust instinct completely.' });
+  if (daily === 3 && basic === 3) findings.push({ type: 'spiritual', level: 'high', label: 'Double Wisdom', detail: 'Wisdom in both natal and day. Clearest judgment and sound reasoning of the cycle available today.' });
+  if (daily === 2 && maha === 2) findings.push({ type: 'spiritual', level: 'medium', label: 'Deep Emotional Day', detail: 'Double Emotion energy. Creative and emotional depth at its peak. What is felt today is felt completely.' });
 
   // ── 8. KARMA DAYS ─────────────────────────────────────────────────────────
-  if (daily === 8 && maha === 8) findings.push({ type: 'karma', level: 'high', label: 'Double Saturn', detail: 'Maximum karmic day. What is built with integrity today compounds. Shortcuts cost triple. The effort matters.' });
-  if (daily === 8 && basic === 8) findings.push({ type: 'karma', level: 'high', label: 'Saturn Day for Saturn Natal', detail: 'Your most karmic day type. The work done today has the longest-lasting consequences — good or bad.' });
-  if (natalNums.filter(n => n === 8).length >= 2 && daily === 8) findings.push({ type: 'karma', level: 'high', label: 'Extreme Saturn Day', detail: 'Multiple 8s in chart on Saturn day. This is a maximum karma day. Act with complete integrity.' });
+  if (daily === 8 && maha === 8) findings.push({ type: 'karma', level: 'high', label: 'Double Discipline', detail: 'Maximum effort day. What is built with integrity today compounds. Shortcuts cost triple. The effort matters.' });
+  if (daily === 8 && basic === 8) findings.push({ type: 'karma', level: 'high', label: 'Discipline Day for Discipline Natal', detail: 'Your most consequential day type. The work done today has the longest-lasting consequences — good or bad.' });
+  if (natalNums.filter(n => n === 8).length >= 2 && daily === 8) findings.push({ type: 'karma', level: 'high', label: 'Extreme Discipline Day', detail: 'Multiple 8s in chart on a Discipline day. This is a maximum-effort day. Act with complete integrity.' });
 
   // Deduplicate by label
   const seen = new Set();
@@ -173,7 +189,14 @@ export function analyzeDayChart({ basic, destiny, maha, antar, monthly, daily, h
   const order = { accident: 0, legal: 1, financial: 2, health: 3, relationship: 4, karma: 5, spiritual: 6, opportunity: 7 };
   unique.sort((a, b) => (order[a.type] ?? 9) - (order[b.type] ?? 9));
 
-  return unique;
+  // Static (non-dynamic) findings translate by exact English detail lookup
+  const localized = unique.map(({ _dyn, ...f }) => {
+    if (_dyn || !lang || lang === 'en') return f;
+    const t = STATIC_FINDINGS_I18N[f.detail]?.[lang];
+    return t ? { ...f, label: t.label, detail: t.detail } : f;
+  });
+
+  return localized;
 }
 
 // ─── Overall day score ────────────────────────────────────────────────────────

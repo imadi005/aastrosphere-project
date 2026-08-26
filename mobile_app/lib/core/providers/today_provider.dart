@@ -67,7 +67,8 @@ final deepInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((r
 final chartDataProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(smartProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  return ApiService.getChart(_dobToIso(user.dob), DateTime.now().hour);
+  final lang = ref.watch(localeProvider).languageCode;
+  return ApiService.getChart(_dobToIso(user.dob), DateTime.now().hour, lang);
 });
 
 final mahaTimelineProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {

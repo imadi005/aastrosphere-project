@@ -59,7 +59,7 @@ const CELL_PLANETS = {
   '2,0':'Moon',   '2,1':'Saturn','2,2':'Rahu',
 };
 
-function buildChartData(dob, targetDate, targetHour = null) {
+function buildChartData(dob, targetDate, targetHour = null, lang = null) {
   const d = new Date(dob);
   const day = d.getDate();
   const basic = basicNumber(day);
@@ -100,6 +100,7 @@ function buildChartData(dob, targetDate, targetHour = null) {
     monthly: monthly.number, daily: dailyNum,
     hourly: hourlyNum,
     natalNums,
+    lang,
   });
   // Day score — use the SAME path as the Today screen so the two always match.
   // (Daily number from buildChartContext matches dailyNum above; this guarantees
@@ -127,11 +128,11 @@ function buildChartData(dob, targetDate, targetHour = null) {
 
 app.post('/api/chart', (req, res) => {
   try {
-    const { dob, client_date, client_hour } = req.body;
+    const { dob, client_date, client_hour, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
     const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const hour = (client_hour !== undefined && client_hour !== null) ? parseInt(client_hour) : new Date().getHours();
-    res.json(buildChartData(dob, targetDate, hour));
+    res.json(buildChartData(dob, targetDate, hour, lang));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -140,10 +141,10 @@ app.post('/api/chart', (req, res) => {
 // ─── /api/chart/date — chart for any date+time ───────────────────────────────
 app.post('/api/chart/date', (req, res) => {
   try {
-    const { dob, date, hour } = req.body;
+    const { dob, date, hour, lang } = req.body;
     if (!dob || !date) return res.status(400).json({ error: 'dob and date required' });
     const targetHour = (hour !== undefined && hour !== null) ? parseInt(hour) : null;
-    res.json(buildChartData(dob, new Date(date).toISOString(), targetHour));
+    res.json(buildChartData(dob, new Date(date).toISOString(), targetHour, lang));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

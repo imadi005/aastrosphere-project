@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/providers/today_provider.dart';
+import '../../../core/providers/locale_provider.dart';
 import '../../../core/services/api_service.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -161,7 +162,8 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
           pickedDate!.month == DateTime.now().month &&
           pickedDate!.day == DateTime.now().day;
       final effectiveHour = pickedHour ?? (isToday ? DateTime.now().hour : null);
-      final data = await ApiService.getChartForDate(dob, dateStr, effectiveHour);
+      final lang = ref.read(localeProvider).languageCode;
+      final data = await ApiService.getChartForDate(dob, dateStr, effectiveHour, lang);
       setState(() {
         _customChartData = data;
         _selectedDate = pickedDate;

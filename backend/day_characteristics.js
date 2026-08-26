@@ -30,8 +30,10 @@ const DAY_CORE = {
   9: { label:'An energetic day',       text:"Strong drive today, well suited to decisive action.",                     kind:'drive' },
 };
 
+import { translateDayCard } from './day_characteristics_i18n.js';
+
 export function buildDayCharacteristics(ctx) {
-  const { maha, antar, monthly, daily, basic, destiny, natalNums = [] } = ctx;
+  const { maha, antar, monthly, daily, basic, destiny, natalNums = [], lang } = ctx;
   const periods = [maha, antar, monthly];
   const has = (n) => periods.includes(n) || daily === n || natalNums.includes(n);
   const countAcross = (n) => periods.filter(x => x === n).length + (daily === n ? 1 : 0);
@@ -115,5 +117,7 @@ export function buildDayCharacteristics(ctx) {
   }
   // headline (core) always first
   result.sort((a, b) => (b._core ? 1 : 0) - (a._core ? 1 : 0));
-  return result.map(({ label, text, category, tone }) => ({ label, text, category, tone }));
+  return result
+    .map(({ label, text, category, tone }) => ({ label, text, category, tone }))
+    .map((card) => translateDayCard(card, lang));
 }
