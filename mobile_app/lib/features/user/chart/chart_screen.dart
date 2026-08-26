@@ -7,6 +7,13 @@ import '../../../core/providers/today_provider.dart';
 import '../../../core/services/api_service.dart';
 import '../../auth/providers/user_provider.dart';
 
+// Religion-neutral labels for the 9 numerology energies — used everywhere
+// this chart is shown to the user, in place of the underlying planet names.
+const Map<int, String> kNeutralEnergyLabel = {
+  1: 'Confidence', 2: 'Emotion', 3: 'Wisdom', 4: 'Change', 5: 'Intellect',
+  6: 'Harmony', 7: 'Insight', 8: 'Discipline', 9: 'Drive',
+};
+
 class ChartScreen extends ConsumerStatefulWidget {
   const ChartScreen({super.key});
 
@@ -190,8 +197,6 @@ class _ChartView extends StatelessWidget {
   Widget build(BuildContext context) {
     final basic = data['basic'] as int;
     final destiny = data['destiny'] as int;
-    final basicPlanet = data['basicPlanet'] as String;
-    final destinyPlanet = data['destinyPlanet'] as String;
     final supportive = (data['supportive'] as List<dynamic>).cast<int>();
     final maha = data['maha'] as Map<String, dynamic>;
     final antar = data['antar'] as Map<String, dynamic>;
@@ -300,18 +305,18 @@ class _ChartView extends StatelessWidget {
           AstroCard(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Column(children: [
-              _PeriodRow(label: 'Maha Dasha', number: maha['number'] as int,
-                  planet: maha['planet'] as String,
+              _PeriodRow(label: 'Long-Term Phase', number: maha['number'] as int,
+                  planet: kNeutralEnergyLabel[maha['number'] as int] ?? '',
                   period: '${_yr(maha['start'])} – ${_yr(maha['end'])}',
                   color: gold, isDark: isDark),
               Divider(color: border, height: 16, thickness: 0.5),
-              _PeriodRow(label: 'Antar Dasha', number: antar['number'] as int,
-                  planet: antar['planet'] as String,
+              _PeriodRow(label: 'Current Phase', number: antar['number'] as int,
+                  planet: kNeutralEnergyLabel[antar['number'] as int] ?? '',
                   period: '${_mo(antar['start'])} – ${_mo(antar['end'])}',
                   color: isDark ? AppColors.successDark : AppColors.success, isDark: isDark),
               Divider(color: border, height: 16, thickness: 0.5),
               _PeriodRow(label: 'Monthly', number: monthly['number'] as int,
-                  planet: monthly['planet'] as String,
+                  planet: kNeutralEnergyLabel[monthly['number'] as int] ?? '',
                   period: '${_dt(monthly['start'])} – ${_dt(monthly['end'])}',
                   color: const Color(0xFF6366F1), isDark: isDark),
               if (daily != null) ...[
@@ -354,13 +359,13 @@ class _ChartView extends StatelessWidget {
           Row(children: [
             Expanded(child: _CoreNumberCard(
               label: 'Basic', sublabel: 'Inner Self',
-              number: basic, planet: basicPlanet,
+              number: basic, planet: kNeutralEnergyLabel[basic] ?? '',
               gold: gold, isDark: isDark,
             )),
             const SizedBox(width: 10),
             Expanded(child: _CoreNumberCard(
               label: 'Destiny', sublabel: 'Life Path',
-              number: destiny, planet: destinyPlanet,
+              number: destiny, planet: kNeutralEnergyLabel[destiny] ?? '',
               gold: gold, isDark: isDark,
             )),
           ]),
@@ -418,8 +423,8 @@ class _GridLegend extends StatelessWidget {
     final successColor = isDark ? AppColors.successDark : AppColors.success;
 
     final items = <Map<String, dynamic>>[
-      {'label': 'Maha', 'number': maha, 'color': gold},
-      {'label': 'Antar', 'number': antar, 'color': successColor},
+      {'label': 'Long-Term', 'number': maha, 'color': gold},
+      {'label': 'Current', 'number': antar, 'color': successColor},
       {'label': 'Monthly', 'number': monthly, 'color': const Color(0xFF6366F1)},
       if (daily != null) {'label': 'Daily', 'number': daily, 'color': const Color(0xFF06B6D4)},
       if (hourly != null) {'label': 'Hourly', 'number': hourly, 'color': const Color(0xFFF59E0B)},
@@ -455,10 +460,10 @@ class _GridWidget extends StatelessWidget {
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final bg = isDark ? AppColors.bgCardDark : AppColors.bgCardLight;
 
-    const planetLabels = [
-      ['Jupiter', 'Sun', 'Mars'],
-      ['Venus', 'Ketu', 'Mercury'],
-      ['Moon', 'Saturn', 'Rahu'],
+    final planetLabels = [
+      [kNeutralEnergyLabel[3]!, kNeutralEnergyLabel[1]!, kNeutralEnergyLabel[9]!],
+      [kNeutralEnergyLabel[6]!, kNeutralEnergyLabel[7]!, kNeutralEnergyLabel[5]!],
+      [kNeutralEnergyLabel[2]!, kNeutralEnergyLabel[8]!, kNeutralEnergyLabel[4]!],
     ];
 
     return Container(

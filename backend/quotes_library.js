@@ -398,7 +398,7 @@ export const DAILY_QUOTES = {
     "Today the investigation is more valuable than the result.",
     "What disrupts your plan today is trying to improve it.",
     "The pattern that doesn't fit — today you figure out why.",
-    "Don't make the confident decision on a Rahu day. Verify first.",
+    "Don't make the confident decision on an unstable day. Verify first.",
     "Today your original thinking outperforms conventional wisdom.",
     "What you find today in the details changes the big picture.",
     "The unusual approach is the right approach today.",

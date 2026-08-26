@@ -152,7 +152,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                       const SizedBox(height: 6),
 
-                      Text('Ank Jyotish',
+                      Text('Numerologist',
                           style: GoogleFonts.cormorantGaramond(
                             fontSize: 16,
                             color: AppColors.textSecondaryLight,

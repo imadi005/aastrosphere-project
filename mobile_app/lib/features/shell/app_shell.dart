@@ -209,7 +209,7 @@ class _AstrologerShell extends ConsumerWidget {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _AttributionFooter(isDark: isDark),
+          _AttributionFooter(isDark: isDark, label: 'Aastrosphere by Pankajj Kumar Mishra  ( Ank Jyotish & Palmist )'),
           _BottomNav(
             currentIndex: index,
             items: isMeView ? _meItems : _clientItems,
@@ -364,7 +364,8 @@ class _BottomNav extends StatelessWidget {
 // ─── Attribution Footer ───────────────────────────────────────────────────────
 class _AttributionFooter extends StatelessWidget {
   final bool isDark;
-  const _AttributionFooter({required this.isDark});
+  final String label;
+  const _AttributionFooter({required this.isDark, this.label = 'Aastrosphere by Pankajj Kumar Mishra  ( Numerologist & Palmist )'});
 
   @override
   Widget build(BuildContext context) {
@@ -373,7 +374,7 @@ class _AttributionFooter extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(top: 4, bottom: 6),
       child: Text(
-        'Aastrosphere by Pankajj Kumar Mishra  ( Ank Jyotish & Palmist )',
+        label,
         textAlign: TextAlign.center,
         style: GoogleFonts.cormorantGaramond(
           fontSize: 10,

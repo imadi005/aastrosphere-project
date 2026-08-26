@@ -9,6 +9,14 @@ export const PLANET_NAMES_COMPAT = {
   6:'Venus', 7:'Ketu', 8:'Saturn', 9:'Mars',
 };
 
+// Religion-neutral labels for the same 9 energies — used anywhere this
+// content reaches the end user directly (vs. astrologer-facing tools,
+// which keep using PLANET_NAMES_COMPAT above).
+export const NEUTRAL_LABELS_COMPAT = {
+  1:'Confidence', 2:'Emotion', 3:'Wisdom', 4:'Change', 5:'Intellect',
+  6:'Harmony', 7:'Insight', 8:'Discipline', 9:'Drive',
+};
+
 // ─── Planetary relationship map (standard Vedic) ─────────────────────────────
 export const VEDIC_RELATIONS = {
   1:{f:[3,9,5],e:[2,7],n:[4,6,8]},
@@ -122,7 +130,7 @@ export const PAIR_DYNAMICS = {
 
   '1_3': { // Sun friends Jupiter, Jupiter friends Sun
     rel: 'f_f',
-    core: "Sun and Jupiter — two of the most naturally aligned planets. Authority meets wisdom. What 1 initiates, 3 gives depth to. What 3 knows, 1 has the nerve to act on. Together they build things that last.",
+    core: "Confidence and Wisdom — two of the most naturally aligned energies. Authority meets wisdom. What 1 initiates, 3 gives depth to. What 3 knows, 1 has the nerve to act on. Together they build things that last.",
     strength: "Neither diminishes the other. 1's boldness is grounded by 3's wisdom. 3's knowledge is activated by 1's courage. The decisions they make together are both fast and sound — a rare combination.",
     tension: "1 trusts instinct, 3 trusts judgment. When instinct and judgment disagree, both can be stubborn about who's right.",
     close_connection: "The rare connection that combines drive and wisdom. Each makes the other more complete.",
@@ -134,7 +142,7 @@ export const PAIR_DYNAMICS = {
 
   '1_5': { // Sun friends Mercury, Mercury friends Sun
     rel: 'f_f',
-    core: "Sun and Mercury — authority and intelligence in natural alignment. One of the strongest combinations for any practical endeavor. Both are driven by results, both are sharp, both understand that execution matters.",
+    core: "Confidence and Intellect — authority and intelligence in natural alignment. One of the strongest combinations for any practical endeavor. Both are driven by results, both are sharp, both understand that execution matters.",
     strength: "1's confidence creates the space for 5's intelligence to land. 5's analytical precision gives 1's decisions real backing. Together they cover the full spectrum from bold idea to sharp implementation.",
     tension: "Neither naturally slows down for emotional processing. The efficiency can feel cold to people around them — and occasionally to each other.",
     close_connection: "The combination that gets things done at the highest level. Requires deliberate emotional investment to go beyond partnership into genuine depth.",
@@ -146,7 +154,7 @@ export const PAIR_DYNAMICS = {
 
   '1_9': { // Sun friends Mars, Mars friends Sun
     rel: 'f_f',
-    core: "Sun and Mars — both fire, both action, both forward. The most energized combination in the system. When directed at something external, they are nearly unstoppable. The risk is entirely internal.",
+    core: "Confidence and Drive — both fire, both action, both forward. The most energized combination in the system. When directed at something external, they are nearly unstoppable. The risk is entirely internal.",
     strength: "Shared courage, shared ambition, shared willingness to fight for what matters. Neither intimidates the other. Neither slows the other down.",
     tension: "When they turn the energy on each other, the collision is memorable. Two people who never back down in the same room.",
     close_connection: "Intensely passionate and intensely volatile. The relationship that is never boring and occasionally devastating.",
@@ -158,7 +166,7 @@ export const PAIR_DYNAMICS = {
 
   '2_3': { // Moon friends Jupiter, Jupiter friends Moon
     rel: 'f_f',
-    core: "Moon and Jupiter — emotional intelligence meets wisdom. 2 brings the feeling, 3 brings the framework. Together they can navigate human situations with a depth that neither achieves alone.",
+    core: "Emotion and Wisdom — emotional intelligence meets wisdom. 2 brings the feeling, 3 brings the framework. Together they can navigate human situations with a depth that neither achieves alone.",
     strength: "3 helps 2 find clarity when emotions cloud the picture. 2 helps 3 remember that wisdom without compassion is just being right. Each corrects the other's natural lean.",
     tension: "3's tendency to judge can land on 2's sensitivity like a verdict. 2's emotional oscillations can exhaust 3's need for consistency.",
     close_connection: "Grounded and caring. The relationship where wisdom and feeling are both respected. Not the most passionate — the most sustaining.",
@@ -170,7 +178,7 @@ export const PAIR_DYNAMICS = {
 
   '3_9': { // Jupiter friends Mars, Mars friends Jupiter
     rel: 'f_f',
-    core: "Jupiter and Mars — wisdom and courage in natural alignment. 3 knows what's right. 9 has the nerve to do it. Together they can take principled bold action that neither can sustain alone.",
+    core: "Wisdom and Drive — wisdom and courage in natural alignment. 3 knows what's right. 9 has the nerve to do it. Together they can take principled bold action that neither can sustain alone.",
     strength: "3's wisdom prevents 9's courage from becoming recklessness. 9's energy prevents 3's wisdom from becoming paralysis. The combination produces action that is both brave and sound.",
     tension: "3 thinks before acting. 9 acts before thinking. The timing conflict is constant and occasionally costly.",
     close_connection: "The relationship with a shared mission. Principled and passionate in equal measure.",
@@ -182,7 +190,7 @@ export const PAIR_DYNAMICS = {
 
   '4_4': { // Rahu friends Rahu (self)
     rel: 'f_f',
-    core: "Double Rahu — the most creatively explosive and practically volatile combination. Together they see angles others miss entirely. The ideas generated in this pairing are genuinely original. The follow-through requires external structure.",
+    core: "Double Change — the most creatively explosive and practically volatile combination. Together they see angles others miss entirely. The ideas generated in this pairing are genuinely original. The follow-through requires external structure.",
     strength: "Neither judges the other's unconventional thinking. Maximum originality. Maximum freedom from conventional limits.",
     tension: "Neither provides the grounding the other needs. Financial instability doubles. The brilliant idea generation has no built-in execution mechanism.",
     close_connection: "Exciting and exhausting. The relationship full of stories and restarts.",
@@ -194,7 +202,7 @@ export const PAIR_DYNAMICS = {
 
   '4_6': { // Rahu friends Venus, Venus friends Rahu
     rel: 'f_f',
-    core: "Rahu and Venus — the unexpected and the beautiful in natural flow. 4 brings the original angle, 6 brings the aesthetic richness. Together they produce work that is both surprising and beautiful — a rare combination.",
+    core: "Change and Harmony — the unexpected and the beautiful in natural flow. 4 brings the original angle, 6 brings the aesthetic richness. Together they produce work that is both surprising and beautiful — a rare combination.",
     strength: "4's unconventional thinking + 6's aesthetic sensibility = creative output that genuinely surprises. The best work of this pairing looks effortless from the outside.",
     tension: "4's instability is hard for 6's need for harmony. When 4 is in chaos mode, 6's beauty-radar goes into alert.",
     close_connection: "Initially very exciting — the unexpected person who also happens to be beautiful in every sense. Long-term requires 4 to provide more consistency.",
@@ -206,7 +214,7 @@ export const PAIR_DYNAMICS = {
 
   '4_7': { // Rahu friends Ketu, Ketu friends Rahu
     rel: 'f_f',
-    core: "Rahu and Ketu — the two shadow planets in natural alignment. This is the most spiritually and philosophically profound pairing. Both are seekers. Neither is satisfied with surface. Together they can access depths that other combinations can't reach — and neither provides the practical grounding that daily life requires.",
+    core: "Change and Insight — two deeply searching energies in natural alignment. This is the most spiritually and philosophically profound pairing. Both are seekers. Neither is satisfied with surface. Together they can access depths that other combinations can't reach — and neither provides the practical grounding that daily life requires.",
     strength: "Mutual recognition of something beyond the conventional. Neither judges the other's seeking. The conversations go places most conversations can't.",
     tension: "Zero practical grounding between them. Neither stabilizes the other's instability. External structure is not optional for this pairing — it's essential.",
     close_connection: "Spiritually profound and practically chaotic. The relationship that changes both people permanently.",
@@ -220,7 +228,7 @@ export const PAIR_DYNAMICS = {
 
   '1_7': { // Sun enemy Ketu, Ketu enemy Sun
     rel: 'e_e',
-    core: "Sun and Ketu — the two most contrary energies in the system. Sun demands presence, authority, and visibility. Ketu withdraws, seeks the invisible, and is comfortable disappearing. Neither understands what the other is doing or why.",
+    core: "Confidence and Insight — the two most contrary energies in the system. One demands presence, authority, and visibility. The other withdraws, seeks the invisible, and is comfortable disappearing. Neither understands what the other is doing or why.",
     strength: "The very incomprehensibility can be compelling. Each experiences something in the other they cannot access in themselves.",
     tension: "1 reads 7's detachment as abandonment or disrespect. 7 reads 1's need for visibility as ego. Both readings have some truth.",
     close_connection: "Unusual and often genuinely profound when it works. Requires 7 to stay present against their nature and 1 to release the need for constant acknowledgment.",
@@ -232,7 +240,7 @@ export const PAIR_DYNAMICS = {
 
   '2_4': { // Moon enemy Rahu, Rahu enemy Moon
     rel: 'e_e',
-    core: "Moon and Rahu — emotional depth meeting radical instability. 2 needs consistency and emotional safety. 4 generates unpredictability and resists patterns. The combination is creatively electric and emotionally challenging.",
+    core: "Emotion and Change — emotional depth meeting radical instability. 2 needs consistency and emotional safety. 4 generates unpredictability and resists patterns. The combination is creatively electric and emotionally challenging.",
     strength: "4's unconventional thinking breaks 2 out of emotional loops that have become grooves. 2's emotional attunement gives 4's chaos a human anchor it rarely has.",
     tension: "4's instability directly triggers 2's abandonment fears. 2's need for emotional consistency feels suffocating to 4's need for freedom.",
     close_connection: "Complicated in the way that leaves marks. The relationship that produces creative breakthroughs and emotional turbulence in equal measure.",
@@ -244,7 +252,7 @@ export const PAIR_DYNAMICS = {
 
   '2_5': { // Moon enemy Mercury, Mercury enemy Moon
     rel: 'e_e',
-    core: "Moon and Mercury — feeling and thinking in fundamental tension. 2 processes the world through emotion and intuition. 5 processes through analysis and logic. Both approaches are real. Neither trusts the other's instrument.",
+    core: "Emotion and Intellect — feeling and thinking in fundamental tension. 2 processes the world through emotion and intuition. 5 processes through analysis and logic. Both approaches are real. Neither trusts the other's instrument.",
     strength: "5's clarity can help 2 articulate something felt but not yet understood. 2's emotional intelligence can give 5's analysis the human context that transforms it.",
     tension: "5 applies logic to 2's emotional experience and calls it help. 2 calls it cold. They're both right.",
     close_connection: "Works when 5 genuinely learns emotional language — not as performance but as respect. 2 needs to hear it. 5 needs to say it.",
@@ -256,7 +264,7 @@ export const PAIR_DYNAMICS = {
 
   '2_8': { // Moon enemy Saturn, Saturn enemy Moon
     rel: 'e_e',
-    core: "Moon and Saturn — two of the deepest givers in the system, running in planetary opposition. Both invest enormous emotional and practical energy in the people they love. The problem is that neither asks for what they need — and what they need is very different.",
+    core: "Emotion and Discipline — two of the deepest givers in the system, running in direct opposition. Both invest enormous emotional and practical energy in the people they love. The problem is that neither asks for what they need — and what they need is very different.",
     strength: "Extraordinary mutual loyalty when aligned. Neither gives up easily. The long arc of this connection can produce something genuinely durable.",
     tension: "Both suppress needs indefinitely. 2 suppresses emotional needs. 8 suppresses requests for acknowledgment. The accumulated silence becomes distance.",
     close_connection: "One of the most durable connections in the system — love that survives what kills other relationships. Requires both to learn to ask.",
@@ -268,7 +276,7 @@ export const PAIR_DYNAMICS = {
 
   '3_5': { // Jupiter enemy Mercury, Mercury enemy Jupiter
     rel: 'e_e',
-    core: "Jupiter and Mercury — wisdom and intelligence in planetary opposition. 3 operates from values, ethics, and long-term principles. 5 operates from analysis, efficiency, and what works now. Both are thinking — with fundamentally different starting points.",
+    core: "Wisdom and Intellect — wisdom and intelligence in direct opposition. 3 operates from values, ethics, and long-term principles. 5 operates from analysis, efficiency, and what works now. Both are thinking — with fundamentally different starting points.",
     strength: "5's commercial intelligence + 3's ethical grounding = decisions that are both smart and right. Rare and valuable in professional contexts.",
     tension: "3 thinks 5 is transactional. 5 thinks 3 is impractical. Both observations have merit.",
     close_connection: "Intellectually rich when both respect the other's frame. Requires deliberate emotional investment from both.",
@@ -280,7 +288,7 @@ export const PAIR_DYNAMICS = {
 
   '3_6': { // Jupiter enemy Venus, Venus enemy Jupiter
     rel: 'e_e',
-    core: "Jupiter and Venus — wisdom and beauty in planetary tension. 3 values depth, ethics, and substance. 6 values beauty, harmony, and aesthetic richness. Neither considers the other's primary value frivolous — but neither naturally prioritizes it either.",
+    core: "Wisdom and Harmony — wisdom and beauty in creative tension. 3 values depth, ethics, and substance. 6 values beauty, harmony, and aesthetic richness. Neither considers the other's primary value frivolous — but neither naturally prioritizes it either.",
     strength: "3's depth gives 6's beauty substance. 6's beauty gives 3's wisdom a more appealing form. Together they create things with both soul and surface.",
     tension: "3 may judge 6's aesthetic investments as vanity. 6 may find 3's principled rigidity suffocating.",
     close_connection: "Deeply complementary when both respect the other's language. The marriage-quality combination that builds a beautiful and meaningful life.",
@@ -292,7 +300,7 @@ export const PAIR_DYNAMICS = {
 
   '5_9': { // Mercury enemy Mars, Mars enemy Mercury
     rel: 'e_e',
-    core: "Mercury and Mars — intelligence and energy in planetary tension. 5 thinks, calculates, and plans. 9 charges, acts, and corrects course in motion. Neither naturally respects the other's process — but together they cover the full spectrum from analysis to execution.",
+    core: "Intellect and Drive — intelligence and energy in creative tension. 5 thinks, calculates, and plans. 9 charges, acts, and corrects course in motion. Neither naturally respects the other's process — but together they cover the full spectrum from analysis to execution.",
     strength: "5's intelligence gives 9's energy direction. 9's courage gives 5's analysis a deadline. The combination produces action that is both smart and bold.",
     tension: "9 thinks 5 is overthinking. 5 thinks 9 is acting recklessly. Both are occasionally right.",
     close_connection: "Competitive and passionate. Works when both are on the same team — becomes exhausting when they compete directly.",
@@ -306,7 +314,7 @@ export const PAIR_DYNAMICS = {
 
   '1_2': { // Sun enemy Moon, Moon friends Sun
     rel: 'e_f',
-    core: "Sun and Moon — the most fundamental polarity in Vedic astrology. 1 pulls toward authority, action, and external impact. 2 pulls toward depth, feeling, and internal attunement. The Moon is drawn to the Sun's light. The Sun doesn't always notice the Moon's pull.",
+    core: "Confidence and Emotion — the most fundamental polarity in this system. 1 pulls toward authority, action, and external impact. 2 pulls toward depth, feeling, and internal attunement. The emotional side is drawn to the confident side's light. The confident side doesn't always notice the pull.",
     strength: "1 provides direction that 2's sensitivity can humanize. 2 provides emotional intelligence that 1's authority can act on. Together they cover what each lacks most.",
     tension: "1 can dominate without registering that 2 is giving way rather than agreeing. 2 can give far more than they should and quietly build resentment.",
     close_connection: "One of the most common pairings in numerology — classically complementary, practically complicated. Works when 1 genuinely acknowledges and 2 genuinely asks.",
@@ -318,7 +326,7 @@ export const PAIR_DYNAMICS = {
 
   '4_8': { // Rahu enemy Saturn, Saturn friends Rahu
     rel: 'e_f',
-    core: "Rahu and Saturn — the most chronically misaligned combination in terms of pace and planning. 4 is fast, instinctive, and comfortable with chaos. 8 is slow, deliberate, and deeply uncomfortable with it. 8 is drawn to 4's freedom. 4 is destabilized by 8's weight.",
+    core: "Change and Discipline — the most chronically misaligned combination in terms of pace and planning. 4 is fast, instinctive, and comfortable with chaos. 8 is slow, deliberate, and deeply uncomfortable with it. 8 is drawn to 4's freedom. 4 is destabilized by 8's weight.",
     strength: "8's patience and structure can eventually bring out 4's best work. When 4 has a stable container to return to, the ideas actually get finished.",
     tension: "The timing conflict is constant. 4 acts before 8 has processed. 8 decides after 4 has already moved on. Frustration is the default state.",
     close_connection: "Requires extraordinary patience from 8 and genuine gratitude from 4. When it works, 4 produces their best work in 8's consistent presence.",
@@ -332,7 +340,7 @@ export const PAIR_DYNAMICS = {
 
   '1_4': { // Sun neutral Rahu, Rahu enemy Sun
     rel: 'n_e',
-    core: "Sun sees Rahu as neutral — manageable, interesting even. Rahu sees Sun as a threat to its freedom. This asymmetry creates a dynamic where 1 thinks things are going well when 4 is quietly chafing.",
+    core: "Confidence sees Change as neutral — manageable, interesting even. Change sees Confidence as a threat to its freedom. This asymmetry creates a dynamic where 1 thinks things are going well when 4 is quietly chafing.",
     strength: "1's direction can channel 4's unconventional energy into something that actually lands. 4's originality can break 1 out of conventional approaches.",
     tension: "4's resistance to 1's authority is structural, not personal — and 1 tends to take it personally.",
     close_connection: "Initially exciting for 1. Long-term requires 1 to understand that 4's resistance is not disloyalty.",
@@ -344,7 +352,7 @@ export const PAIR_DYNAMICS = {
 
   '1_6': { // Sun neutral Venus, Venus enemy Sun
     rel: 'n_e',
-    core: "Sun is neutral to Venus — appreciates the beauty without being transformed by it. Venus is threatened by Sun's dominance of space and attention. 1 can unknowingly crowd out 6's need for harmony and aesthetic expression.",
+    core: "Confidence is neutral to Harmony — appreciates the beauty without being transformed by it. Harmony is threatened by Confidence's dominance of space and attention. 1 can unknowingly crowd out 6's need for harmony and aesthetic expression.",
     strength: "1's ambition and 6's charm create a socially and professionally potent combination. Together they project an image that opens doors.",
     tension: "6's sharp tongue when their standards are unmet vs 1's ego when their authority is questioned. Both take criticism poorly in different ways.",
     close_connection: "Highly attractive combination that requires 1 to make room and 6 to communicate disappointment before it becomes contempt.",
@@ -356,7 +364,7 @@ export const PAIR_DYNAMICS = {
 
   '1_8': { // Sun neutral Saturn, Saturn enemy Sun
     rel: 'n_e',
-    core: "Sun is neutral to Saturn — respects the work ethic without fully understanding the pace. Saturn is wary of Sun — authority that hasn't been earned through time feels suspect. 8 watches 1's confidence carefully for whether it's warranted.",
+    core: "Confidence is neutral to Discipline — respects the work ethic without fully understanding the pace. Discipline is wary of Confidence — authority that hasn't been earned through time feels suspect. 8 watches 1's confidence carefully for whether it's warranted.",
     strength: "When 1's initiative meets 8's discipline, what they build is both bold and durable. Neither half of this combination is achievable alone.",
     tension: "1 wants results now. 8 knows they come through sustained effort over time. The timeline disagreement is structural.",
     close_connection: "Built on mutual respect for work ethic. Not passionate in the conventional sense — durable in a way passion rarely is.",
@@ -368,7 +376,7 @@ export const PAIR_DYNAMICS = {
 
   '2_6': { // Moon neutral Venus, Venus enemy Moon
     rel: 'n_e',
-    core: "Moon is comfortable with Venus — emotional depth and beauty feel naturally aligned. Venus is more guarded with Moon — the emotional intensity can crowd the harmony. 2 often gives more emotionally than 6 is ready to receive.",
+    core: "Emotion is comfortable with Harmony — emotional depth and beauty feel naturally aligned. Harmony is more guarded with Emotion — the emotional intensity can crowd the harmony. 2 often gives more emotionally than 6 is ready to receive.",
     strength: "The most aesthetically and emotionally rich pairing. What they create together has both beauty and genuine feeling.",
     tension: "6's sharp tongue when standards are unmet can devastate 2's sensitivity. 2's emotional weight can overwhelm 6's need for lightness.",
     close_connection: "One of the most romantically charged combinations. The highs are extraordinary. The lows require both to know how to repair.",
@@ -380,7 +388,7 @@ export const PAIR_DYNAMICS = {
 
   '2_7': { // Moon neutral Ketu, Ketu neutral Moon — actually both neutral
     rel: 'n_n',
-    core: "Moon and Ketu — emotional depth and philosophical depth. Neither is on the surface. Together they can access a quality of understanding that is genuinely rare — if 7 stays present long enough for 2 to feel safe.",
+    core: "Emotion and Insight — emotional depth and philosophical depth. Neither is on the surface. Together they can access a quality of understanding that is genuinely rare — if 7 stays present long enough for 2 to feel safe.",
     strength: "Mutual recognition of depth. 2 feels understood without explaining. 7 feels free without abandoning.",
     tension: "7's structural detachment leaves 2 in prolonged uncertainty about where they stand.",
     close_connection: "Quietly profound when it works. Requires 7 to make peace with closeness and 2 to make peace with 7's need for space.",
@@ -392,7 +400,7 @@ export const PAIR_DYNAMICS = {
 
   '3_8': { // Jupiter neutral Saturn, Saturn neutral Jupiter — both neutral
     rel: 'n_n',
-    core: "Jupiter and Saturn — wisdom and karma. Both understand that what matters takes time. Both have high standards. Both give more than they take. The combination is deeply steady and occasionally too serious.",
+    core: "Wisdom and Discipline — wisdom and patience. Both understand that what matters takes time. Both have high standards. Both give more than they take. The combination is deeply steady and occasionally too serious.",
     strength: "Mutual respect for depth, ethics, and sustained effort. What they build together lasts because both refuse to cut corners.",
     tension: "Neither brings lightness. Joy needs to be scheduled deliberately or it doesn't happen.",
     close_connection: "The relationship that builds a legacy. Not the most passionate — the most enduring.",
@@ -404,7 +412,7 @@ export const PAIR_DYNAMICS = {
 
   '3_7': { // Jupiter neutral Ketu, Ketu neutral Jupiter — both neutral
     rel: 'n_n',
-    core: "Jupiter and Ketu — the two most philosophically and spiritually inclined planets in neutral alignment. Together they go deeper than either goes alone. The challenge is that 7's instability tests 3's need for consistency.",
+    core: "Wisdom and Insight — the two most philosophically and spiritually inclined energies in neutral alignment. Together they go deeper than either goes alone. The challenge is that 7's instability tests 3's need for consistency.",
     strength: "Shared love of knowledge, meaning, and depth. The insight that emerges from their conversations is genuinely rare.",
     tension: "7's tendency to vanish or change direction frustrates 3's need for the ethical consistency of following through.",
     close_connection: "Philosophically profound and practically uncertain. Requires 7 to commit to presence.",
@@ -416,7 +424,7 @@ export const PAIR_DYNAMICS = {
 
   '6_9': { // Venus neutral Mars, Mars enemy Venus — n_e
     rel: 'n_e',
-    core: "Venus and Mars — beauty and passion in a charged asymmetry. 9's energy is drawn to 6's magnetism. 6 finds 9's intensity compelling and occasionally threatening. The most romantically volatile combination.",
+    core: "Harmony and Drive — beauty and passion in a charged asymmetry. 9's energy is drawn to 6's magnetism. 6 finds 9's intensity compelling and occasionally threatening. The most romantically volatile combination.",
     strength: "Maximum passion and aesthetic richness together. What they create has both fire and beauty.",
     tension: "9's explosive anger + 6's sharp tongue when hurt = fights that leave permanent marks. Both say the thing that cannot be unsaid.",
     close_connection: "The most romantically charged combination. Never boring. The words said in conflict need to be chosen with extraordinary care.",
@@ -430,7 +438,7 @@ export const PAIR_DYNAMICS = {
 
   '2_9': { // Moon neutral Mars, Mars friends Moon
     rel: 'n_f',
-    core: "Moon and Mars — emotional depth and warrior energy in an interesting asymmetry. 9 is drawn to and protective of 2. 2 is both comforted and occasionally overwhelmed by 9's intensity.",
+    core: "Emotion and Drive — emotional depth and warrior energy in an interesting asymmetry. 9 is drawn to and protective of 2. 2 is both comforted and occasionally overwhelmed by 9's intensity.",
     strength: "9 protects 2 with a fierceness that 2 didn't know they needed. 2 grounds 9's volatility with emotional attunement 9 rarely receives.",
     tension: "9's explosive edge can shatter 2's sensitivity in ways 9 doesn't fully register.",
     close_connection: "Intensely romantic and intensely volatile. The relationship that feels like a novel being written in real time.",
@@ -442,7 +450,7 @@ export const PAIR_DYNAMICS = {
 
   '4_5': { // Rahu neutral Mercury, Mercury friends Rahu — actually let me check
     rel: 'n_f',
-    core: "Rahu and Mercury in an asymmetric alignment — 5 is drawn to 4's unconventional angle and research depth. 4 is neutral to 5's precision. Together they can produce genuinely interesting commercial and intellectual work — if 4's chaos doesn't overwhelm 5's need for reliable information.",
+    core: "Change and Intellect in an asymmetric alignment — 5 is drawn to 4's unconventional angle and research depth. 4 is neutral to 5's precision. Together they can produce genuinely interesting commercial and intellectual work — if 4's chaos doesn't overwhelm 5's need for reliable information.",
     strength: "5's analytical precision + 4's research instinct = unusually deep commercial intelligence",
     tension: "4's unpredictability disrupts 5's need for reliable information. Financial decisions together carry elevated risk.",
     close_connection: "Intellectually stimulating and financially complicated. Better as intellectual partnership than primary relationship.",
@@ -454,7 +462,7 @@ export const PAIR_DYNAMICS = {
 
   '5_6': { // Mercury neutral Venus, Venus friends Mercury — n_f
     rel: 'n_f',
-    core: "Mercury and Venus in pleasant asymmetry — 6 is naturally drawn to 5's intelligence and commercial sharpness. 5 is neutral to 6's beauty but can see its commercial value. Together they combine aesthetic and intelligence in ways that work especially well in creative commerce.",
+    core: "Intellect and Harmony in pleasant asymmetry — 6 is naturally drawn to 5's intelligence and commercial sharpness. 5 is neutral to 6's beauty but can see its commercial value. Together they combine aesthetic and intelligence in ways that work especially well in creative commerce.",
     strength: "5's commercial intelligence + 6's aesthetic sensibility = work that is both beautiful and successful",
     tension: "5 optimizes. 6 indulges. Their approaches to spending and creating are fundamentally different.",
     close_connection: "The relationship that looks extraordinary from the outside. Requires both to invest in depth, not just appearance.",
@@ -466,7 +474,7 @@ export const PAIR_DYNAMICS = {
 
   '5_8': { // Mercury neutral Saturn, Saturn friends Mercury — n_f
     rel: 'n_f',
-    core: "Mercury and Saturn in productive asymmetry — 8 is drawn to 5's intelligence and precision. 5 is neutral to 8's pace but values what 8 builds. Together they are one of the most methodically excellent financial combinations — if they can reconcile 5's speed with 8's deliberateness.",
+    core: "Intellect and Discipline in productive asymmetry — 8 is drawn to 5's intelligence and precision. 5 is neutral to 8's pace but values what 8 builds. Together they are one of the most methodically excellent financial combinations — if they can reconcile 5's speed with 8's deliberateness.",
     strength: "5's analytical sharpness + 8's disciplined patience = financial decisions that are both intelligent and durable",
     tension: "5 wants to move. 8 wants to be sure. The timing conflict is constant and occasionally costly.",
     close_connection: "Built on intellectual respect. Not the most passionate — the most practically sound.",
@@ -478,7 +486,7 @@ export const PAIR_DYNAMICS = {
 
   '6_7': { // Venus neutral Ketu, Ketu friends Venus — n_f
     rel: 'n_f',
-    core: "Venus and Ketu in a fortunate asymmetry — 7 is naturally drawn to 6's beauty and warmth. 6 finds 7 philosophically interesting but occasionally hard to hold onto. Together they produce outcomes that are both beautiful and mysteriously fortunate.",
+    core: "Harmony and Insight in a fortunate asymmetry — 7 is naturally drawn to 6's beauty and warmth. 6 finds 7 philosophically interesting but occasionally hard to hold onto. Together they produce outcomes that are both beautiful and mysteriously fortunate.",
     strength: "7's luck arrives around the things 6 creates. 6's beauty gives 7's philosophical seeking a physical form.",
     tension: "7's structural detachment leaves 6 feeling unappreciated for what they create and provide.",
     close_connection: "One of the more fortunate romantic combinations. Lucky and beautiful — which is rarer than either alone.",
@@ -490,7 +498,7 @@ export const PAIR_DYNAMICS = {
 
   '6_8': { // Venus neutral Saturn, Saturn friends Venus — n_f
     rel: 'n_f',
-    core: "Venus and Saturn in interesting asymmetry — 8 is drawn to 6's beauty and warmth, though 6 is neutral to 8's weight. Together they build beautiful things that last — 6 provides the taste, 8 provides the staying power.",
+    core: "Harmony and Discipline in interesting asymmetry — 8 is drawn to 6's beauty and warmth, though 6 is neutral to 8's weight. Together they build beautiful things that last — 6 provides the taste, 8 provides the staying power.",
     strength: "8's patience and effort + 6's aesthetic vision = the beautiful life that is actually earned and therefore appreciated",
     tension: "6 wants it now. 8 knows it takes time. The pace difference can feel like deprivation to 6 and ingratitude from 8's perspective.",
     close_connection: "The beautiful home and life built over years. Not instantaneous — genuinely satisfying.",
@@ -516,7 +524,7 @@ export const PAIR_DYNAMICS = {
 
   '2_2': {
     rel: 'n_n',
-    core: "Double Moon — the most emotionally attuned combination possible. When both are in a good place, the understanding between them is almost psychic. When one is struggling, the other follows. There is no emotional ballast in this pairing — only resonance.",
+    core: "Double Emotion — the most emotionally attuned combination possible. When both are in a good place, the understanding between them is almost psychic. When one is struggling, the other follows. There is no emotional ballast in this pairing — only resonance.",
     strength: "Neither has to explain. The depth of mutual attunement is rare and real. Creative and emotional output together is extraordinary.",
     tension: "Mood contagion runs both directions. When both are down simultaneously, there is nothing to provide stability.",
     close_connection: "The relationship that feels telepathic. Requires both to maintain individual emotional stability.",
@@ -528,7 +536,7 @@ export const PAIR_DYNAMICS = {
 
   '3_3': {
     rel: 'n_n',
-    core: "Double Jupiter — the most ethically aligned combination. Shared values, shared worldview, mutual respect for wisdom and principle. Also the most prone to principled impasse — two people who are both right in different ways.",
+    core: "Double Wisdom — the most ethically aligned combination. Shared values, shared worldview, mutual respect for wisdom and principle. Also the most prone to principled impasse — two people who are both right in different ways.",
     strength: "Deep alignment on what matters. Neither compromises the other's integrity. The most values-consistent partnership.",
     tension: "Both believe they are right — because they often are. The debates are not about ego but about genuine conviction, which makes them harder to resolve.",
     close_connection: "Deeply respectful. Occasionally too principled to be spontaneous. The relationship that other people call 'solid.'",
@@ -540,7 +548,7 @@ export const PAIR_DYNAMICS = {
 
   '4_4': {
     rel: 'f_f',
-    core: "Double Rahu — the most creatively explosive and practically volatile combination. Together they see angles others miss entirely. The ideas generated in this pairing are genuinely original. The follow-through requires external structure.",
+    core: "Double Change — the most creatively explosive and practically volatile combination. Together they see angles others miss entirely. The ideas generated in this pairing are genuinely original. The follow-through requires external structure.",
     strength: "Neither judges the other's unconventional thinking. Maximum originality. Maximum freedom from conventional limits.",
     tension: "Neither provides the grounding the other needs. Financial instability doubles. The brilliant idea generation has no built-in execution mechanism.",
     close_connection: "Exciting and exhausting. The relationship full of stories and restarts.",
@@ -552,7 +560,7 @@ export const PAIR_DYNAMICS = {
 
   '5_5': {
     rel: 'n_n',
-    core: "Double Mercury — the sharpest analytical combination. Business and financial intelligence at its peak. Also the most anxiety-prone — two calculating minds in the same space, each running faster than the conversation can keep up.",
+    core: "Double Intellect — the sharpest analytical combination. Business and financial intelligence at its peak. Also the most anxiety-prone — two calculating minds in the same space, each running faster than the conversation can keep up.",
     strength: "Commercial instinct that borders on prescient. Financial decisions made together are unusually reliable.",
     tension: "Overthinking amplified. Analysis paralysis doubles. Anxiety can become the emotional climate of the relationship.",
     close_connection: "Intellectually electric. Requires deliberate emotional investment — neither provides it naturally.",
@@ -564,7 +572,7 @@ export const PAIR_DYNAMICS = {
 
   '6_6': {
     rel: 'n_n',
-    core: "Double Venus — maximum beauty, warmth, social grace, and the most cutting combined tongue when disappointed. What they create together is aesthetically extraordinary. What they say to each other when hurt is also extraordinary — in the wrong direction.",
+    core: "Double Harmony — maximum beauty, warmth, social grace, and the most cutting combined tongue when disappointed. What they create together is aesthetically extraordinary. What they say to each other when hurt is also extraordinary — in the wrong direction.",
     strength: "The most beautiful social and creative pairing. Everything they produce together has an extraordinary quality.",
     tension: "Both have unannounced high standards. Both have sharp tongues when those standards are unmet. The disappointment cycles can be elaborate.",
     close_connection: "The relationship everyone envies from outside. Requires both to speak disappointment before it becomes contempt.",
@@ -576,7 +584,7 @@ export const PAIR_DYNAMICS = {
 
   '7_7': {
     rel: 'n_n',
-    core: "Double Ketu — the most psychically attuned and least practically grounded combination. They understand each other at a level that requires no explanation. They also both tend to disappear at the same time.",
+    core: "Double Insight — the most psychically attuned and least practically grounded combination. They understand each other at a level that requires no explanation. They also both tend to disappear at the same time.",
     strength: "Mutual understanding that is nearly wordless. Neither judges the other's seeking. The conversation goes places others can't follow.",
     tension: "Double instability. When both are unsettled, there is no anchor between them.",
     close_connection: "Profound and unpredictable. The relationship that is never quite certain but always deeply real.",
@@ -588,7 +596,7 @@ export const PAIR_DYNAMICS = {
 
   '8_8': {
     rel: 'n_n',
-    core: "Double Saturn — the most karmic combination. Maximum loyalty, maximum patience, maximum suppressed needs. Both give everything and ask for nothing. The danger is not conflict — it is the accumulation of unspoken needs that becomes distance.",
+    core: "Double Discipline — the most deeply committed combination. Maximum loyalty, maximum patience, maximum suppressed needs. Both give everything and ask for nothing. The danger is not conflict — it is the accumulation of unspoken needs that becomes distance.",
     strength: "Unbreakable loyalty over time. The combination that survives what kills everything else.",
     tension: "Both suppress what they need indefinitely. The silence becomes a comfortable trap.",
     close_connection: "The relationship that lasts — for better or for worse. Requires both to learn one difficult skill: asking.",
@@ -600,7 +608,7 @@ export const PAIR_DYNAMICS = {
 
   '9_9': {
     rel: 'n_n',
-    core: "Double Mars — maximum intensity, maximum passion, maximum volatility. When directed at something external, this combination is genuinely formidable. When the energy turns inward, the damage is real.",
+    core: "Double Drive — maximum intensity, maximum passion, maximum volatility. When directed at something external, this combination is genuinely formidable. When the energy turns inward, the damage is real.",
     strength: "The most energized and courageous combination. Neither backs down. Together they attempt things others won't.",
     tension: "When they fight each other, neither stops at reasonable. The collateral damage is significant.",
     close_connection: "The most passionate combination. Burns very bright. Requires both to commit to directing energy outward.",
@@ -614,7 +622,7 @@ export const PAIR_DYNAMICS = {
 
   '3_4': {
     rel: 'n_n',
-    core: "Jupiter and Rahu — wisdom and disruption in neutral alignment. 3 provides the ethical and intellectual frame. 4 provides the unconventional angle that breaks the frame open. The friction is productive when both are pointing at the same problem.",
+    core: "Wisdom and Change — wisdom and disruption in neutral alignment. 3 provides the ethical and intellectual frame. 4 provides the unconventional angle that breaks the frame open. The friction is productive when both are pointing at the same problem.",
     strength: "Research depth + principled framework = insights that are both original and sound",
     tension: "3 finds 4's chaos difficult. 4 finds 3's rules limiting. Neither is wrong.",
     close_connection: "Better as intellectual partnership than primary relationship. The ideas generated together are worth the friction.",
@@ -626,7 +634,7 @@ export const PAIR_DYNAMICS = {
 
   '4_9': {
     rel: 'n_n',
-    core: "Rahu and Mars — instability and explosive energy in neutral alignment. The combination generates maximum kinetic force with minimum grounding. Together they are capable of extraordinary physical and creative output — and of spectacular misfires.",
+    core: "Change and Drive — instability and explosive energy in neutral alignment. The combination generates maximum kinetic force with minimum grounding. Together they are capable of extraordinary physical and creative output — and of spectacular misfires.",
     strength: "Physical and competitive energy at maximum. Neither constrains the other.",
     tension: "Legal risks. Frustration cycles. The feeling of being trapped in each other's chaos.",
     close_connection: "Passionate and complicated. The feeling of being unable to fully leave or fully stay.",
@@ -638,7 +646,7 @@ export const PAIR_DYNAMICS = {
 
   '5_7': {
     rel: 'n_n',
-    core: "Mercury and Ketu — intelligence and intuition in interesting neutral alignment. 5 calculates. 7 intuits. Together they can access both modes simultaneously — which produces financial and strategic decisions of unusual quality.",
+    core: "Intellect and Insight — intelligence and intuition in interesting neutral alignment. 5 calculates. 7 intuits. Together they can access both modes simultaneously — which produces financial and strategic decisions of unusual quality.",
     strength: "5's financial precision + 7's quiet luck = one of the most fortunate financial combinations",
     tension: "Easy come, easy go. Neither naturally holds what arrives together.",
     close_connection: "Fortunate and interesting. 7's depth gives 5's precision something genuinely worth calculating for.",
@@ -650,7 +658,7 @@ export const PAIR_DYNAMICS = {
 
   '7_8': {
     rel: 'n_n',
-    core: "Ketu and Saturn — luck and karma in neutral alignment. 7's fortune can lift 8's heavy sustained effort at exactly the right moment. 8's discipline can give 7's instability a container that actually holds. When this works, it's transformative.",
+    core: "Insight and Discipline — luck and sustained effort in neutral alignment. 7's fortune can lift 8's heavy sustained effort at exactly the right moment. 8's discipline can give 7's instability a container that actually holds. When this works, it's transformative.",
     strength: "7's luck arrives precisely when 8's effort has built the foundation it needs",
     tension: "7's detachment frustrates 8's need for acknowledgment. 8's heaviness dampens 7's natural lightness.",
     close_connection: "Spiritually rich and practically challenging. The combination that produces unexpected breakthroughs in long-standing efforts.",
@@ -662,7 +670,7 @@ export const PAIR_DYNAMICS = {
 
   '7_9': {
     rel: 'n_n',
-    core: "Ketu and Mars — fortune and courage in neutral alignment. 7's luck protects 9's bold moves at a higher rate than probability suggests. Together they take larger risks with better outcomes.",
+    core: "Insight and Drive — fortune and courage in neutral alignment. 7's luck protects 9's bold moves at a higher rate than probability suggests. Together they take larger risks with better outcomes.",
     strength: "Fortune backing courage — bold joint moves work out more often than they should",
     tension: "9's explosive energy can destroy what 7's luck built. The protection is real but not infinite.",
     close_connection: "Fortunate and passionate. The bold decisions together tend to land.",
@@ -674,7 +682,7 @@ export const PAIR_DYNAMICS = {
 
   '8_9': {
     rel: 'n_n',
-    core: "Saturn and Mars — discipline and passion in neutral alignment. 8 sustains. 9 generates. Together they produce maximum output — 9 creates the energy, 8 turns it into something durable. The most productive pairing for sustained high-output work.",
+    core: "Discipline and Drive — discipline and passion in neutral alignment. 8 sustains. 9 generates. Together they produce maximum output — 9 creates the energy, 8 turns it into something durable. The most productive pairing for sustained high-output work.",
     strength: "9's intensity + 8's patience = output that is both powerful and lasting",
     tension: "9's impatience eventually pushes 8 past their threshold. 8's deliberateness frustrates 9's need to move.",
     close_connection: "Passionate and demanding. Both give everything. Both need everything.",
@@ -723,8 +731,7 @@ export function getTodayCompatibility(daily1, daily2, basic1, basic2, periods1 =
   let energy = score >= 70 ? 'flowing' : score >= 45 ? 'steady' : 'tense';
   if (sameNum) energy = 'amplified';
 
-  const labels = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'Ketu',8:'Saturn',9:'Mars'};
-  const dayLabel = sameNum ? `${labels[daily1]} × ${labels[daily2]}` : `${labels[daily1]} meets ${labels[daily2]}`;
+  const dayLabel = sameNum ? `${NEUTRAL_LABELS_COMPAT[daily1]} × ${NEUTRAL_LABELS_COMPAT[daily2]}` : `${NEUTRAL_LABELS_COMPAT[daily1]} meets ${NEUTRAL_LABELS_COMPAT[daily2]}`;
 
   const headline = _getDayHeadline(daily1, daily2, sameNum);
   const detail = _getDayDetail(daily1, daily2, sameNum, dr1, dr2);
@@ -750,72 +757,72 @@ export function getTodayCompatibility(daily1, daily2, basic1, basic2, periods1 =
 function _getDayHeadline(d1, d2, same) {
   if (same) {
     const amplified = {
-      1:"Double Sun day — authority and confidence amplified. Everything initiated today carries double weight.",
-      2:"Double Moon day — emotional depth and creative sensitivity at maximum. What's felt today is felt completely.",
-      3:"Double Jupiter day — wisdom and clarity doubled. The decisions made today have unusual soundness.",
-      4:"Double Rahu day — maximum unpredictability. Original thinking peaks, practical grounding requires effort.",
-      5:"Double Mercury day — sharpest commercial and financial thinking of the cycle. Act on what the analysis shows.",
-      6:"Double Venus day — maximum beauty and warmth between you. What's expressed today is expressed completely.",
-      7:"Double Ketu day — deep intuitive resonance. The unspoken understanding peaks today.",
-      8:"Double Saturn day — maximum karmic weight. What's built or repaired today compounds.",
-      9:"Double Mars day — maximum energy and intensity. Direct it outward before it turns inward.",
+      1:"Double Confidence day — authority and confidence amplified. Everything initiated today carries double weight.",
+      2:"Double Emotion day — emotional depth and creative sensitivity at maximum. What's felt today is felt completely.",
+      3:"Double Wisdom day — wisdom and clarity doubled. The decisions made today have unusual soundness.",
+      4:"Double Change day — maximum unpredictability. Original thinking peaks, practical grounding requires effort.",
+      5:"Double Intellect day — sharpest commercial and financial thinking of the cycle. Act on what the analysis shows.",
+      6:"Double Harmony day — maximum beauty and warmth between you. What's expressed today is expressed completely.",
+      7:"Double Insight day — deep intuitive resonance. The unspoken understanding peaks today.",
+      8:"Double Discipline day — maximum weight. What's built or repaired today compounds.",
+      9:"Double Drive day — maximum energy and intensity. Direct it outward before it turns inward.",
     };
     return amplified[d1] || "Same energy amplified today — everything is more.";
   }
   const map = {
-    '1_2':"Sun meets Moon — authority softens into attunement today. The bold and the sensitive in the same room.",
-    '1_3':"Sun meets Jupiter — authority backed by wisdom. The strategic decision today is both fast and sound.",
-    '1_4':"Sun meets Rahu — direction meets disruption. Stay curious about the unconventional angle.",
-    '1_5':"Sun meets Mercury — authority and intelligence aligned. The sharpest day for joint practical decisions.",
-    '1_6':"Sun meets Venus — confidence and beauty together. Socially and professionally both peak.",
-    '1_7':"Sun meets Ketu — bold action with luck behind it. Today's opportunity is real.",
-    '1_8':"Sun meets Saturn — initiative meets patience. One wants to move, one wants to wait. Both are right.",
-    '1_9':"Sun meets Mars — two fires in the same space. Direct the energy before it directs you.",
-    '2_3':"Moon meets Jupiter — emotional intelligence and wisdom together. The advice given today lands deeply.",
-    '2_4':"Moon meets Rahu — sensitivity meets instability. Creative energy peaks, practical grounding drops.",
-    '2_5':"Moon meets Mercury — feeling and thinking in conversation. Communication clarity available today.",
-    '2_6':"Moon meets Venus — maximum warmth and creative depth. The most beautiful day for genuine connection.",
-    '2_7':"Moon meets Ketu — emotional depth and philosophical detachment. Understanding arrives without words.",
-    '2_8':"Moon meets Saturn — sensitivity meets heaviness. Show up for each other before being asked.",
-    '2_9':"Moon meets Mars — depth and intensity together. Passion is available and so is volatility.",
-    '3_4':"Jupiter meets Rahu — wisdom stress-tests the unconventional. The friction today is productive.",
-    '3_5':"Jupiter meets Mercury — wisdom and intelligence. The analysis today is both smart and sound.",
-    '3_6':"Jupiter meets Venus — values and beauty converging. Creative work with substance today.",
-    '3_7':"Jupiter meets Ketu — wisdom and seeking together. The deep conversation available today is rare.",
-    '3_8':"Jupiter meets Saturn — patience and wisdom. Long-term thinking has maximum clarity today.",
-    '3_9':"Jupiter meets Mars — wisdom and courage aligned. The principled bold move today is right.",
-    '4_5':"Rahu meets Mercury — original thinking meets sharp analysis. Interesting ideas, verify before executing.",
-    '4_6':"Rahu meets Venus — unconventional beauty. The creative output today surprises even you.",
-    '4_7':"Rahu meets Ketu — both shadow planets active. Deep and destabilizing in equal measure.",
-    '4_8':"Rahu meets Saturn — chaos meets patience. 8 grounds what 4 generates today.",
-    '4_9':"Rahu meets Mars — maximum energy with minimum grounding. Physical outlet is essential.",
-    '5_6':"Mercury meets Venus — commercial intelligence and beauty together. Creative commerce peaks.",
-    '5_7':"Mercury meets Ketu — financial intelligence and luck aligned. The opportunity today is real.",
-    '5_8':"Mercury meets Saturn — sharp analysis and patient discipline. The financial decision today holds.",
-    '5_9':"Mercury meets Mars — intelligence and courage. Competitive instinct at its sharpest.",
-    '6_7':"Venus meets Ketu — beauty and fortune together. Lucky and beautiful simultaneously.",
-    '6_8':"Venus meets Saturn — earned beauty. The long creative effort finally shows today.",
-    '6_9':"Venus meets Mars — beauty and passion. Channel it before it combusts.",
-    '7_8':"Ketu meets Saturn — fortune meets sustained effort. The unexpected breakthrough in a long project.",
-    '7_9':"Ketu meets Mars — luck and courage together. Bold moves are protected today.",
-    '8_9':"Saturn meets Mars — discipline and intensity. Maximum sustained output is available.",
+    '1_2':"Confidence meets Emotion — authority softens into attunement today. The bold and the sensitive in the same room.",
+    '1_3':"Confidence meets Wisdom — authority backed by wisdom. The strategic decision today is both fast and sound.",
+    '1_4':"Confidence meets Change — direction meets disruption. Stay curious about the unconventional angle.",
+    '1_5':"Confidence meets Intellect — authority and intelligence aligned. The sharpest day for joint practical decisions.",
+    '1_6':"Confidence meets Harmony — confidence and beauty together. Socially and professionally both peak.",
+    '1_7':"Confidence meets Insight — bold action with luck behind it. Today's opportunity is real.",
+    '1_8':"Confidence meets Discipline — initiative meets patience. One wants to move, one wants to wait. Both are right.",
+    '1_9':"Confidence meets Drive — two fires in the same space. Direct the energy before it directs you.",
+    '2_3':"Emotion meets Wisdom — emotional intelligence and wisdom together. The advice given today lands deeply.",
+    '2_4':"Emotion meets Change — sensitivity meets instability. Creative energy peaks, practical grounding drops.",
+    '2_5':"Emotion meets Intellect — feeling and thinking in conversation. Communication clarity available today.",
+    '2_6':"Emotion meets Harmony — maximum warmth and creative depth. The most beautiful day for genuine connection.",
+    '2_7':"Emotion meets Insight — emotional depth and quiet detachment. Understanding arrives without words.",
+    '2_8':"Emotion meets Discipline — sensitivity meets heaviness. Show up for each other before being asked.",
+    '2_9':"Emotion meets Drive — depth and intensity together. Passion is available and so is volatility.",
+    '3_4':"Wisdom meets Change — wisdom stress-tests the unconventional. The friction today is productive.",
+    '3_5':"Wisdom meets Intellect — wisdom and intelligence. The analysis today is both smart and sound.",
+    '3_6':"Wisdom meets Harmony — values and beauty converging. Creative work with substance today.",
+    '3_7':"Wisdom meets Insight — wisdom and seeking together. The deep conversation available today is rare.",
+    '3_8':"Wisdom meets Discipline — patience and wisdom. Long-term thinking has maximum clarity today.",
+    '3_9':"Wisdom meets Drive — wisdom and courage aligned. The principled bold move today is right.",
+    '4_5':"Change meets Intellect — original thinking meets sharp analysis. Interesting ideas, verify before executing.",
+    '4_6':"Change meets Harmony — unconventional beauty. The creative output today surprises even you.",
+    '4_7':"Change meets Insight — two restless, unconventional energies active. Deep and destabilizing in equal measure.",
+    '4_8':"Change meets Discipline — chaos meets patience. Discipline grounds what restlessness generates today.",
+    '4_9':"Change meets Drive — maximum energy with minimum grounding. Physical outlet is essential.",
+    '5_6':"Intellect meets Harmony — commercial intelligence and beauty together. Creative commerce peaks.",
+    '5_7':"Intellect meets Insight — financial intelligence and luck aligned. The opportunity today is real.",
+    '5_8':"Intellect meets Discipline — sharp analysis and patient discipline. The financial decision today holds.",
+    '5_9':"Intellect meets Drive — intelligence and courage. Competitive instinct at its sharpest.",
+    '6_7':"Harmony meets Insight — beauty and fortune together. Lucky and beautiful simultaneously.",
+    '6_8':"Harmony meets Discipline — earned beauty. The long creative effort finally shows today.",
+    '6_9':"Harmony meets Drive — beauty and passion. Channel it before it combusts.",
+    '7_8':"Insight meets Discipline — fortune meets sustained effort. The unexpected breakthrough in a long project.",
+    '7_9':"Insight meets Drive — luck and courage together. Bold moves are protected today.",
+    '8_9':"Discipline meets Drive — discipline and intensity. Maximum sustained output is available.",
   };
   const key = [Math.min(d1,d2),Math.max(d1,d2)].join('_');
-  return map[key] || `${PLANET_NAMES_COMPAT[d1]} meets ${PLANET_NAMES_COMPAT[d2]} today.`;
+  return map[key] || `${NEUTRAL_LABELS_COMPAT[d1]} meets ${NEUTRAL_LABELS_COMPAT[d2]} today.`;
 }
 
 function _getDayDetail(d1, d2, same, dr1, dr2) {
   if (same) {
     const details = {
-      1:"Both running Sun energy today — everything initiated together carries real weight. The confidence is warranted. The risk is that the ego is also doubled. Choose the one thing worth directing this toward.",
-      2:"Both in Moon mode — the emotional attunement between you today is at its peak. Whatever is created or expressed carries unusual depth. The shadow is that if one is off, the other will follow.",
-      3:"Double Jupiter — the clearest strategic thinking available in this pairing. What you plan today is likely to be sound. The risk is getting too serious to enjoy being together.",
-      4:"Double Rahu — original thinking peaks. The creative ideas today are genuinely interesting. The execution will require external structure that neither of you will naturally provide.",
-      5:"Double Mercury — the sharpest financial and commercial day of the cycle. The analysis is accurate. Trust it, act on it, and don't let overthinking delay the window.",
-      6:"Double Venus — maximum warmth and aesthetic richness. What you create or express together today has a quality that other days can't match. Say the things that deserve to be said.",
-      7:"Double Ketu — the wordless understanding between you peaks today. The intuitive reads are accurate. Practical matters should wait — this day is for depth, not logistics.",
-      8:"Double Saturn — maximum karmic weight. Whatever effort is made today compounds. Whatever is repaired today holds. Don't waste it on things that don't matter.",
-      9:"Double Mars — both running at maximum intensity. The energy available today is extraordinary. The only question is direction. Choose the external challenge before the internal one chooses you.",
+      1:"Both running high-confidence energy today — everything initiated together carries real weight. The confidence is warranted. The risk is that the ego is also doubled. Choose the one thing worth directing this toward.",
+      2:"Both in deep-feeling mode — the emotional attunement between you today is at its peak. Whatever is created or expressed carries unusual depth. The shadow is that if one is off, the other will follow.",
+      3:"Double Wisdom — the clearest strategic thinking available in this pairing. What you plan today is likely to be sound. The risk is getting too serious to enjoy being together.",
+      4:"Double Change — original thinking peaks. The creative ideas today are genuinely interesting. The execution will require external structure that neither of you will naturally provide.",
+      5:"Double Intellect — the sharpest financial and commercial day of the cycle. The analysis is accurate. Trust it, act on it, and don't let overthinking delay the window.",
+      6:"Double Harmony — maximum warmth and aesthetic richness. What you create or express together today has a quality that other days can't match. Say the things that deserve to be said.",
+      7:"Double Insight — the wordless understanding between you peaks today. The intuitive reads are accurate. Practical matters should wait — this day is for depth, not logistics.",
+      8:"Double Discipline — maximum weight. Whatever effort is made today compounds. Whatever is repaired today holds. Don't waste it on things that don't matter.",
+      9:"Double Drive — both running at maximum intensity. The energy available today is extraordinary. The only question is direction. Choose the external challenge before the internal one chooses you.",
     };
     return details[d1] || "Same energy doubled between you — everything is amplified in both directions today.";
   }
@@ -841,7 +848,7 @@ function _getDayDetail(d1, d2, same, dr1, dr2) {
     '3_7':"The deep conversation available in this pairing today goes somewhere most conversations can't. Make the time. The insight that arrives reorients things.",
     '3_8':"Patient wisdom and patient work. The foundation laid today through sustained principled effort lasts in a way that faster work doesn't.",
     '3_9':"Conviction and courage running together. The principled bold move today has both the knowledge and the nerve behind it.",
-    '4_5':"Original thinking plus sharp analysis. The commercial idea that emerges today is genuinely interesting. Verify before executing — the enthusiasm is real, and so is the Rahu.",
+    '4_5':"Original thinking plus sharp analysis. The commercial idea that emerges today is genuinely interesting. Verify before executing — the enthusiasm is real, and so is the restlessness.",
     '4_6':"Unconventional and beautiful. Whatever you create together today has an originality that surprises even you.",
     '4_7':"Both running deep seeking energy. The conversation goes places most conversations don't. Light on practical output — heavy on insight.",
     '4_8':"Chaos finds an unexpected counterweight in patience today. 8 grounds what 4 generates. The dynamic works when both accept their role.",

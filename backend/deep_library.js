@@ -45,12 +45,12 @@ export const DEEP_NUMBER_PROFILES = {
   },
   4: {
     pattern: "The researcher. Thinks in unconventional patterns. Ahead of its time and often misunderstood because of it.",
-    internal_conflict: "Has the vision but not always the execution. Plans that exist only in the mind. Rahu's energy — brilliant and illusory simultaneously.",
+    internal_conflict: "Has the vision but not always the execution. Plans that exist only in the mind — brilliant and illusory simultaneously.",
     real_life: "Your ideas are genuinely original. People call you unpredictable but what you mean is you can't keep up. You've started more things than you've finished.",
     money_pattern: "Spends before the money arrives. Makes financial decisions based on possibility, not reality. Technology and research are the money-makers when disciplined.",
     love_pattern: "Exciting partner initially. Hard to pin down. The unpredictability that attracted your partner eventually exhausts you. Needs a grounded partner to balance the chaos.",
     work_pattern: "Research, technology, analysis — natural territory. Terrible in routine roles. The boss who gives unconventional assignments gets the best output.",
-    shadow: "The illusion is the trap. You're capable of convincing yourself that a bad decision is a good one. Rahu makes things look different than you are.",
+    shadow: "The illusion is the trap. You're capable of convincing yourself that a bad decision is a good one. This restless instinct makes things look different than they are.",
     what_trips_you: "Impulsive financial decisions. Buying things you don't need. Committing to plans you don't follow through on.",
     current_chapter: "Something that seemed solid is revealing itself as unstable — or something dismissed as chaotic is revealing hidden structure.",
     health_real: "Blood sugar, blood pressure — the body mirrors the financial and emotional volatility. Accidents when the mind is elsewhere.",
@@ -144,7 +144,7 @@ export const DEEP_COMBINATIONS = {
   '1_4': {
     name: "Vision without Execution",
     what_it_creates: "Brilliant ideas and chaotic implementation. The mind runs ahead of reality. One of the most innovative combinations — and one of the most frustrating to live with.",
-    the_conflict: "The authority you want requires consistency you struggle to maintain. Rahu disrupts the plans that the Sun wants to execute.",
+    the_conflict: "The authority you want requires consistency you struggle to maintain. A restless, disruptive instinct keeps derailing the very plans your ambition wants to execute.",
     real_life: "You've had ideas that — if followed through — would have changed your financial picture significantly. You've also committed to things confidently and then found your interest gone two weeks later.",
     warning: "The people depending on you have been let down before. The pattern is visible to others even when it's invisible to you.",
     advice: "Finish one thing before starting the next. Not because starting isn't your strength — it clearly is — but because finishing is what builds the reputation you actually want.",
@@ -162,7 +162,7 @@ export const DEEP_COMBINATIONS = {
   '1_6': {
     name: "Status and Luxury",
     what_it_creates: "A person who wants the best of everything — and has enough drive to actually get it. But the spending keeps pace with the earning.",
-    the_conflict: "The Sun wants recognition, Venus wants beauty — both are expensive. The ambition earns, the aesthetics spend.",
+    the_conflict: "The drive for recognition and the pull toward beauty are both expensive. The ambition earns, the aesthetics spend.",
     real_life: "You've upgraded your life regularly — home, clothes, car, experiences. You've also had moments where you wondered why the account doesn't grow despite the income.",
     warning: "The lifestyle is built on income that requires sustained effort. Any disruption to the income hits harder because the expenses don't downgrade easily.",
     advice: "One savings system — even small — that runs before the spending starts. Automate it so the decision doesn't happen at the point of temptation.",
@@ -170,7 +170,7 @@ export const DEEP_COMBINATIONS = {
 
   '1_7': {
     name: "Continuous Luck",
-    what_it_creates: "One of the most fortunate natal combinations. The authority of 1 is protected and amplified by Ketu's luck. Things work out — often inexplicably.",
+    what_it_creates: "One of the most fortunate natal combinations. The authority of 1 is protected and amplified by an unusual thread of luck. Things work out — often inexplicably.",
     the_conflict: "The luck can create complacency. When things have always worked out, the discipline required for sustained success can feel unnecessary — until suddenly it isn't.",
     real_life: "You've gotten through situations that would have broken others. You've had opportunities arrive right when you needed you. You've also perhaps not worked as hard as you could have because fortune has been a backup.",
     warning: "Luck without effort creates a ceiling. This combination can achieve extraordinary things — but only when the effort matches the fortune.",
@@ -180,10 +180,10 @@ export const DEEP_COMBINATIONS = {
   '1_8': {
     name: "Ego meets Karma",
     what_it_creates: "One of the most demanding natal combinations. Authority is built — but through obstacle, not inheritance. Every win is earned twice.",
-    the_conflict: "The Sun wants immediate recognition. Saturn insists on delay and dues. The tension between what you deserve and what you have is a recurring theme.",
+    the_conflict: "The drive wants immediate recognition. But the path insists on delay and dues. The tension between what you deserve and what you have is a recurring theme.",
     real_life: "You've had achievements dismissed or attributed to others. You've worked harder than people who got further faster. You've also held grudges about it.",
     warning: "The insults and humiliations this combination attracts are real. But so is the tendency to see insult where none was intended.",
-    advice: "The slowness is not injustice. It's Saturn ensuring what's built will last. Trust the timeline even when it's infuriating.",
+    advice: "The slowness is not injustice. It's the process ensuring what's built will last. Trust the timeline even when it's infuriating.",
   },
 
   '1_9': {
@@ -197,7 +197,7 @@ export const DEEP_COMBINATIONS = {
 
   '2_4': {
     name: "Emotional Chaos",
-    what_it_creates: "Moon's sensitivity amplified by Rahu's illusion. Negative thought patterns feel like insights. The mind is clever but pointed in difficult directions.",
+    what_it_creates: "Deep emotional sensitivity amplified by a pull toward illusion. Negative thought patterns feel like insights. The mind is clever but pointed in difficult directions.",
     the_conflict: "The intelligence is real but frequently misapplied. The emotional sensitivity makes rational thinking harder. The two together create a cycle of clever negative thinking.",
     real_life: "You've talked yourself into believing things that weren't true — about situations and about people. Your worst fears have a way of feeling like foresight.",
     warning: "Criminal tendencies emerge from this combination under pressure — not necessarily dramatic, but the willingness to justify crossing lines increases significantly.",
@@ -214,14 +214,14 @@ export const DEEP_COMBINATIONS = {
   },
 
   '2_8': {
-    name: "Moon meets Karma",
-    what_it_creates: "Emotional weight and karmic responsibility combined. One of the heavier natal combinations — but also one that builds the most genuine depth of character.",
-    the_conflict: "Moon needs emotional comfort. Saturn demands emotional work. The result is a person who feels more than you show and carries more than you admit.",
+    name: "Sensitivity meets Duty",
+    what_it_creates: "Emotional weight and deep responsibility combined. One of the heavier natal combinations — but also one that builds the most genuine depth of character.",
+    the_conflict: "One side needs emotional comfort. The other demands emotional work. The result is a person who feels more than you show and carries more than you admit.",
     real_life: "You've had periods of genuine darkness that you moved through alone. Your low moods go lower than others see. Your resilience is higher than you get credit for.",
     without_1_or_9: "Without the ballast of 1 or 9 in the chart, inferiority complex and depression are the real risks — not weakness, but the absence of counterweight.",
     with_1_or_9: "With 1 or 9 present, this becomes superiority complex — the defense mechanism of someone who has felt inferior.",
     warning: "The depression is real, not dramatic. It needs active management — not just will power.",
-    advice: "Build one routine that protects emotional baseline regardless of external circumstances. The discipline Saturn demands is the same discipline that manages the emotional weight.",
+    advice: "Build one routine that protects emotional baseline regardless of external circumstances. The discipline this period demands is the same discipline that manages the emotional weight.",
   },
 
   '3_6': {
@@ -234,7 +234,7 @@ export const DEEP_COMBINATIONS = {
   },
 
   '4_9': {
-    name: "Bandhan Yoga (without 5)",
+    name: "The Trapped Pattern (without 5)",
     what_it_creates: "The feeling of being trapped — in circumstances, relationships, or patterns that feel impossible to exit. One of the most uncomfortable permanent combinations.",
     the_conflict: "9 wants freedom and action. 4 creates constriction and confusion. The warrior is in a cage.",
     real_life: "You've felt stuck in situations longer than made sense. Jobs you should have left, relationships you should have ended, cities you should have moved from — something always made it harder than it needed to be.",
@@ -243,7 +243,7 @@ export const DEEP_COMBINATIONS = {
   },
 
   '5_4': {
-    name: "Financial Bandhan (without 9)",
+    name: "The Financial Treadmill (without 9)",
     what_it_creates: "The most common financial pattern among people who are intelligent about money but still struggle with it. Spending keeps pace with earning — always.",
     the_conflict: "5's business intelligence keeps generating income. 4's impulsiveness keeps spending it. The net result is a treadmill that runs faster as the income grows.",
     real_life: "You've earned well at points in your life. You've also had moments of genuine financial stress that shouldn't have happened given the income. The math never quite adds up the way it should.",
@@ -280,7 +280,7 @@ export const DEEP_COMBINATIONS = {
 
   '7_8': {
     name: "Heavy Energy (without 1)",
-    what_it_creates: "Ketu's spiritual detachment meets Saturn's karmic weight — without the Sun's light. One of the more difficult natal combinations. Luck is suppressed, spiritual inclination is strong.",
+    what_it_creates: "A quiet spiritual detachment meets a heavy sense of duty — without the boost of natural confidence. One of the more difficult natal combinations. Luck is suppressed, spiritual inclination is strong.",
     the_conflict: "The soul is seeking liberation. The karma demands dues. The result is a person who feels like you're working harder than the results justify.",
     real_life: "You've had periods where luck seemed to actively avoid you. Where the effort didn't convert. Where the spiritual seeking felt like the only thing that made sense.",
     warning: "Marital and physical satisfaction are both reduced in this combination. Not absent — but reliably lower than expected.",
@@ -289,7 +289,7 @@ export const DEEP_COMBINATIONS = {
   },
 
   '2_8_4': {
-    name: "Vipreet Raj Yoga",
+    name: "Adversity Into Triumph",
     what_it_creates: "The adversity-to-triumph combination. Life runs in dramatic cycles — significant highs and lows. But the person survives and often thrives through what would break others.",
     the_conflict: "The rollercoaster is exhausting. The bluntness that comes with this combination creates friction. The tendency to live in fear during the low periods is real.",
     real_life: "Your life story has more dramatic chapters than average. You've lost things and rebuilt you. You've also said things in candid moments that caused more damage than intended.",
@@ -300,7 +300,7 @@ export const DEEP_COMBINATIONS = {
 
   '3_1_9': {
     name: "Full Power Triad",
-    what_it_creates: "The most powerful uplifting combination in the grid. Jupiter's wisdom, Sun's authority, Mars' energy — all three simultaneously. Built for leadership, achievement, and impact.",
+    what_it_creates: "The most powerful uplifting combination in the grid. Deep wisdom, natural authority, and raw drive — all three simultaneously. Built for leadership, achievement, and impact.",
     the_conflict: "The same intensity that enables greatness enables authoritarianism. The hunger for power can override the wisdom that should govern it.",
     real_life: "You've led things. People have followed you. You've also imposed your vision on situations where collaboration would have worked better.",
     warning: "Fascist decision-making — your way or no way — is the shadow of this combination. The brilliance doesn't justify the rigidity.",
@@ -309,7 +309,7 @@ export const DEEP_COMBINATIONS = {
 
   '1_7_8': {
     name: "High Intuition",
-    what_it_creates: "What you sense about situations and people is usually right. Not sometimes — usually. This is Kali Zuban: the accurate tongue. What you say will happen, tends to happen.",
+    what_it_creates: "What you sense about situations and people is usually right. Not sometimes — usually. This is sometimes called the accurate tongue. What you say will happen, tends to happen.",
     the_conflict: "High intuition creates dissatisfaction in physical and intimate relationships. The inner world is rich; the physical world feels insufficient by comparison.",
     real_life: "You've said 'I knew that would happen' more times than is comfortable. You've also had a sense about people early on that you ignored — and regretted.",
     warning: "The intuition is real, but it can become paranoia if the social worker tendencies aren't honored. The need to help, to contribute — when suppressed, it turns inward as anxiety.",
@@ -331,90 +331,90 @@ export const DEEP_COMBINATIONS = {
 // What each dasha ACTUALLY feels like to live through
 export const DEEP_DASHA_EXPERIENCE = {
   maha_8: {
-    title: "The Long Saturn Chapter (8 years)",
+    title: "The Long Effort Chapter (8 years)",
     what_it_feels_like: "Like pushing through wet concrete. Progress is real but invisible. Effort feels disproportionate to results — especially in the first half. The second half begins to reveal what the first half was building.",
-    what_is_actually_happening: "Karmic debts are being settled and karmic credit is being accumulated. Every ethical decision, every sustained effort, every instance of real discipline — all of it is being recorded and will compound.",
+    what_is_actually_happening: "Old debts are being settled and long-term credit is being accumulated. Every ethical decision, every sustained effort, every instance of real discipline — all of it is being recorded and will compound.",
     years_1_to_4: "The heaviest period. Delays, obstacles, and the feeling that the world isn't cooperating. Health needs attention. Financial pressure is higher than it should be given the effort.",
-    years_5_to_8: "The shift. What was built quietly begins to show. Recognition arrives. The effort starts converting. If even 8 is formed (natal 8 + Maha 8), this is when the transformation becomes visible.",
+    years_5_to_8: "The shift. What was built quietly begins to show. Recognition arrives. The effort starts converting, and this is when the transformation becomes visible.",
     the_trap: "Depression and negative attitude. The heaviness of this period can make the world seem permanently difficult. It isn't. It's specifically 8 years.",
     the_gift: "The character that gets built during this period cannot be taken away. The person who exits this phase is fundamentally more capable than the person who entered it.",
-    advice: "Don't measure the Maha 8 by what it looks like from the outside. Measure it by who you're becoming.",
+    advice: "Don't measure this chapter by what it looks like from the outside. Measure it by who you're becoming.",
   },
 
   maha_7: {
     title: "The Lucky Wanderer Chapter (7 years)",
     what_it_feels_like: "Like the universe is slightly on your side without doing anything differently. Things work out. Travel happens. Spiritual curiosity peaks. The grip on material things loosens — sometimes voluntarily, sometimes not.",
-    what_is_actually_happening: "Ketu's energy is dissolving what doesn't belong in the next chapter and creating space for what does. The detachment isn't indifference — it's preparation.",
-    instability_warning: "Multiple 7s in the chart during Maha 7 creates instability that can feel like chaos. Job changes, relationship shifts, residential moves — all compressed.",
-    the_trap: "Substance use and avoidance. The Ketu energy creates a pull toward escapism when the instability feels unmanageable.",
+    what_is_actually_happening: "A quiet detaching energy is dissolving what doesn't belong in the next chapter and creating space for what does. The detachment isn't indifference — it's preparation.",
+    instability_warning: "Multiple 7s in the chart during this chapter creates instability that can feel like chaos. Job changes, relationship shifts, residential moves — all compressed.",
+    the_trap: "Substance use and avoidance. This period creates a pull toward escapism when the instability feels unmanageable.",
     the_gift: "Luck. Real, structural, inexplicable luck. The right people at the right time. Doors that open without knocking.",
     advice: "Trust the detachment. What you're losing was supposed to go. What's arriving is the replacement.",
   },
 
   maha_9: {
     title: "The Warrior Chapter (9 years)",
-    what_it_feels_like: "Like being handed a sword and asked to build something with it. High energy. High conflict. High output. The Mars energy demands movement — physical, professional, personal.",
+    what_it_feels_like: "Like being handed a sword and asked to build something with it. High energy. High conflict. High output. This period demands movement — physical, professional, personal.",
     what_is_actually_happening: "Action and consequence are running at maximum speed. What you do matters more in this period than in others. The energy is an amplifier — of effort and of mistakes.",
-    multiple_9_warning: "When multiple 9s are in the chart during Maha 9, frustration becomes a permanent undercurrent. Legal issues, physical accidents, and explosive confrontations are elevated risks.",
+    multiple_9_warning: "When multiple 9s are in the chart during this chapter, frustration becomes a permanent undercurrent. Legal issues, physical accidents, and explosive confrontations are elevated risks.",
     the_trap: "Aggression misdirected. The warrior energy looks for battles — it needs to be given real ones or it creates you.",
     the_gift: "Unstoppable momentum when the energy is directed. Career achievements, physical feats, entrepreneurial wins — all amplified.",
     advice: "Channel, don't suppress. Find the worthy fight and give it everything.",
   },
 
   maha_5: {
-    title: "The Mercury Chapter (5 years)",
+    title: "The Sharp Mind Chapter (5 years)",
     what_it_feels_like: "The sharpest thinking period of the 45-year cycle. Business opportunities cluster. Money moves faster than usual — in both directions. The mind works better and worries more simultaneously.",
-    what_is_actually_happening: "Mercury is illuminating financial intelligence and communication gifts. Business and money are the themes of the entire 5-year arc.",
-    double_5_warning: "When natal 5 is present, the 5 Maha creates 55 — dual thought, overthinking, anxiety alongside the financial abundance. The opportunities are real. So is the mental strain.",
+    what_is_actually_happening: "This period sharpens financial intelligence and communication gifts. Business and money are the themes of the entire 5-year arc.",
+    double_5_warning: "When natal 5 is present, this chapter creates 55 — dual thought, overthinking, anxiety alongside the financial abundance. The opportunities are real. So is the mental strain.",
     triple_5_warning: "5+5+5 is the overconfidence-fraud risk combination. The cleverness tips into cutting corners. Financial ambition overrides ethics.",
     the_gift: "Cash flow, business success, communication brilliance. The networking and deal-making abilities are at peak.",
     advice: "Protect the sleep. The mind doesn't stop during this period. The anxiety management is not optional.",
   },
 
   maha_6: {
-    title: "The Venus Chapter (6 years)",
+    title: "The Heart & Beauty Chapter (6 years)",
     what_it_feels_like: "Like life gets more beautiful — and more expensive. Relationships come alive. Aesthetic experiences multiply. The desire for luxury becomes persistent and harder to resist.",
-    what_is_actually_happening: "Venus is activating the love, beauty, and harmony dimensions of the life. Relationships and creative work get your best energy.",
-    double_6_warning: "When natal 6 is present, the 6 Maha creates 66 — conflicts, harsh speech, luxury at others' expense. The beauty turns contentious.",
+    what_is_actually_happening: "This period activates the love, beauty, and harmony dimensions of the life. Relationships and creative work get your best energy.",
+    double_6_warning: "When natal 6 is present, this chapter creates 66 — conflicts, harsh speech, luxury at others' expense. The beauty turns contentious.",
     the_gift: "Love, beauty, creativity, social recognition. The best period for romantic and creative development.",
     advice: "Enjoy it. Budget for the indulgence rather than pretending it won't happen.",
   },
 
   maha_1: {
-    title: "The Sun Chapter (1 year)",
+    title: "The Spotlight Chapter (1 year)",
     what_it_feels_like: "A brief but intense spotlight. Authority, recognition, and financial gains are available — but only to those who reach for you. It's 1 year, not forever.",
-    what_is_actually_happening: "The Sun illuminates ambition and authority. Whatever has been built quietly is now visible. Career moves made in this year have outsized impact.",
-    the_trap: "Ego inflation. The Sun year can make the ego louder than the wisdom.",
+    what_is_actually_happening: "This period illuminates ambition and authority. Whatever has been built quietly is now visible. Career moves made in this year have outsized impact.",
+    the_trap: "Ego inflation. This year can make the ego louder than the wisdom.",
     the_gift: "Recognition, career advancement, financial gains, competition victory.",
     advice: "Move fast. The window is short. Make the bold move this year.",
   },
 
   maha_2: {
-    title: "The Moon Chapter (2 years)",
+    title: "The Emotional Depth Chapter (2 years)",
     what_it_feels_like: "Like emotional volume is turned up. Creativity peaks. Social connections multiply. The inner world becomes louder than the outer world.",
-    what_is_actually_happening: "The Moon activates emotional intelligence, creativity, and relational depth. Not primarily a money period — a depth and connection period.",
-    multiple_2_warning: "Multiple 2s during Maha 2 — emotional instability, depression risk, suicidal tendencies in extreme cases. Needs active support structures.",
+    what_is_actually_happening: "This period activates emotional intelligence, creativity, and relational depth. Not primarily a money period — a depth and connection period.",
+    multiple_2_warning: "Multiple 2s during this chapter — emotional instability, depression risk, suicidal tendencies in extreme cases. Needs active support structures.",
     the_gift: "Deep connections, creative breakthroughs, social expansion.",
     advice: "Let the emotions be useful rather than just felt. Create something with you.",
   },
 
   maha_3: {
-    title: "The Jupiter Chapter (3 years)",
+    title: "The Wisdom Chapter (3 years)",
     what_it_feels_like: "Like wisdom becomes accessible in a new way. The learning appetite increases. Family attachment deepens. The moral compass recalibrates.",
-    what_is_actually_happening: "Jupiter expands the life in the direction of knowledge, family, and ethics. Spiritual seeking peaks. Career moves through expertise and trust.",
-    double_3_warning: "33 during Maha 3 — moral flexibility, spiritual showmanship, family detachment. The wisdom turns performative rather than genuine.",
-    job_loss_note: "Job loss during 33 energy in Maha 3: the next position will be lower in status or pay. The market senses the ethical shift.",
-    the_gift: "Wisdom, family bonding, spiritual growth, seeking the right guidance.",
-    advice: "Don't compromise the ethics even when it's convenient. The Jupiter period's rewards are specifically tied to integrity.",
+    what_is_actually_happening: "This period expands the life in the direction of knowledge, family, and ethics. Reflective seeking peaks. Career moves through expertise and trust.",
+    double_3_warning: "33 during this chapter — moral flexibility, performative wisdom, family detachment. The wisdom turns performative rather than genuine.",
+    job_loss_note: "Job loss during 33 energy in this chapter: the next position will be lower in status or pay. The market senses the ethical shift.",
+    the_gift: "Wisdom, family bonding, inner growth, seeking the right guidance.",
+    advice: "Don't compromise the ethics even when it's convenient. This period's rewards are specifically tied to integrity.",
   },
 
   maha_4: {
-    title: "The Rahu Chapter (4 years)",
+    title: "The Foggy Crossroads Chapter (4 years)",
     what_it_feels_like: "Like the rules of cause and effect have been suspended. Plans change without warning. Financial decisions that seemed sound turn out badly. The fog is real.",
-    what_is_actually_happening: "Rahu is testing adaptability and exposing illusions. The 4 years are asking: what do you actually know versus what you think you know?",
-    double_4_warning: "44 during Maha 4 — confusion doubles, delusions strengthen, financial chaos peaks. Rationality is the first casualty.",
-    even_4_positive: "Even 4 (natal 4 present + Maha 4 = 44) — transformation is possible. Clarity of thought returns. Financial discipline becomes accessible.",
-    the_trap: "Fraud, scams, and being deceived. The Rahu period attracts illusory opportunities. The more attractive the offer, the more dangerous it likely is.",
+    what_is_actually_happening: "This period tests adaptability and exposes illusions. The 4 years are asking: what do you actually know versus what you think you know?",
+    double_4_warning: "44 during this chapter — confusion doubles, delusions strengthen, financial chaos peaks. Rationality is the first casualty.",
+    even_4_positive: "Even 4 (natal 4 present + this chapter = 44) — transformation is possible. Clarity of thought returns. Financial discipline becomes accessible.",
+    the_trap: "Fraud, scams, and being deceived. This period attracts illusory opportunities. The more attractive the offer, the more dangerous it likely is.",
     the_gift: "Research breakthroughs, technology insights, unconventional solutions to old problems.",
     advice: "Verify everything twice. Trust nobody's financial advice without independent confirmation.",
   },
@@ -450,7 +450,7 @@ export const DEEP_PERIOD_TEXTS = {
         "Something you've been putting off because it felt too hard — this is the week it gets done",
       ],
       watch_out: [
-        "Anger is closer to the surface than usual — the combination of pressure and Mars energy is combustible",
+        "Anger is closer to the surface than usual — the combination of pressure and high energy is combustible",
         "Accidents are more likely when moving fast — physical caution is warranted",
         "Don't pick the fight that presents itself midweek — it's a trap",
       ],
@@ -498,14 +498,14 @@ export const DEEP_PERIOD_TEXTS = {
     '8_7': {
       overview: "A month where the effort is high and the feedback is delayed. What's being built is more substantial than what's visible. The spiritual dimension of life is louder than usual — listen to it.",
       first_half: "The heaviness peaks early. The obstacles feel like you're everywhere. You're not — you're specific and temporary.",
-      second_half: "A quiet shift. Not dramatic, but real. Things that were stuck begin to move. The luck that Ketu carries starts to show.",
+      second_half: "A quiet shift. Not dramatic, but real. Things that were stuck begin to move. The luck this period carries starts to show.",
       finance: "Income is steady but not growing this month. The financial move to make is defensive — protect what's there rather than extend.",
       relationships: "Depth over breadth. One relationship deepens significantly this month if given attention. The others can wait.",
       health: "Dental and digestive issues are the watch areas. The body holds what the mind is processing.",
       career: "Methodical progress. The work done this month is building something that pays off next quarter.",
     },
     '8_9': {
-      overview: "The most productive month of the current cycle. The Mars-Saturn combination is the relentless achiever energy — enormous output, real results, genuine exhaustion.",
+      overview: "The most productive month of the current cycle. This combination is the relentless achiever energy — enormous output, real results, genuine exhaustion.",
       first_half: "High momentum. The things you've been delaying get done. The career moves you've been considering get made.",
       second_half: "The pace catches up. The body needs recovery the mind refuses to schedule. Force the rest.",
       finance: "Strong income month. The effort converts to money this month more than it has recently.",
@@ -530,7 +530,7 @@ export const DEEP_PERIOD_TEXTS = {
       title: "The Year of Quiet Transformation",
       overview: "This is not the year that looks impressive from the outside. It's the year that changes the inside. The effort is real. The delay is real. The transformation is also real — it just won't be fully visible until next year.",
       best_months: "The middle of the year — specifically when monthly energy shifts toward 1 or 5 — is when the effort starts converting to visible results.",
-      risky_months: "The beginning and end of the year carry the heaviest Saturn energy. Financial caution is essential in January-February and November-December.",
+      risky_months: "The beginning and end of the year carry the heaviest, slowest energy. Financial caution is essential in January-February and November-December.",
       finance: "Steady income, slow growth, real pressure. The financial move of the year is building one savings or investment system that runs automatically.",
       relationships: "One relationship deepens dramatically this year — either the existing one or a new one that arrives unexpectedly. The choice of which one determines the next several years.",
       health: "Dental, intestinal, and stress-carried tension are the year's health themes. One preventive health check in Q1 or Q2 is strongly advised.",
@@ -539,7 +539,7 @@ export const DEEP_PERIOD_TEXTS = {
     },
     '8_9': {
       title: "The Year of Maximum Output",
-      overview: "The most demanding year of the current cycle — and potentially the most impactful. Mars and Saturn together demand everything. The person who shows up fully gets the full reward.",
+      overview: "The most demanding year of the current cycle — and potentially the most impactful. High drive and heavy discipline together demand everything. The person who shows up fully gets the full reward.",
       best_months: "April-June is the peak window. Career moves, financial breakthroughs, and physical achievements made during this period have the year's highest leverage.",
       risky_months: "August-September. The energy peaks and then crashes. The aggression risk is highest in August. Take the rest September demands.",
       finance: "Income year. The effort converts to money. But the spending instinct is equally activated — build the savings barrier before the income arrives.",
@@ -597,7 +597,7 @@ export const HONEST_WARNINGS = {
   },
   maha_8_early: {
     short: "You're in the hardest part of a difficult chapter. The good news: it doesn't last forever. The bad news: there's no shortcut through it.",
-    detail: "Years 1-4 of Maha 8 are characterized by disproportionate effort, delayed results, and the specific pain of watching less deserving people succeed faster. This is not injustice — it's timing.",
+    detail: "Years 1-4 of this chapter are characterized by disproportionate effort, delayed results, and the specific pain of watching less deserving people succeed faster. This is not injustice — it's timing.",
     probability: "High probability that sustained discipline in this period builds something that survives the next 20 years.",
   },
   defamation_risk_active: {
@@ -607,7 +607,7 @@ export const HONEST_WARNINGS = {
   },
   double_4_active: {
     short: "Financial decisions made right now have a higher-than-usual probability of being wrong. Wait if you can.",
-    detail: "The Rahu energy at double intensity creates compelling illusions around financial opportunities. The more attractive the offer, the more skepticism it deserves. Government scrutiny and fraud risk are both elevated.",
+    detail: "This energy at double intensity creates compelling illusions around financial opportunities. The more attractive the offer, the more skepticism it deserves. Government scrutiny and fraud risk are both elevated.",
     probability: "High probability of financial regret for major decisions made in this window without independent verification.",
   },
 };
@@ -628,7 +628,7 @@ export const PERSONAL_PATTERNS = {
     recurring_lesson: "The perfect is the enemy of the good — in finances, in relationships, in life.",
   },
   '1_8': {
-    money: "The Delayed Return: You work harder than the results currently show. The delay is Saturn's signature, not the world's verdict on your worth.",
+    money: "The Delayed Return: You work harder than the results currently show. The delay is this pattern's signature, not the world's verdict on your worth.",
     love: "The Demanding Partner: You give generously and require equally. The imbalance — when it exists — is felt intensely.",
     work: "The Earned Authority: Every position you've held, you've earned the hard way. The respect you have is genuine because it was paid for.",
     recurring_lesson: "The obstacles are not enemies. You are the architects of the version of you that will actually last.",
@@ -666,7 +666,7 @@ export default {
 export const DEEP_COMBINATIONS_EXTENDED = {
 
   '1_1': {
-    name: "Double Sun",
+    name: "Double Authority",
     what_it_creates: "The most intense ego energy possible. Authority isn't sought — it's assumed. When this combination is active, you operate as though leadership is your birthright.",
     the_conflict: "Two suns in the same sky. The ego has no natural counterweight. Pride becomes the lens through which every situation is interpreted.",
     real_life: "You've been told you're arrogant by people who were probably right. You've also led things others couldn't. Both are true simultaneously.",
@@ -675,7 +675,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '2_2': {
-    name: "Double Moon",
+    name: "Double Sensitivity",
     what_it_creates: "Emotional sensitivity at maximum intensity. Creative output is extraordinary. The social magnetism is real. So is the emotional fragility.",
     the_conflict: "Two moons mean the emotional tides run simultaneously in all directions. Highs are very high. Lows are very low. Stability requires active construction.",
     real_life: "You feel things more deeply than most people around you — and you know it. The creativity that comes from this depth is genuine. So is the exhaustion of feeling everything.",
@@ -704,7 +704,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   '2_7': {
     name: "Emotion meets Intuition",
     what_it_creates: "Psychic-level sensitivity. What this combination feels about situations and people tends to be accurate in ways that are hard to explain rationally.",
-    the_conflict: "The emotional need for closeness and the Ketu detachment pull in opposite directions. Deep desire for connection alongside an inexplicable pull toward solitude.",
+    the_conflict: "The emotional need for closeness and an instinct toward detachment pull in opposite directions. Deep desire for connection alongside an inexplicable pull toward solitude.",
     real_life: "You've known things before you were confirmed. You've also created distance from people you needed because the emotional intensity felt like too much.",
     warning: "Anxiety is structural in this combination — not situational. The nervous system is running hotter than average at all times.",
     advice: "The intuition is more reliable than the anxiety. Learn to distinguish between you — one is signal, one is noise.",
@@ -713,14 +713,14 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   '2_9': {
     name: "Emotion meets Aggression",
     what_it_creates: "Passionate, intense, volatile. The love is fierce and the anger is equally fierce. The creative and emotional output is remarkable when channeled.",
-    the_conflict: "Moon's need for emotional safety and Mars' need for action and confrontation create a person who simultaneously needs peace and creates conflict.",
+    the_conflict: "The need for emotional safety and the need for action and confrontation create a person who simultaneously needs peace and creates conflict.",
     real_life: "Your relationships have been intense. You've loved people with everything and fought you with the same energy. Sometimes the same person in the same week.",
     warning: "The emotional volatility in this combination — if unmanaged — creates a pattern of meaningful relationships ending in dramatic ways.",
     advice: "The passion is not the problem. The absence of a pause between feeling and expression is. Build the pause.",
   },
 
   '3_3': {
-    name: "Double Jupiter",
+    name: "Double Wisdom",
     what_it_creates: "Deep wisdom, strong ethical foundation, genuine spiritual capacity. When directed correctly, one of the most respected combinations in any room.",
     the_conflict: "33 is also the number of moral justification — convincing yourself that bending the rules is acceptable because your intentions are good. The wisdom that should prevent this is the thing being used to rationalize it.",
     real_life: "You've been the wisest person in some rooms. You've also, quietly, compromised on something you publicly stood for. The internal dissonance from that is louder than you admit.",
@@ -731,7 +731,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   '3_4': {
     name: "Wisdom meets Disruption",
     what_it_creates: "Unconventional brilliance. Research ability is genuinely exceptional. The wisdom of 3 and the investigative nature of 4 make this combination naturally suited to finding what others miss.",
-    the_conflict: "The planning that Jupiter facilitates and the chaos Rahu introduces are in constant tension. The grand plan is always being disrupted by the unexpected variable.",
+    the_conflict: "The planning that wisdom facilitates and the chaos a restless instinct introduces are in constant tension. The grand plan is always being disrupted by the unexpected variable.",
     real_life: "You've had ideas that were genuinely ahead of your time. You've also made plans that looked solid on paper and fell apart in execution for reasons that seemed random.",
     warning: "The rationalization ability in this combination is dangerous — 3's wisdom is used to justify 4's impulsive financial decisions.",
     advice: "Write down the plan before you commit to it. Then have someone else read it. The clarity of another set of eyes is what this combination needs.",
@@ -740,7 +740,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   '3_5': {
     name: "Wisdom meets Business",
     what_it_creates: "The most credible business combination. Knowledge that translates into income. Advisory, consulting, teaching — anywhere expertise is monetized.",
-    the_conflict: "Jupiter's idealism about how business should be conducted and Mercury's pragmatism about how it actually works create ongoing internal debate.",
+    the_conflict: "An idealism about how business should be conducted and a pragmatism about how it actually works create ongoing internal debate.",
     real_life: "You've walked away from money because it didn't feel right. You've also made money in ways that felt completely aligned. The distinction is clear to you even when it isn't to others.",
     warning: "When ethics are compromised for financial gain in this combination, the financial gain doesn't stick and the reputation takes years to rebuild.",
     advice: "The alignment between what you know is right and what you do is your competitive advantage. Don't trade it.",
@@ -749,7 +749,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   '3_7': {
     name: "Wisdom meets Luck",
     what_it_creates: "The philosophical wanderer. Deeply attracted to meaning, knowledge, and spiritual truth. Lucky in the pursuits that align with genuine purpose.",
-    the_conflict: "Jupiter's attachment to tradition and Ketu's instinct to detach from everything create a person who values wisdom but keeps questioning whether any of it is real.",
+    the_conflict: "An attachment to tradition and an instinct to detach from everything create a person who values wisdom but keeps questioning whether any of it is real.",
     real_life: "You've sought teachers, books, systems of understanding. You've also been in periods where everything you thought was true seemed questionable.",
     warning: "The seeking never ends in this combination — the destination is never quite reached. This can become beautiful or it can become avoidance of commitment.",
     advice: "The seeking is the path, not the obstacle. But it needs to be anchored in one genuine practice — not sampled and discarded.",
@@ -757,8 +757,8 @@ export const DEEP_COMBINATIONS_EXTENDED = {
 
   '3_8': {
     name: "Wisdom meets Karma",
-    what_it_creates: "Serious, disciplined, and ethical. Builds things that last. The combination of Jupiter's values and Saturn's patience creates achievements that are genuinely earned.",
-    the_conflict: "The pace of Saturn and the wisdom of Jupiter agree on almost everything — except timing. The wisdom says the opportunity is now. Saturn says wait.",
+    what_it_creates: "Serious, disciplined, and ethical. Builds things that last. The combination of deep values and steady patience creates achievements that are genuinely earned.",
+    the_conflict: "The instinct toward patience and the wisdom of good judgment agree on almost everything — except timing. The wisdom says the opportunity is now. The patience says wait.",
     real_life: "You've achieved things through sustained effort that others gave up on. You've also missed windows because the preparation never felt quite complete.",
     warning: "Family obligations and professional ambitions compete directly in this combination. The sacrifice required in one to satisfy the other creates long-term resentment if not addressed.",
     advice: "The timing that feels like obstruction is often protection. The opportunity that requires you to abandon your values isn't the right opportunity.",
@@ -767,26 +767,26 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   '3_9': {
     name: "Wisdom meets Fire",
     what_it_creates: "Bold, principled, and willing to fight for what is right. Politics, law, and activism are the natural territories.",
-    the_conflict: "Jupiter's instinct to counsel and Mars' instinct to confront don't always agree on the right approach. Sometimes the wisdom is right. Sometimes the fight is necessary. Knowing which is which is the lifelong project.",
+    the_conflict: "The instinct to counsel and the instinct to confront don't always agree on the right approach. Sometimes the wisdom is right. Sometimes the fight is necessary. Knowing which is which is the lifelong project.",
     real_life: "You've stood up for something when it would have been easier not to. You've also picked fights over principles when pragmatism would have served better.",
     warning: "The righteous anger in this combination is real — but it can become self-righteousness that alienates the allies needed to actually win.",
     advice: "Choose the battles that matter. Not every injustice requires your specific intervention.",
   },
 
   '4_4': {
-    name: "Double Rahu",
+    name: "Double Instability",
     what_it_creates: "Maximum unpredictability. The most volatile financial and decision-making combination in the grid. Brilliant in unconventional ways. Genuinely difficult to live with — including for the person yourself.",
-    the_conflict: "Rahu amplified creates illusions that feel like insights. The confidence in wrong directions is indistinguishable from the confidence in right ones.",
+    the_conflict: "This energy amplified creates illusions that feel like insights. The confidence in wrong directions is indistinguishable from the confidence in right ones.",
     real_life: "You've made decisions that seemed completely logical to you and completely insane to everyone else — and sometimes you were right and sometimes you weren't. The problem is you can't reliably tell in advance.",
-    warning: "Double Rahu is the fraud risk combination — on both sides. The environment during this period attracts both those who will deceive and the temptation to deceive. Government scrutiny is elevated.",
+    warning: "This is the fraud risk combination — on both sides. The environment during this period attracts both those who will deceive and the temptation to deceive. Government scrutiny is elevated.",
     even_4_note: "Even 44 transforms this: logical thinking returns. Good planning becomes accessible. The chaos organizes itself.",
     advice: "Get an external check on every major decision. Your internal compass is unreliable in this combination — not permanently, but now.",
   },
 
   '4_5': {
-    name: "Financial Bandhan Seed",
-    what_it_creates: "The combination that, without 9's grounding energy, creates the Financial Bandhan pattern — income and expenditure chasing each other endlessly.",
-    the_conflict: "Mercury's business intelligence generates income. Rahu's impulsiveness spends it before it accumulates. The cycle continues until an external system interrupts it.",
+    name: "The Financial Treadmill Seed",
+    what_it_creates: "The combination that, without 9's grounding energy, creates a treadmill pattern — income and expenditure chasing each other endlessly.",
+    the_conflict: "Sharp business intelligence generates income. A restless impulsiveness spends it before it accumulates. The cycle continues until an external system interrupts it.",
     real_life: "You've had months where you earned well and still ended up short. The math doesn't add up in ways you can't fully account for.",
     warning: "Debt accumulates quietly in this combination. Not dramatically — gradually. By the time it's visible, it's significant.",
     advice: "Automate the savings before the spending starts. The intelligence is there. The impulse control needs structural support.",
@@ -795,43 +795,43 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   '4_6': {
     name: "Unpredictable Beauty",
     what_it_creates: "Attraction to the unconventional. Magnetic personality. Unusual taste. The love life tends to feature surprising people and surprising situations.",
-    the_conflict: "Venus wants beauty and stability. Rahu disrupts stability and makes beauty feel temporary. The relationships that start dramatically tend to end dramatically.",
+    the_conflict: "A love of beauty and stability meets a restlessness that disrupts stability and makes beauty feel temporary. The relationships that start dramatically tend to end dramatically.",
     real_life: "Your romantic history is more interesting than most people's. That's not entirely a compliment.",
     warning: "Financial chaos triggered by relationship complications — joint expenses, shared assets, emotional spending — is the specific risk of this combination.",
     advice: "Keep finances independent in relationships longer than feels necessary. The intelligence knows this. The attraction overrides it.",
   },
 
   '4_7': {
-    name: "Rahu meets Ketu",
-    what_it_creates: "The two shadow planets in direct combination. The most internally complex combination in the grid. Neither material nor spiritual fully satisfies.",
-    the_conflict: "Rahu pulls toward the world. Ketu pulls away from it. The person exists in a state of simultaneous craving and detachment that is genuinely difficult to resolve.",
+    name: "Craving meets Detachment",
+    what_it_creates: "Two opposing pulls in direct combination. The most internally complex combination in the grid. Neither material nor spiritual fully satisfies.",
+    the_conflict: "One instinct pulls toward the world. The other pulls away from it. The person exists in a state of simultaneous craving and detachment that is genuinely difficult to resolve.",
     real_life: "You've wanted things intensely and felt empty when you got you. You've walked away from things that should have satisfied you and wondered why.",
     warning: "Identity crisis is a recurring experience for this combination — not a phase, a structural condition. Without a spiritual framework, the crisis has no resolution.",
     advice: "The resolution is not found by choosing one direction. It's found in accepting that both drives are valid and neither is complete alone.",
   },
 
   '4_8': {
-    name: "Rahu meets Karma",
-    what_it_creates: "The most accident-prone combination in the grid. Rahu's recklessness and Saturn's delay create situations where carelessness has disproportionate consequences.",
-    the_conflict: "Saturn demands patience. Rahu refuses it. The combination creates decisions made too fast in situations that required more time.",
+    name: "Instability meets Consequence",
+    what_it_creates: "The most accident-prone combination in the grid. A reckless instinct and a slow, dues-collecting energy create situations where carelessness has disproportionate consequences.",
+    the_conflict: "One side demands patience. The other refuses it. The combination creates decisions made too fast in situations that required more time.",
     real_life: "You've had accidents or near-misses that were partly caused by moving faster than the situation warranted. You've also done research that was genuinely impressive.",
     warning: "Chronic health issues and financial miscalculations are structural in this combination. The accidents are not random — you're the consequence of speed without caution.",
     advice: "Slow down specifically around physical movement and financial decisions. Those are the two domains where this combination's cost is highest.",
   },
 
   '5_5': {
-    name: "Double Mercury",
+    name: "Double Sharp Mind",
     what_it_creates: "The sharpest analytical mind available. Financial intelligence at maximum intensity. Business instinct that borders on precognitive.",
     the_conflict: "The same razor mind that creates financial excellence creates anxiety that has no off switch. The thinking that solves problems at work keeps the person awake solving problems that don't exist.",
     real_life: "You've figured things out that confused smarter-looking people. You've also lost sleep over things that resolved yourself without your intervention.",
-    warning: "555 is the fraud-committer profile — the overconfidence that comes with double Mercury tips into cutting corners and justifying shortcuts. The intelligence starts working against integrity.",
+    warning: "555 is the fraud-committer profile — the overconfidence that comes with a doubled sharp mind tips into cutting corners and justifying shortcuts. The intelligence starts working against integrity.",
     advice: "Sleep is not a luxury for this combination — it's the maintenance schedule. The mind running hot without rest eventually runs wrong.",
   },
 
   '5_6': {
     name: "Business meets Beauty",
     what_it_creates: "The intersection of financial intelligence and aesthetic sensibility. Creative commerce — fashion, media, beauty industry — is the natural territory.",
-    the_conflict: "Mercury's drive to optimize and Venus' drive to indulge are in direct opposition. The business mind knows the margin. The aesthetic self ignores it.",
+    the_conflict: "A drive to optimize and a drive to indulge are in direct opposition. The business mind knows the margin. The aesthetic self ignores it.",
     real_life: "You've made money in creative ways. You've also spent it on beautiful things in ways that slightly undermined the financial picture.",
     warning: "Obstructed communication in close relationships — the intelligence creates a tendency to be right in ways that feel like criticism. The relationship suffers for it.",
     advice: "Being right is less valuable than being understood. Sometimes the second requires choosing the second-best solution.",
@@ -840,16 +840,16 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   '5_8': {
     name: "Disciplined Intelligence",
     what_it_creates: "Methodical wealth building. Financial decisions made with patience and precision. The slowest but most reliable path to genuine accumulation.",
-    the_conflict: "Mercury wants to move fast. Saturn insists on due diligence. The combination creates the right decisions but sometimes makes you too slowly.",
+    the_conflict: "One instinct wants to move fast. The other insists on due diligence. The combination creates the right decisions but sometimes makes you too slowly.",
     real_life: "You've missed windows because you needed more information. You've also avoided disasters that faster-moving people walked straight into.",
     warning: "The conservatism can become paralysis. Not every decision benefits from more analysis.",
     advice: "Set a deadline for the decision. Not for the information gathering — for the actual choice. The deadline forces the action the discipline keeps postponing.",
   },
 
   '6_6': {
-    name: "Double Venus",
+    name: "Double Beauty",
     what_it_creates: "Maximum aesthetic sensitivity, maximum romantic intensity, maximum creative capacity — and maximum tendency toward excess in all three.",
-    the_conflict: "Both Venuses want everything beautiful and everything pleasurable simultaneously. The result is a life that looks extraordinary from the outside and is genuinely expensive to maintain.",
+    the_conflict: "This energy doubled wants everything beautiful and everything pleasurable simultaneously. The result is a life that looks extraordinary from the outside and is genuinely expensive to maintain.",
     real_life: "Your space, your appearance, your experiences — all curated to a standard most people don't maintain. The cost of this standard is rarely acknowledged.",
     warning: "66 is the harsh-tongue combination. When disappointed or provoked, the words that come out are specifically designed to wound. This is not unconscious — the intelligence knows exactly where to cut.",
     love_affairs: "Multiple simultaneous romantic connections are structurally present in this combination — not as moral failure but as energetic reality. Managing this honestly is the work.",
@@ -859,7 +859,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   '6_8': {
     name: "Earned Luxury",
     what_it_creates: "The person who builds the beautiful life through genuine sustained effort rather than luck or inheritance. Everything aesthetic in this life was worked for.",
-    the_conflict: "Venus wants the beauty now. Saturn says earn it first. The tension between desire and discipline creates either the most beautifully disciplined life or a grinding resentment.",
+    the_conflict: "One instinct wants the beauty now. The other says earn it first. The tension between desire and discipline creates either the most beautifully disciplined life or a grinding resentment.",
     real_life: "You've built things that look effortless from the outside. The effort was anything but. You know the exact cost of everything you have.",
     warning: "The resentment when the effort goes unacknowledged is quiet and deep. It doesn't announce itself until it's significant.",
     advice: "Acknowledge yourself for what you've built. Don't wait for others to do it — you're busy admiring the result without calculating the input.",
@@ -867,7 +867,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
 
   '6_9': {
     name: "Passion and Beauty",
-    what_it_creates: "The most romantically intense combination. Venus' love of beauty and Mars' intensity of feeling create relationships that are genuinely memorable — for better and worse.",
+    what_it_creates: "The most romantically intense combination. A love of beauty and an intensity of feeling create relationships that are genuinely memorable — for better and worse.",
     the_conflict: "The love is real and the conflict is equally real. Both run hot. The romantic intensity and the fighting intensity are the same energy expressed differently.",
     real_life: "Your love stories are not boring. Your fights are not boring either. The people who've been closest to you have experienced both extremes.",
     warning: "Physical and emotional intensity without conscious management leads to a pattern of relationships that begin beautifully and end dramatically.",
@@ -875,25 +875,25 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '7_7': {
-    name: "Double Ketu",
+    name: "Double Detachment",
     what_it_creates: "Maximum instability and maximum intuition simultaneously. The person who changes everything — jobs, cities, relationships, belief systems — in patterns that look chaotic from the outside but follow an internal logic.",
-    the_conflict: "Ketu doubled means detachment from everything, including the things that should anchor the life. The instability isn't chosen — it's structural.",
+    the_conflict: "This energy doubled means detachment from everything, including the things that should anchor the life. The instability isn't chosen — it's structural.",
     real_life: "You've moved more than average. Changed directions more than average. Started over more than average. Each time felt necessary. Looking back, it mostly was.",
-    warning: "Substance use is the most dangerous risk of this combination — the instability looking for chemical relief. Once that door opens, the Ketu energy makes closing it very difficult.",
+    warning: "Substance use is the most dangerous risk of this combination — the instability looking for chemical relief. Once that door opens, this energy makes closing it very difficult.",
     advice: "One anchor — a practice, a person, a purpose — that doesn't change regardless of what else is shifting. Without it, the instability compounds.",
   },
 
   '7_9': {
     name: "Lucky Warrior",
     what_it_creates: "Courage backed by fortune. The bold moves that would be reckless in other combinations tend to work in this one. Travel and adventure consistently open doors.",
-    the_conflict: "Ketu's detachment and Mars' engagement pull in different directions. The warrior wants to fight. The Ketu energy keeps asking why it matters.",
+    the_conflict: "An instinct toward detachment and an instinct toward engagement pull in different directions. The warrior wants to fight. The detached side keeps asking why it matters.",
     real_life: "You've made moves that surprised people — geographic, career, personal — and you've worked out more often than the odds suggested you should.",
     warning: "The luck creates overconfidence that periodically leads to a move that doesn't work out. The falls are harder because the expectation of luck is built in.",
     advice: "The luck is real. Don't bet everything on it in any single moment. Let it compound.",
   },
 
   '8_8': {
-    name: "Double Saturn — Karmic Peak",
+    name: "Double Discipline — Karmic Peak",
     what_it_creates: "The most karmic combination in the entire grid. Either peak achievement or peak struggle — determined entirely by the integrity of the foundation being built.",
     the_conflict: "The first 8 demands effort. The second 8 demands that the effort be ethical and sustained. There is no shortcut available and no luck to substitute for discipline.",
     real_life: "Your life is a direct reflection of your choices in a way that most people's lives are not. The cause-effect relationship is unusually tight.",
@@ -905,17 +905,17 @@ export const DEEP_COMBINATIONS_EXTENDED = {
 
   '8_9': {
     name: "Relentless Achievement",
-    what_it_creates: "The most productive combination available. Saturn's discipline and Mars' energy together create output that would exhaust two separate people. What this combination builds when directed correctly is extraordinary.",
-    the_conflict: "Saturn wants careful, sustained effort. Mars wants immediate results. The tension between the two creates both the productivity and the physical toll.",
+    what_it_creates: "The most productive combination available. Deep discipline and raw energy together create output that would exhaust two separate people. What this combination builds when directed correctly is extraordinary.",
+    the_conflict: "One side wants careful, sustained effort. The other wants immediate results. The tension between the two creates both the productivity and the physical toll.",
     real_life: "You've worked harder than most people you know. You've also pushed through circumstances that would have stopped others. The results have been real — and the cost has been real.",
-    warning: "Heart disease, high blood pressure, and burnout are the specific risks. The body is not designed to run at Mars-Saturn intensity indefinitely. Rest is not optional.",
+    warning: "Heart disease, high blood pressure, and burnout are the specific risks. The body is not designed to run at this intensity indefinitely. Rest is not optional.",
     advice: "Schedule recovery with the same discipline you schedule output. The machine that doesn't get maintained eventually stops.",
   },
 
   '9_9': {
-    name: "Double Mars — Maximum Intensity",
+    name: "Double Drive — Maximum Intensity",
     what_it_creates: "The highest energy, highest aggression, highest achievement potential combination. Nothing is done halfway. Every decision is total commitment. Every conflict is total war.",
-    the_conflict: "Two Mars energies feed each other. The frustration when blocked doubles. The aggression without outlet becomes self-destructive. The achievement when channeled is genuinely remarkable.",
+    the_conflict: "This energy doubled feeds itself. The frustration when blocked doubles. The aggression without outlet becomes self-destructive. The achievement when channeled is genuinely remarkable.",
     real_life: "You've done things at speed and intensity that others found exhausting just to watch. You've also had explosive moments that you regret — not because the anger wasn't valid but because the expression was disproportionate.",
     warning: "Legal issues from anger-driven confrontations and physical accidents from recklessness are the highest-probability risks of this combination. The volatility is not character — it's energy without channel.",
     advice: "Physical outlet is mandatory, not optional. Sport, competition, physical work — daily. The energy that doesn't go into something constructive goes into something destructive.",

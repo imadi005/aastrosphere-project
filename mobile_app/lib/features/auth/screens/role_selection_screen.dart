@@ -212,7 +212,7 @@ class _IntroPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 18),
                       Text(
-                        'Astrology through Vedic Numerology',
+                        'Guidance through the Power of Numbers',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.dmSans(
                           fontSize: 14,
