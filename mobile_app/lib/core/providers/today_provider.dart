@@ -43,19 +43,22 @@ final lifeInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((r
 final weeklyInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(smartProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  return ApiService.getWeeklyInsights(_dobToIso(user.dob));
+  final lang = ref.watch(localeProvider).languageCode;
+  return ApiService.getWeeklyInsights(_dobToIso(user.dob), lang);
 });
 
 final monthlyInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(smartProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  return ApiService.getMonthlyInsights(_dobToIso(user.dob));
+  final lang = ref.watch(localeProvider).languageCode;
+  return ApiService.getMonthlyInsights(_dobToIso(user.dob), lang);
 });
 
 final yearlyInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(smartProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  return ApiService.getYearlyInsights(_dobToIso(user.dob));
+  final lang = ref.watch(localeProvider).languageCode;
+  return ApiService.getYearlyInsights(_dobToIso(user.dob), lang);
 });
 
 final deepInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {

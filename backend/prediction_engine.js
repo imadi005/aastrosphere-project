@@ -22,6 +22,7 @@ import {
   DAILY_LAYER, MAHA_CONTEXT, ANTAR_CONTEXT, MONTHLY_CONTEXT,
 } from './daily_prediction_library.js';
 import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
+import { DAY_CHARACTER_I18N, WEEK_CHARACTER_I18N, MONTH_CHARACTER_I18N, localizedChar } from './breakdown_library_i18n.js';
 import { getDayDefinition } from './day_definition_library.js';
 import { getDayScore } from './day_score_library.js';
 import { getPriorityAction } from './priority_action_library.js';
@@ -701,7 +702,7 @@ export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOStrin
     const mon = currentMonthlyDasha(ctx._dob || '', dateStr);
     const monNum = mon ? mon.number : monthly;
     const dayNum = reduceToSingle(monNum + wdLord);
-    const char = DAY_CHARACTER[dayNum];
+    const char = localizedChar(DAY_CHARACTER, DAY_CHARACTER_I18N, dayNum, ctx.lang);
     const dayName = DAY_NAMES[wd];
     const isToday = date.toDateString() === todayDate.toDateString();
     // Day quality based on planetary relationship between user's basic and daily number
@@ -807,7 +808,7 @@ export function generateMonthlyPrediction(ctx, targetDate = new Date().toISOStri
     const weekMidSafe = weekMid > periodEnd ? periodEnd : weekMid;
     const weekMon = ctx._dob ? currentMonthlyDasha(ctx._dob, weekMidSafe.toISOString()) : null;
     const dominantNum = weekMon ? weekMon.number : monthly;
-    const char = WEEK_CHARACTER[dominantNum];
+    const char = localizedChar(WEEK_CHARACTER, WEEK_CHARACTER_I18N, dominantNum, ctx.lang);
     const isCurrentWeek = w === currentWeekIdx;
 
     // Date range label
@@ -899,7 +900,7 @@ export function generateYearlyPrediction(ctx, targetDate = new Date().toISOStrin
     const monthStart = new Date(year, m, 1).toISOString();
     const mon = currentMonthlyDasha(ctx._dob || '', monthStart);
     const monthNum = mon ? mon.number : 5;
-    const char = MONTH_CHARACTER[monthNum];
+    const char = localizedChar(MONTH_CHARACTER, MONTH_CHARACTER_I18N, monthNum, ctx.lang);
     const isCurrentMonth = m === currentMonth;
     // Find specific risky + lucky days in this month
     const WDAY_LORDS = [1,2,9,5,3,6,8]; // Sun=0..Sat=6

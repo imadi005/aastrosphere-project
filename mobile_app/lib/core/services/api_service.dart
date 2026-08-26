@@ -132,22 +132,25 @@ class ApiService {
       });
 
   // ─── INSIGHTS — always send client date ──────────────────────────────
-  static Future<Map<String, dynamic>> getWeeklyInsights(String dob) =>
+  static Future<Map<String, dynamic>> getWeeklyInsights(String dob, [String? lang]) =>
       _post('/api/insights/weekly', {
         'dob': dob,
         'client_date': clientDate,
+        if (lang != null) 'lang': lang,
       });
 
-  static Future<Map<String, dynamic>> getMonthlyInsights(String dob) =>
+  static Future<Map<String, dynamic>> getMonthlyInsights(String dob, [String? lang]) =>
       _post('/api/insights/monthly', {
         'dob': dob,
         'client_date': clientDate,
+        if (lang != null) 'lang': lang,
       });
 
-  static Future<Map<String, dynamic>> getYearlyInsights(String dob) =>
+  static Future<Map<String, dynamic>> getYearlyInsights(String dob, [String? lang]) =>
       _post('/api/insights/yearly', {
         'dob': dob,
         'client_date': clientDate,
+        if (lang != null) 'lang': lang,
       });
 
   // ─── TIMELINE (astrologer) — server is the single source of truth for

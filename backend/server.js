@@ -875,10 +875,11 @@ app.post('/api/insights/daily', (req, res) => {
 // ─── /api/insights/weekly ─────────────────────────────────────
 app.post('/api/insights/weekly', (req, res) => {
   try {
-    const { dob, client_date } = req.body;
+    const { dob, client_date, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
     const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const ctx = buildChartContext(dob, targetDate);
+    ctx.lang = lang;
     res.json(generateWeeklyPrediction(ctx, targetDate));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -886,10 +887,11 @@ app.post('/api/insights/weekly', (req, res) => {
 // ─── /api/insights/monthly ────────────────────────────────────
 app.post('/api/insights/monthly', (req, res) => {
   try {
-    const { dob, client_date } = req.body;
+    const { dob, client_date, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
     const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const ctx = buildChartContext(dob, targetDate);
+    ctx.lang = lang;
     res.json(generateMonthlyPrediction(ctx, targetDate));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -897,10 +899,11 @@ app.post('/api/insights/monthly', (req, res) => {
 // ─── /api/insights/yearly ─────────────────────────────────────
 app.post('/api/insights/yearly', (req, res) => {
   try {
-    const { dob, client_date } = req.body;
+    const { dob, client_date, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
     const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const ctx = buildChartContext(dob, targetDate);
+    ctx.lang = lang;
     res.json(generateYearlyPrediction(ctx, targetDate));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
