@@ -1,8 +1,6 @@
 {
   "@@locale": "en",
-
   "appTitle": "Aastrosphere",
-
   "navToday": "Today",
   "navInsights": "Insights",
   "navAsk": "Ask",
@@ -10,11 +8,9 @@
   "navChart": "Chart",
   "navMe": "Me",
   "navClients": "Clients",
-
   "selectYourLanguage": "Select your language",
   "changeLanguage": "Change language",
   "languageUpdated": "Language updated",
-
   "continueLabel": "Continue",
   "getOtp": "Get OTP",
   "verifyAndContinue": "Verify & Continue",
@@ -22,7 +18,6 @@
   "save": "Save",
   "done": "Done",
   "letsDiveIn": "Let's Dive In",
-
   "userLogin": "User Login",
   "astrologerLogin": "Astrologer Login",
   "enterPhoneToContinue": "Enter your phone number to continue",
@@ -33,28 +28,138 @@
   "userRoleDesc": "Daily guidance, personal chart and reminders",
   "astrologerRole": "Astrologer",
   "astrologerRoleDesc": "Read charts, timelines and client reports",
-
   "logout": "Logout",
   "askAnything": "Ask Anything",
   "askYourQuestion": "Ask your question...",
   "clearChat": "Clear chat",
-
   "todayTab": "Today",
   "insightsTab": "Insights",
   "chartTab": "Chart",
   "circleTab": "Circle",
-
   "timelineTab": "Timeline",
   "patternTab": "Pattern",
   "reportsTab": "Reports",
   "consultTab": "Consult",
   "comingSoon": "Coming soon",
   "modeClient": "Client",
-
+  "longTermPhase": "Long-Term Phase",
+  "currentPhase": "Current Phase",
+  "monthlyLabel": "Monthly",
+  "dailyLabel": "Daily",
+  "hourlyLabel": "Hourly",
+  "basicLabel": "Basic",
+  "innerSelf": "Inner Self",
+  "destinyLabel": "Destiny",
+  "lifePath": "Life Path",
+  "numerologicalGrid": "Numerological Grid",
   "lockIn": "Lock in",
-  "todaysPriority": "Today's Priority",
+  "todaysPriority": "TODAY'S PRIORITY",
   "luckyColor": "Lucky Color",
   "coreNumbers": "Core Numbers",
   "runningPeriods": "Running Periods",
-  "dayAnalysis": "Day Analysis"
+  "dayAnalysis": "Day Analysis",
+  "readingTodaysEnergy": "Reading today's energy...",
+  "todaysGuidance": "TODAY'S GUIDANCE",
+  "couldNotLoadReading": "Could not load today's reading",
+  "tryAgain": "Try again",
+  "completeProfileToBegin": "Complete your profile to begin",
+  "hourByHour": "Hour by Hour",
+  "activeInYourChart": "Active in Your Chart",
+  "tapAnyHourDetailLower": "tap any hour below for detail",
+  "tapAnyHourDetail": "Tap any hour for detail",
+  "notYet": "Not yet",
+  "doLabel": "DO",
+  "avoidLabel": "AVOID",
+  "bestForThisHour": "BEST FOR THIS HOUR",
+  "avoidThisHour": "AVOID THIS HOUR",
+  "whyThisHour": "WHY THIS HOUR",
+  "physicalCaution": "PHYSICAL CAUTION",
+  "cautionWindowsToday": "CAUTION WINDOWS TODAY",
+  "notifiedHourBefore": "You will be notified 1 hour before each window.",
+  "goodFor": "GOOD FOR",
+  "goEasyOn": "GO EASY ON",
+  "rightNow": "RIGHT NOW",
+  "tapForDetails": "Tap for details",
+  "restOfYourDay": "THE REST OF YOUR DAY",
+  "nowLower": "now",
+  "nowUpper": "NOW",
+  "energyToday": "ENERGY TODAY",
+  "bestLabel": "Best",
+  "cautionLabel": "Caution",
+  "greetingMorning": "Good morning, {name}",
+  "@greetingMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingAfternoon": "Good afternoon, {name}",
+  "@greetingAfternoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingEvening": "Good evening, {name}",
+  "@greetingEvening": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingLate": "Hello, {name}",
+  "@greetingLate": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askWelcomeMessage": "✨ **Welcome** ✨\n\nI'm your personal guide. Ask me anything about:\n\n• **Your Path** - Personality, patterns, life direction\n• **Career** - Job switch, promotion, business\n• **Relationships** - Love, marriage, family vibes\n• **Finance** - Money, investments, wealth\n• **Health** - Wellness, remedies, lifestyle\n\n**What's on your mind?** 😊",
+  "askWord": "Ask ",
+  "anythingWord": "Anything",
+  "byPankajj": "by Pankajj Kumar Mishra",
+  "askQuestionGuidance": "Ask your question for\nastrological guidance",
+  "careerLoveMoneyHealth": "Career · Love · Money · Health",
+  "typingLabel": "Typing...",
+  "watchOut": "WATCH OUT",
+  "bestFor": "BEST FOR",
+  "cautionUpper": "CAUTION",
+  "yourCurrentChapter": "YOUR CURRENT CHAPTER",
+  "couldNotLoadInsights": "Could not load insights",
+  "retryLabel": "Retry",
+  "weekByWeek": "Week by Week",
+  "monthByMonth": "Month by Month",
+  "thisWeek": "This Week",
+  "monthArc": "Month Arc",
+  "lifeDomains": "Life Domains",
+  "yourYear": "Your Year",
+  "yourCircle": "Your Circle",
+  "todayScoreLabel": "Today",
+  "removeLabel": "Remove",
+  "doTogether": "DO TOGETHER",
+  "beCarefulToday": "BE CAREFUL TODAY",
+  "howYouShowUp": "How you show up for each other",
+  "errorLabel": "Error",
+  "addToYourCircle": "Add to your circle",
+  "partnerFriendFamily": "Partner, friend, family, colleague — anyone",
+  "addToCircle": "Add to circle",
+  "addAnyone": "Add anyone — partner, friend, family, colleague",
+  "seeHowNumbersInteract": "See how your numbers interact",
+  "addSomeone": "Add someone",
+  "personWord": "person",
+  "peopleWord": "people",
+  "tapToSeeFullReading": "tap to see full reading",
+  "overallTab": "Overall",
+  "dynamicsTab": "Dynamics",
+  "whatWorks": "What works",
+  "theTension": "The tension",
+  "growthEdge": "Growth edge",
+  "friendshipLabel": "Friendship",
+  "youLabel": "You",
+  "themLabel": "Them",
+  "theirNameHint": "Their name"
 }

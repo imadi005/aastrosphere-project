@@ -138,6 +138,36 @@ class AppLocalizationsTe extends AppLocalizations {
   String get modeClient => 'క్లయింట్';
 
   @override
+  String get longTermPhase => 'దీర్ఘకాలిక దశ';
+
+  @override
+  String get currentPhase => 'ప్రస్తుత దశ';
+
+  @override
+  String get monthlyLabel => 'నెలవారీ';
+
+  @override
+  String get dailyLabel => 'రోజువారీ';
+
+  @override
+  String get hourlyLabel => 'గంటవారీ';
+
+  @override
+  String get basicLabel => 'ప్రాథమిక';
+
+  @override
+  String get innerSelf => 'అంతర్గత స్వీయం';
+
+  @override
+  String get destinyLabel => 'విధి';
+
+  @override
+  String get lifePath => 'జీవిత మార్గం';
+
+  @override
+  String get numerologicalGrid => 'సంఖ్యా గ్రిడ్';
+
+  @override
   String get lockIn => 'లాక్ చేయి';
 
   @override
@@ -154,4 +184,245 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get dayAnalysis => 'రోజు విశ్లేషణ';
+
+  @override
+  String get readingTodaysEnergy => 'ఈరోజు శక్తిని చదువుతోంది...';
+
+  @override
+  String get todaysGuidance => 'ఈరోజు మార్గదర్శకత్వం';
+
+  @override
+  String get couldNotLoadReading => 'ఈరోజు రీడింగ్ లోడ్ కాలేదు';
+
+  @override
+  String get tryAgain => 'మళ్లీ ప్రయత్నించండి';
+
+  @override
+  String get completeProfileToBegin =>
+      'ప్రారంభించడానికి మీ ప్రొఫైల్‌ను పూర్తి చేయండి';
+
+  @override
+  String get hourByHour => 'గంట గంటకు';
+
+  @override
+  String get activeInYourChart => 'మీ చార్టులో సక్రియంగా ఉంది';
+
+  @override
+  String get tapAnyHourDetailLower => 'వివరాల కోసం క్రింద ఏదైనా గంటను నొక్కండి';
+
+  @override
+  String get tapAnyHourDetail => 'వివరాల కోసం ఏదైనా గంటను నొక్కండి';
+
+  @override
+  String get notYet => 'ఇంకా కాదు';
+
+  @override
+  String get doLabel => 'చేయండి';
+
+  @override
+  String get avoidLabel => 'నివారించండి';
+
+  @override
+  String get bestForThisHour => 'ఈ గంటకు ఉత్తమమైనది';
+
+  @override
+  String get avoidThisHour => 'ఈ గంటలో నివారించండి';
+
+  @override
+  String get whyThisHour => 'ఎందుకు ఈ గంట';
+
+  @override
+  String get physicalCaution => 'శారీరక జాగ్రత్త';
+
+  @override
+  String get cautionWindowsToday => 'ఈరోజు జాగ్రత్త సమయాలు';
+
+  @override
+  String get notifiedHourBefore =>
+      'ప్రతి విండోకు 1 గంట ముందు మీకు తెలియజేయబడుతుంది.';
+
+  @override
+  String get goodFor => 'దీనికి మంచిది';
+
+  @override
+  String get goEasyOn => 'దీనిలో మృదువుగా ఉండండి';
+
+  @override
+  String get rightNow => 'ఇప్పుడే';
+
+  @override
+  String get tapForDetails => 'వివరాల కోసం నొక్కండి';
+
+  @override
+  String get restOfYourDay => 'మీ రోజులో మిగిలిన సమయం';
+
+  @override
+  String get nowLower => 'ఇప్పుడు';
+
+  @override
+  String get nowUpper => 'ఇప్పుడు';
+
+  @override
+  String get energyToday => 'ఈరోజు శక్తి';
+
+  @override
+  String get bestLabel => 'ఉత్తమమైనది';
+
+  @override
+  String get cautionLabel => 'జాగ్రత్త';
+
+  @override
+  String greetingMorning(String name) {
+    return 'శుభోదయం, $name';
+  }
+
+  @override
+  String greetingAfternoon(String name) {
+    return 'శుభ మధ్యాహ్నం, $name';
+  }
+
+  @override
+  String greetingEvening(String name) {
+    return 'శుభ సాయంత్రం, $name';
+  }
+
+  @override
+  String greetingLate(String name) {
+    return 'నమస్కారం, $name';
+  }
+
+  @override
+  String get askWelcomeMessage =>
+      '✨ **స్వాగతం** ✨\n\nనేను మీ వ్యక్తిగత మార్గదర్శిని. నన్ను ఏదైనా అడగండి:\n\n• **మీ మార్గం** - వ్యక్తిత్వం, సరళులు, జీవిత దిశ\n• **వృత్తి** - ఉద్యోగ మార్పు, ప్రమోషన్, వ్యాపారం\n• **సంబంధాలు** - ప్రేమ, వివాహం, కుటుంబ వాతావరణం\n• **ఆర్థికం** - డబ్బు, పెట్టుబడులు, సంపద\n• **ఆరోగ్యం** - ఆరోగ్యం, పరిష్కారాలు, జీవనశైలి\n\n**మీ మనసులో ఏముంది?** 😊';
+
+  @override
+  String get askWord => 'అడగండి ';
+
+  @override
+  String get anythingWord => 'ఏదైనా';
+
+  @override
+  String get byPankajj => 'పంకజ్ కుమార్ మిశ్రా ద్వారా';
+
+  @override
+  String get askQuestionGuidance => 'మార్గదర్శకత్వం కోసం\nమీ ప్రశ్న అడగండి';
+
+  @override
+  String get careerLoveMoneyHealth => 'వృత్తి · ప్రేమ · డబ్బు · ఆరోగ్యం';
+
+  @override
+  String get typingLabel => 'టైప్ చేస్తోంది...';
+
+  @override
+  String get watchOut => 'జాగ్రత్తగా ఉండండి';
+
+  @override
+  String get bestFor => 'దీనికి ఉత్తమమైనది';
+
+  @override
+  String get cautionUpper => 'జాగ్రత్త';
+
+  @override
+  String get yourCurrentChapter => 'మీ ప్రస్తుత అధ్యాయం';
+
+  @override
+  String get couldNotLoadInsights => 'అంతర్దృష్టులు లోడ్ కాలేదు';
+
+  @override
+  String get retryLabel => 'మళ్లీ ప్రయత్నించండి';
+
+  @override
+  String get weekByWeek => 'వారం వారం';
+
+  @override
+  String get monthByMonth => 'నెల నెలా';
+
+  @override
+  String get thisWeek => 'ఈ వారం';
+
+  @override
+  String get monthArc => 'నెల చక్రం';
+
+  @override
+  String get lifeDomains => 'జీవిత రంగాలు';
+
+  @override
+  String get yourYear => 'మీ సంవత్సరం';
+
+  @override
+  String get yourCircle => 'మీ సర్కిల్';
+
+  @override
+  String get todayScoreLabel => 'ఈరోజు';
+
+  @override
+  String get removeLabel => 'తీసివేయి';
+
+  @override
+  String get doTogether => 'కలిసి చేయండి';
+
+  @override
+  String get beCarefulToday => 'ఈరోజు జాగ్రత్తగా ఉండండి';
+
+  @override
+  String get howYouShowUp => 'మీరు ఒకరికొకరు ఎలా అందుబాటులో ఉంటారు';
+
+  @override
+  String get errorLabel => 'లోపం';
+
+  @override
+  String get addToYourCircle => 'మీ సర్కిల్‌కు జోడించండి';
+
+  @override
+  String get partnerFriendFamily =>
+      'భాగస్వామి, స్నేహితుడు, కుటుంబం, సహోద్యోగి — ఎవరైనా';
+
+  @override
+  String get addToCircle => 'సర్కిల్‌కు జోడించండి';
+
+  @override
+  String get addAnyone =>
+      'ఎవరినైనా జోడించండి — భాగస్వామి, స్నేహితుడు, కుటుంబం, సహోద్యోగి';
+
+  @override
+  String get seeHowNumbersInteract => 'మీ సంఖ్యలు ఎలా కలుస్తాయో చూడండి';
+
+  @override
+  String get addSomeone => 'ఎవరినైనా జోడించండి';
+
+  @override
+  String get personWord => 'వ్యక్తి';
+
+  @override
+  String get peopleWord => 'వ్యక్తులు';
+
+  @override
+  String get tapToSeeFullReading => 'పూర్తి రీడింగ్ చూడటానికి నొక్కండి';
+
+  @override
+  String get overallTab => 'మొత్తం';
+
+  @override
+  String get dynamicsTab => 'డైనమిక్స్';
+
+  @override
+  String get whatWorks => 'ఏది పనిచేస్తుంది';
+
+  @override
+  String get theTension => 'ఉద్రిక్తత';
+
+  @override
+  String get growthEdge => 'వృద్ధి దిశ';
+
+  @override
+  String get friendshipLabel => 'స్నేహం';
+
+  @override
+  String get youLabel => 'మీరు';
+
+  @override
+  String get themLabel => 'వారు';
+
+  @override
+  String get theirNameHint => 'వారి పేరు';
 }

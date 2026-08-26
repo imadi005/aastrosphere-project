@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/services/api_service.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class Friend {
   final String id, name;
@@ -48,7 +49,7 @@ class CircleScreen extends ConsumerWidget {
       ),
       body: friendsAsync.when(
         loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),
-        error: (_, __) => Center(child: Text('Error', style: GoogleFonts.dmSans(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight))),
+        error: (_, __) => Center(child: Text(AppLocalizations.of(context)!.errorLabel, style: GoogleFonts.dmSans(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight))),
         data: (friends) => friends.isEmpty
             ? _EmptyCircle(isDark: isDark, gold: gold, onAdd: () => _showAddFriend(context, isDark, gold))
             : _FriendsList(friends: friends, isDark: isDark, gold: gold),
@@ -75,12 +76,12 @@ class _EmptyCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Text('Your Circle', style: GoogleFonts.cormorantGaramond(fontSize: 24, color: gold)),
+      Text(AppLocalizations.of(context)!.yourCircle, style: GoogleFonts.cormorantGaramond(fontSize: 24, color: gold)),
       const SizedBox(height: 8),
-      Text('Add anyone — partner, friend, family, colleague',
+      Text(AppLocalizations.of(context)!.addAnyone,
           style: GoogleFonts.dmSans(fontSize: 13, color: secondary), textAlign: TextAlign.center),
       const SizedBox(height: 6),
-      Text('See how your numbers interact', style: GoogleFonts.dmSans(fontSize: 12, color: secondary.withOpacity(0.6))),
+      Text(AppLocalizations.of(context)!.seeHowNumbersInteract, style: GoogleFonts.dmSans(fontSize: 12, color: secondary.withOpacity(0.6))),
       const SizedBox(height: 24),
       GestureDetector(
         onTap: onAdd,
@@ -88,7 +89,7 @@ class _EmptyCircle extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(color: gold.withOpacity(0.1), borderRadius: BorderRadius.circular(24),
               border: Border.all(color: gold.withOpacity(0.3), width: 0.5)),
-          child: Text('Add someone', style: GoogleFonts.dmSans(fontSize: 13, color: gold)),
+          child: Text(AppLocalizations.of(context)!.addSomeone, style: GoogleFonts.dmSans(fontSize: 13, color: gold)),
         ),
       ),
     ]));
@@ -106,8 +107,8 @@ class _FriendsList extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       children: [
-        Text('Your Circle', style: GoogleFonts.cormorantGaramond(fontSize: 22, color: gold)),
-        Text('${friends.length} ${friends.length == 1 ? 'person' : 'people'} — tap to see full reading',
+        Text(AppLocalizations.of(context)!.yourCircle, style: GoogleFonts.cormorantGaramond(fontSize: 22, color: gold)),
+        Text('${friends.length} ${friends.length == 1 ? AppLocalizations.of(context)!.personWord : AppLocalizations.of(context)!.peopleWord} — ${AppLocalizations.of(context)!.tapToSeeFullReading}',
             style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
         const SizedBox(height: 16),
         ...friends.map((f) => Padding(
@@ -212,7 +213,7 @@ class _FriendCardState extends State<_FriendCard> {
                 else if (score != null) Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Text('$score%', style: GoogleFonts.cormorantGaramond(fontSize: 26, color: scoreColor(score), height: 1)),
                   if (todayScore != null)
-                    Text('Today: $todayScore%', style: GoogleFonts.dmSans(fontSize: 10, color: scoreColor(todayScore))),
+                    Text('${AppLocalizations.of(context)!.todayScoreLabel}: $todayScore%', style: GoogleFonts.dmSans(fontSize: 10, color: scoreColor(todayScore))),
                 ]),
                 const SizedBox(width: 8),
                 Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 16, color: secondary),
@@ -228,11 +229,11 @@ class _FriendCardState extends State<_FriendCard> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
               child: Row(children: [
-                _Tab(label: 'Today', active: _activeTab == 0, gold: gold, isDark: isDark, onTap: () => setState(() => _activeTab = 0)),
+                _Tab(label: AppLocalizations.of(context)!.todayTab, active: _activeTab == 0, gold: gold, isDark: isDark, onTap: () => setState(() => _activeTab = 0)),
                 const SizedBox(width: 8),
-                _Tab(label: 'Overall', active: _activeTab == 1, gold: gold, isDark: isDark, onTap: () => setState(() => _activeTab = 1)),
+                _Tab(label: AppLocalizations.of(context)!.overallTab, active: _activeTab == 1, gold: gold, isDark: isDark, onTap: () => setState(() => _activeTab = 1)),
                 const SizedBox(width: 8),
-                _Tab(label: 'Dynamics', active: _activeTab == 2, gold: gold, isDark: isDark, onTap: () => setState(() => _activeTab = 2)),
+                _Tab(label: AppLocalizations.of(context)!.dynamicsTab, active: _activeTab == 2, gold: gold, isDark: isDark, onTap: () => setState(() => _activeTab = 2)),
               ]),
             ),
 
@@ -254,7 +255,7 @@ class _FriendCardState extends State<_FriendCard> {
                 child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   Icon(Icons.remove_circle_outline, size: 14, color: secondary.withOpacity(0.5)),
                   const SizedBox(width: 4),
-                  Text('Remove', style: GoogleFonts.dmSans(fontSize: 11, color: secondary.withOpacity(0.5))),
+                  Text(AppLocalizations.of(context)!.removeLabel, style: GoogleFonts.dmSans(fontSize: 11, color: secondary.withOpacity(0.5))),
                 ]),
               ),
             ),
@@ -351,7 +352,7 @@ class _TodayTab extends StatelessWidget {
         const SizedBox(height: 14),
         Divider(color: border, height: 1, thickness: 0.5),
         const SizedBox(height: 10),
-        Text('DO TOGETHER', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: successColor)),
+        Text(AppLocalizations.of(context)!.doTogether, style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: successColor)),
         const SizedBox(height: 6),
         ...doList.map((item) => Padding(
           padding: const EdgeInsets.only(bottom: 5),
@@ -366,7 +367,7 @@ class _TodayTab extends StatelessWidget {
 
       if (watchList.isNotEmpty) ...[
         const SizedBox(height: 10),
-        Text('BE CAREFUL TODAY', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: dangerColor)),
+        Text(AppLocalizations.of(context)!.beCarefulToday, style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: dangerColor)),
         const SizedBox(height: 6),
         ...watchList.map((item) => Padding(
           padding: const EdgeInsets.only(bottom: 5),
@@ -410,11 +411,11 @@ class _OverallTab extends StatelessWidget {
       Divider(color: border, height: 1, thickness: 0.5),
       const SizedBox(height: 12),
 
-      _CompatRow(label: 'What works', text: strength, color: successColor, secondary: secondary, primary: primary),
+      _CompatRow(label: AppLocalizations.of(context)!.whatWorks, text: strength, color: successColor, secondary: secondary, primary: primary),
       const SizedBox(height: 10),
-      _CompatRow(label: 'The tension', text: tension, color: dangerColor, secondary: secondary, primary: primary),
+      _CompatRow(label: AppLocalizations.of(context)!.theTension, text: tension, color: dangerColor, secondary: secondary, primary: primary),
       const SizedBox(height: 10),
-      _CompatRow(label: 'Growth edge', text: growth, color: gold, secondary: secondary, primary: primary),
+      _CompatRow(label: AppLocalizations.of(context)!.growthEdge, text: growth, color: gold, secondary: secondary, primary: primary),
 
       if (romantic != null || friendship != null) ...[
         const SizedBox(height: 12),
@@ -424,7 +425,7 @@ class _OverallTab extends StatelessWidget {
           _CompatRow(label: relationLabel, text: romantic, color: Colors.pinkAccent, secondary: secondary, primary: primary),
         if (romantic != null && friendship != null) const SizedBox(height: 10),
         if (friendship != null)
-          _CompatRow(label: 'Friendship', text: friendship, color: const Color(0xFF6366F1), secondary: secondary, primary: primary),
+          _CompatRow(label: AppLocalizations.of(context)!.friendshipLabel, text: friendship, color: const Color(0xFF6366F1), secondary: secondary, primary: primary),
       ],
 
       if (destinyNote != null) ...[
@@ -474,17 +475,17 @@ class _DynamicsTab extends StatelessWidget {
     if (p1 == null || p2 == null) return const SizedBox();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('How you show up for each other', style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600, color: primary)),
+      Text(AppLocalizations.of(context)!.howYouShowUp, style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600, color: primary)),
       const SizedBox(height: 12),
 
       // Person 1
-      _PersonDynamic(person: p1, label: 'You', gold: gold, isDark: isDark),
+      _PersonDynamic(person: p1, label: AppLocalizations.of(context)!.youLabel, gold: gold, isDark: isDark),
       const SizedBox(height: 12),
       Divider(color: border, height: 1, thickness: 0.5),
       const SizedBox(height: 12),
 
       // Person 2
-      _PersonDynamic(person: p2, label: 'Them', gold: gold, isDark: isDark),
+      _PersonDynamic(person: p2, label: AppLocalizations.of(context)!.themLabel, gold: gold, isDark: isDark),
     ]);
   }
 }
@@ -507,7 +508,7 @@ class _PersonDynamic extends StatelessWidget {
         const SizedBox(width: 8),
         Text(label, style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600, color: gold)),
         const SizedBox(width: 6),
-        Text('(Basic ${person['basic']}, Destiny ${person['destiny']})',
+        Text('(${AppLocalizations.of(context)!.basicLabel} ${person['basic']}, ${AppLocalizations.of(context)!.destinyLabel} ${person['destiny']})',
             style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
       ]),
       const SizedBox(height: 8),
@@ -569,9 +570,9 @@ class _AddFriendSheetState extends State<_AddFriendSheet> {
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Center(child: Container(width: 36, height: 3, decoration: BoxDecoration(color: border, borderRadius: BorderRadius.circular(2)))),
         const SizedBox(height: 20),
-        Text('Add to your circle', style: GoogleFonts.cormorantGaramond(fontSize: 20, color: gold)),
+        Text(AppLocalizations.of(context)!.addToYourCircle, style: GoogleFonts.cormorantGaramond(fontSize: 20, color: gold)),
         const SizedBox(height: 4),
-        Text('Partner, friend, family, colleague — anyone', style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
+        Text(AppLocalizations.of(context)!.partnerFriendFamily, style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
         const SizedBox(height: 20),
 
         // Name
@@ -579,7 +580,7 @@ class _AddFriendSheetState extends State<_AddFriendSheet> {
           controller: _nameCtrl,
           style: GoogleFonts.dmSans(fontSize: 14, color: primary),
           decoration: InputDecoration(
-            hintText: 'Their name',
+            hintText: AppLocalizations.of(context)!.theirNameHint,
             hintStyle: GoogleFonts.dmSans(color: secondary),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: border, width: 0.5)),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: gold, width: 1)),
@@ -655,7 +656,7 @@ class _AddFriendSheetState extends State<_AddFriendSheet> {
               ),
               child: Center(child: _saving
                   ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                  : Text('Add to circle', style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black))),
+                  : Text(AppLocalizations.of(context)!.addToCircle, style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black))),
             ),
           ),
         ),

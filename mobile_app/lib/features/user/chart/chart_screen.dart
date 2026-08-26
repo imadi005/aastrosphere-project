@@ -6,6 +6,7 @@ import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/providers/today_provider.dart';
 import '../../../core/services/api_service.dart';
 import '../../auth/providers/user_provider.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 // Religion-neutral labels for the 9 numerology energies — used everywhere
 // this chart is shown to the user, in place of the underlying planet names.
@@ -280,7 +281,7 @@ class _ChartView extends StatelessWidget {
           const SizedBox(height: 16),
 
           // ── Grid ──────────────────────────────────────────────────
-          SectionLabel('Numerological Grid'),
+          SectionLabel(AppLocalizations.of(context)!.numerologicalGrid),
           const SizedBox(height: 8),
           _GridWidget(grid: grid, isDark: isDark, gold: gold),
           const SizedBox(height: 10),
@@ -300,35 +301,35 @@ class _ChartView extends StatelessWidget {
           const SizedBox(height: 16),
 
           // ── Running Periods ───────────────────────────────────────
-          SectionLabel('Running Periods'),
+          SectionLabel(AppLocalizations.of(context)!.runningPeriods),
           const SizedBox(height: 8),
           AstroCard(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Column(children: [
-              _PeriodRow(label: 'Long-Term Phase', number: maha['number'] as int,
+              _PeriodRow(label: AppLocalizations.of(context)!.longTermPhase, number: maha['number'] as int,
                   planet: kNeutralEnergyLabel[maha['number'] as int] ?? '',
                   period: '${_yr(maha['start'])} – ${_yr(maha['end'])}',
                   color: gold, isDark: isDark),
               Divider(color: border, height: 16, thickness: 0.5),
-              _PeriodRow(label: 'Current Phase', number: antar['number'] as int,
+              _PeriodRow(label: AppLocalizations.of(context)!.currentPhase, number: antar['number'] as int,
                   planet: kNeutralEnergyLabel[antar['number'] as int] ?? '',
                   period: '${_mo(antar['start'])} – ${_mo(antar['end'])}',
                   color: isDark ? AppColors.successDark : AppColors.success, isDark: isDark),
               Divider(color: border, height: 16, thickness: 0.5),
-              _PeriodRow(label: 'Monthly', number: monthly['number'] as int,
+              _PeriodRow(label: AppLocalizations.of(context)!.monthlyLabel, number: monthly['number'] as int,
                   planet: kNeutralEnergyLabel[monthly['number'] as int] ?? '',
                   period: '${_dt(monthly['start'])} – ${_dt(monthly['end'])}',
                   color: const Color(0xFF6366F1), isDark: isDark),
               if (daily != null) ...[
                 Divider(color: border, height: 16, thickness: 0.5),
-                _PeriodRow(label: 'Daily', number: daily,
+                _PeriodRow(label: AppLocalizations.of(context)!.dailyLabel, number: daily,
                     planet: '',
                     period: targetDate ?? '',
                     color: const Color(0xFF06B6D4), isDark: isDark),
               ],
               if (hourly != null) ...[
                 Divider(color: border, height: 16, thickness: 0.5),
-                _PeriodRow(label: 'Hourly', number: hourly,
+                _PeriodRow(label: AppLocalizations.of(context)!.hourlyLabel, number: hourly,
                     planet: '',
                     period: targetHour != null
                         ? '${targetHour > 12 ? targetHour - 12 : targetHour == 0 ? 12 : targetHour}:00 ${targetHour < 12 ? 'AM' : 'PM'}'
@@ -342,7 +343,7 @@ class _ChartView extends StatelessWidget {
           // ── Day Analysis ──────────────────────────────────────────
           if (dayAnalysis.isNotEmpty) ...[
             const SizedBox(height: 4),
-            SectionLabel('Day Analysis'),
+            SectionLabel(AppLocalizations.of(context)!.dayAnalysis),
             const SizedBox(height: 8),
             _DayAnalysisSection(
               findings: dayAnalysis,
@@ -354,17 +355,17 @@ class _ChartView extends StatelessWidget {
           ],
 
           // ── Core Numbers ──────────────────────────────────────────
-          SectionLabel('Core Numbers'),
+          SectionLabel(AppLocalizations.of(context)!.coreNumbers),
           const SizedBox(height: 8),
           Row(children: [
             Expanded(child: _CoreNumberCard(
-              label: 'Basic', sublabel: 'Inner Self',
+              label: AppLocalizations.of(context)!.basicLabel, sublabel: AppLocalizations.of(context)!.innerSelf,
               number: basic, planet: kNeutralEnergyLabel[basic] ?? '',
               gold: gold, isDark: isDark,
             )),
             const SizedBox(width: 10),
             Expanded(child: _CoreNumberCard(
-              label: 'Destiny', sublabel: 'Life Path',
+              label: AppLocalizations.of(context)!.destinyLabel, sublabel: AppLocalizations.of(context)!.lifePath,
               number: destiny, planet: kNeutralEnergyLabel[destiny] ?? '',
               gold: gold, isDark: isDark,
             )),
@@ -374,7 +375,7 @@ class _ChartView extends StatelessWidget {
           // ── Lucky Color only ──────────────────────────────────────
           if (lucky.isNotEmpty && lucky['color'] != null) ...[
             _InfoCard(
-              title: 'Lucky Color',
+              title: AppLocalizations.of(context)!.luckyColor,
               value: lucky['color'] as String? ?? '',
               isDark: isDark, gold: gold,
             ),
@@ -422,12 +423,13 @@ class _GridLegend extends StatelessWidget {
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final successColor = isDark ? AppColors.successDark : AppColors.success;
 
+    final t = AppLocalizations.of(context)!;
     final items = <Map<String, dynamic>>[
-      {'label': 'Long-Term', 'number': maha, 'color': gold},
-      {'label': 'Current', 'number': antar, 'color': successColor},
-      {'label': 'Monthly', 'number': monthly, 'color': const Color(0xFF6366F1)},
-      if (daily != null) {'label': 'Daily', 'number': daily, 'color': const Color(0xFF06B6D4)},
-      if (hourly != null) {'label': 'Hourly', 'number': hourly, 'color': const Color(0xFFF59E0B)},
+      {'label': t.longTermPhase, 'number': maha, 'color': gold},
+      {'label': t.currentPhase, 'number': antar, 'color': successColor},
+      {'label': t.monthlyLabel, 'number': monthly, 'color': const Color(0xFF6366F1)},
+      if (daily != null) {'label': t.dailyLabel, 'number': daily, 'color': const Color(0xFF06B6D4)},
+      if (hourly != null) {'label': t.hourlyLabel, 'number': hourly, 'color': const Color(0xFFF59E0B)},
     ];
 
     return Wrap(

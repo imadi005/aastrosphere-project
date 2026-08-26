@@ -360,6 +360,66 @@ abstract class AppLocalizations {
   /// **'Client'**
   String get modeClient;
 
+  /// No description provided for @longTermPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-Term Phase'**
+  String get longTermPhase;
+
+  /// No description provided for @currentPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Phase'**
+  String get currentPhase;
+
+  /// No description provided for @monthlyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthlyLabel;
+
+  /// No description provided for @dailyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get dailyLabel;
+
+  /// No description provided for @hourlyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hourly'**
+  String get hourlyLabel;
+
+  /// No description provided for @basicLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic'**
+  String get basicLabel;
+
+  /// No description provided for @innerSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Inner Self'**
+  String get innerSelf;
+
+  /// No description provided for @destinyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Destiny'**
+  String get destinyLabel;
+
+  /// No description provided for @lifePath.
+  ///
+  /// In en, this message translates to:
+  /// **'Life Path'**
+  String get lifePath;
+
+  /// No description provided for @numerologicalGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Numerological Grid'**
+  String get numerologicalGrid;
+
   /// No description provided for @lockIn.
   ///
   /// In en, this message translates to:
@@ -369,7 +429,7 @@ abstract class AppLocalizations {
   /// No description provided for @todaysPriority.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s Priority'**
+  /// **'TODAY\'S PRIORITY'**
   String get todaysPriority;
 
   /// No description provided for @luckyColor.
@@ -395,6 +455,462 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Day Analysis'**
   String get dayAnalysis;
+
+  /// No description provided for @readingTodaysEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading today\'s energy...'**
+  String get readingTodaysEnergy;
+
+  /// No description provided for @todaysGuidance.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY\'S GUIDANCE'**
+  String get todaysGuidance;
+
+  /// No description provided for @couldNotLoadReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load today\'s reading'**
+  String get couldNotLoadReading;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
+  /// No description provided for @completeProfileToBegin.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile to begin'**
+  String get completeProfileToBegin;
+
+  /// No description provided for @hourByHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Hour by Hour'**
+  String get hourByHour;
+
+  /// No description provided for @activeInYourChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Active in Your Chart'**
+  String get activeInYourChart;
+
+  /// No description provided for @tapAnyHourDetailLower.
+  ///
+  /// In en, this message translates to:
+  /// **'tap any hour below for detail'**
+  String get tapAnyHourDetailLower;
+
+  /// No description provided for @tapAnyHourDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any hour for detail'**
+  String get tapAnyHourDetail;
+
+  /// No description provided for @notYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet'**
+  String get notYet;
+
+  /// No description provided for @doLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DO'**
+  String get doLabel;
+
+  /// No description provided for @avoidLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'AVOID'**
+  String get avoidLabel;
+
+  /// No description provided for @bestForThisHour.
+  ///
+  /// In en, this message translates to:
+  /// **'BEST FOR THIS HOUR'**
+  String get bestForThisHour;
+
+  /// No description provided for @avoidThisHour.
+  ///
+  /// In en, this message translates to:
+  /// **'AVOID THIS HOUR'**
+  String get avoidThisHour;
+
+  /// No description provided for @whyThisHour.
+  ///
+  /// In en, this message translates to:
+  /// **'WHY THIS HOUR'**
+  String get whyThisHour;
+
+  /// No description provided for @physicalCaution.
+  ///
+  /// In en, this message translates to:
+  /// **'PHYSICAL CAUTION'**
+  String get physicalCaution;
+
+  /// No description provided for @cautionWindowsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'CAUTION WINDOWS TODAY'**
+  String get cautionWindowsToday;
+
+  /// No description provided for @notifiedHourBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'You will be notified 1 hour before each window.'**
+  String get notifiedHourBefore;
+
+  /// No description provided for @goodFor.
+  ///
+  /// In en, this message translates to:
+  /// **'GOOD FOR'**
+  String get goodFor;
+
+  /// No description provided for @goEasyOn.
+  ///
+  /// In en, this message translates to:
+  /// **'GO EASY ON'**
+  String get goEasyOn;
+
+  /// No description provided for @rightNow.
+  ///
+  /// In en, this message translates to:
+  /// **'RIGHT NOW'**
+  String get rightNow;
+
+  /// No description provided for @tapForDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap for details'**
+  String get tapForDetails;
+
+  /// No description provided for @restOfYourDay.
+  ///
+  /// In en, this message translates to:
+  /// **'THE REST OF YOUR DAY'**
+  String get restOfYourDay;
+
+  /// No description provided for @nowLower.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get nowLower;
+
+  /// No description provided for @nowUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'NOW'**
+  String get nowUpper;
+
+  /// No description provided for @energyToday.
+  ///
+  /// In en, this message translates to:
+  /// **'ENERGY TODAY'**
+  String get energyToday;
+
+  /// No description provided for @bestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get bestLabel;
+
+  /// No description provided for @cautionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Caution'**
+  String get cautionLabel;
+
+  /// No description provided for @greetingMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning, {name}'**
+  String greetingMorning(String name);
+
+  /// No description provided for @greetingAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon, {name}'**
+  String greetingAfternoon(String name);
+
+  /// No description provided for @greetingEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening, {name}'**
+  String greetingEvening(String name);
+
+  /// No description provided for @greetingLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello, {name}'**
+  String greetingLate(String name);
+
+  /// No description provided for @askWelcomeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'✨ **Welcome** ✨\n\nI\'m your personal guide. Ask me anything about:\n\n• **Your Path** - Personality, patterns, life direction\n• **Career** - Job switch, promotion, business\n• **Relationships** - Love, marriage, family vibes\n• **Finance** - Money, investments, wealth\n• **Health** - Wellness, remedies, lifestyle\n\n**What\'s on your mind?** 😊'**
+  String get askWelcomeMessage;
+
+  /// No description provided for @askWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask '**
+  String get askWord;
+
+  /// No description provided for @anythingWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything'**
+  String get anythingWord;
+
+  /// No description provided for @byPankajj.
+  ///
+  /// In en, this message translates to:
+  /// **'by Pankajj Kumar Mishra'**
+  String get byPankajj;
+
+  /// No description provided for @askQuestionGuidance.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask your question for\nastrological guidance'**
+  String get askQuestionGuidance;
+
+  /// No description provided for @careerLoveMoneyHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Career · Love · Money · Health'**
+  String get careerLoveMoneyHealth;
+
+  /// No description provided for @typingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Typing...'**
+  String get typingLabel;
+
+  /// No description provided for @watchOut.
+  ///
+  /// In en, this message translates to:
+  /// **'WATCH OUT'**
+  String get watchOut;
+
+  /// No description provided for @bestFor.
+  ///
+  /// In en, this message translates to:
+  /// **'BEST FOR'**
+  String get bestFor;
+
+  /// No description provided for @cautionUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'CAUTION'**
+  String get cautionUpper;
+
+  /// No description provided for @yourCurrentChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR CURRENT CHAPTER'**
+  String get yourCurrentChapter;
+
+  /// No description provided for @couldNotLoadInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load insights'**
+  String get couldNotLoadInsights;
+
+  /// No description provided for @retryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryLabel;
+
+  /// No description provided for @weekByWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week by Week'**
+  String get weekByWeek;
+
+  /// No description provided for @monthByMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month by Month'**
+  String get monthByMonth;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get thisWeek;
+
+  /// No description provided for @monthArc.
+  ///
+  /// In en, this message translates to:
+  /// **'Month Arc'**
+  String get monthArc;
+
+  /// No description provided for @lifeDomains.
+  ///
+  /// In en, this message translates to:
+  /// **'Life Domains'**
+  String get lifeDomains;
+
+  /// No description provided for @yourYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Year'**
+  String get yourYear;
+
+  /// No description provided for @yourCircle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Circle'**
+  String get yourCircle;
+
+  /// No description provided for @todayScoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayScoreLabel;
+
+  /// No description provided for @removeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeLabel;
+
+  /// No description provided for @doTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'DO TOGETHER'**
+  String get doTogether;
+
+  /// No description provided for @beCarefulToday.
+  ///
+  /// In en, this message translates to:
+  /// **'BE CAREFUL TODAY'**
+  String get beCarefulToday;
+
+  /// No description provided for @howYouShowUp.
+  ///
+  /// In en, this message translates to:
+  /// **'How you show up for each other'**
+  String get howYouShowUp;
+
+  /// No description provided for @errorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get errorLabel;
+
+  /// No description provided for @addToYourCircle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to your circle'**
+  String get addToYourCircle;
+
+  /// No description provided for @partnerFriendFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner, friend, family, colleague — anyone'**
+  String get partnerFriendFamily;
+
+  /// No description provided for @addToCircle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to circle'**
+  String get addToCircle;
+
+  /// No description provided for @addAnyone.
+  ///
+  /// In en, this message translates to:
+  /// **'Add anyone — partner, friend, family, colleague'**
+  String get addAnyone;
+
+  /// No description provided for @seeHowNumbersInteract.
+  ///
+  /// In en, this message translates to:
+  /// **'See how your numbers interact'**
+  String get seeHowNumbersInteract;
+
+  /// No description provided for @addSomeone.
+  ///
+  /// In en, this message translates to:
+  /// **'Add someone'**
+  String get addSomeone;
+
+  /// No description provided for @personWord.
+  ///
+  /// In en, this message translates to:
+  /// **'person'**
+  String get personWord;
+
+  /// No description provided for @peopleWord.
+  ///
+  /// In en, this message translates to:
+  /// **'people'**
+  String get peopleWord;
+
+  /// No description provided for @tapToSeeFullReading.
+  ///
+  /// In en, this message translates to:
+  /// **'tap to see full reading'**
+  String get tapToSeeFullReading;
+
+  /// No description provided for @overallTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall'**
+  String get overallTab;
+
+  /// No description provided for @dynamicsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Dynamics'**
+  String get dynamicsTab;
+
+  /// No description provided for @whatWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'What works'**
+  String get whatWorks;
+
+  /// No description provided for @theTension.
+  ///
+  /// In en, this message translates to:
+  /// **'The tension'**
+  String get theTension;
+
+  /// No description provided for @growthEdge.
+  ///
+  /// In en, this message translates to:
+  /// **'Growth edge'**
+  String get growthEdge;
+
+  /// No description provided for @friendshipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Friendship'**
+  String get friendshipLabel;
+
+  /// No description provided for @youLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get youLabel;
+
+  /// No description provided for @themLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Them'**
+  String get themLabel;
+
+  /// No description provided for @theirNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Their name'**
+  String get theirNameHint;
 }
 
 class _AppLocalizationsDelegate

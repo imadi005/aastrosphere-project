@@ -9,6 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/services/notification_service.dart';
 import '../../auth/providers/user_provider.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class TodayScreen extends ConsumerStatefulWidget {
   const TodayScreen({super.key});
@@ -57,7 +58,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             children: [
               CircularProgressIndicator(strokeWidth: 1.5, color: gold),
               const SizedBox(height: 16),
-              Text('Reading today\'s energy...',
+              Text(AppLocalizations.of(context)!.readingTodaysEnergy,
                   style: GoogleFonts.dmSans(fontSize: 13, color: secondary)),
             ],
           )),
@@ -194,7 +195,7 @@ class _GreetingRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(_greeting(first),
+        Text(_greeting(context, first),
             style: GoogleFonts.cormorantGaramond(
                 fontSize: 26, fontWeight: FontWeight.w400, color: gold)),
         Text(DateFormat('EEEE, d MMMM').format(date),
@@ -203,16 +204,17 @@ class _GreetingRow extends StatelessWidget {
     );
   }
 
-  String _greeting(String first) {
+  String _greeting(BuildContext context, String first) {
+    final t = AppLocalizations.of(context)!;
     final h = DateTime.now().hour;
     // 5 AM – 11:59 AM
-    if (h >= 5 && h < 12) return 'Good morning, $first';
+    if (h >= 5 && h < 12) return t.greetingMorning(first);
     // 12 PM – 4:59 PM
-    if (h >= 12 && h < 17) return 'Good afternoon, $first';
+    if (h >= 12 && h < 17) return t.greetingAfternoon(first);
     // 5 PM – 9:59 PM
-    if (h >= 17 && h < 22) return 'Good evening, $first';
+    if (h >= 17 && h < 22) return t.greetingEvening(first);
     // 10 PM – 4:59 AM (late night / very early)
-    return 'Hello, $first';
+    return t.greetingLate(first);
   }
 }
 
@@ -417,7 +419,7 @@ class _HourSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ── Section label
-        SectionLabel('Hour by Hour'),
+        SectionLabel(AppLocalizations.of(context)!.hourByHour),
         const SizedBox(height: 10),
 
         // ── Energy Wave ────────────────────────────────────────────────────
@@ -425,14 +427,14 @@ class _HourSection extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Text('ENERGY TODAY', style: GoogleFonts.dmSans(
+              Text(AppLocalizations.of(context)!.energyToday, style: GoogleFonts.dmSans(
                   fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: gold)),
               const Spacer(),
               _Dot(color: isDark ? AppColors.successDark : AppColors.success), const SizedBox(width: 4),
-              Text('Best', style: GoogleFonts.dmSans(fontSize: 8, color: secondary)),
+              Text(AppLocalizations.of(context)!.bestLabel, style: GoogleFonts.dmSans(fontSize: 8, color: secondary)),
               const SizedBox(width: 10),
               _Dot(color: const Color(0xFFF59E0B)), const SizedBox(width: 4),
-              Text('Caution', style: GoogleFonts.dmSans(fontSize: 8, color: secondary)),
+              Text(AppLocalizations.of(context)!.cautionLabel, style: GoogleFonts.dmSans(fontSize: 8, color: secondary)),
             ]),
             const SizedBox(height: 12),
             SizedBox(
@@ -465,7 +467,7 @@ class _HourSection extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Text('NOW  $ch12 $campm',
+                Text('${AppLocalizations.of(context)!.nowUpper}  $ch12 $campm',
                     style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
                         letterSpacing: 1, color: gold)),
                 const Spacer(),
@@ -505,7 +507,7 @@ class _HourSection extends StatelessWidget {
                 Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   if (currentGoodFor.isNotEmpty) Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('GOOD FOR', style: GoogleFonts.dmSans(fontSize: 8,
+                      Text(AppLocalizations.of(context)!.goodFor, style: GoogleFonts.dmSans(fontSize: 8,
                           color: (isDark ? AppColors.successDark : AppColors.success),
                           fontWeight: FontWeight.w700, letterSpacing: 0.5)),
                       const SizedBox(height: 4),
@@ -524,7 +526,7 @@ class _HourSection extends StatelessWidget {
                   ),
                   if (currentAvoid.isNotEmpty) Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('AVOID', style: GoogleFonts.dmSans(fontSize: 8,
+                      Text(AppLocalizations.of(context)!.avoidLabel, style: GoogleFonts.dmSans(fontSize: 8,
                           color: isDark ? AppColors.dangerDark : AppColors.danger,
                           fontWeight: FontWeight.w700, letterSpacing: 0.5)),
                       const SizedBox(height: 4),
@@ -927,7 +929,7 @@ class _DayBlocksState extends State<_DayBlocks> {
                         decoration: BoxDecoration(
                             color: widget.gold.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4)),
-                        child: Text('NOW', style: GoogleFonts.dmSans(
+                        child: Text(AppLocalizations.of(context)!.nowUpper, style: GoogleFonts.dmSans(
                             fontSize: 8, fontWeight: FontWeight.w700,
                             color: widget.gold, letterSpacing: 0.5)),
                       ),
@@ -1052,7 +1054,7 @@ class _HourSummaryCard extends StatelessWidget {
             cautionChips.map((c) => c).toList())),
         ]),
         const SizedBox(height: 4),
-        Text('tap any hour below for detail',
+        Text(AppLocalizations.of(context)!.tapAnyHourDetailLower,
             style: GoogleFonts.dmSans(fontSize: 9, color: secondary.withOpacity(0.45))),
       ]),
     );
@@ -1204,7 +1206,7 @@ class _OneActionCardState extends State<_OneActionCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('TODAY\'S PRIORITY', style: GoogleFonts.dmSans(
+          Text(AppLocalizations.of(context)!.todaysPriority, style: GoogleFonts.dmSans(
               fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: widget.gold)),
           const SizedBox(height: 12),
           if (!_loaded)
@@ -1264,7 +1266,7 @@ class _OneActionCardState extends State<_OneActionCard> {
                 child: OutlinedButton.icon(
                   onPressed: _lockFocus,
                   icon: Icon(Icons.lock_outline, size: 13, color: widget.gold.withOpacity(0.78)),
-                  label: Text('Lock in',
+                  label: Text(AppLocalizations.of(context)!.lockIn,
                       style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: widget.gold.withOpacity(0.86),
@@ -1313,7 +1315,7 @@ class _OneActionCardState extends State<_OneActionCard> {
                   child: OutlinedButton.icon(
                     onPressed: () => _markCompleted(false),
                     icon: const Icon(Icons.refresh, size: 16),
-                    label: Text('Not yet',
+                    label: Text(AppLocalizations.of(context)!.notYet,
                         style: GoogleFonts.dmSans(fontSize: 12.5, fontWeight: FontWeight.w700)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: secondary,
@@ -1379,14 +1381,14 @@ class _GuidanceCardState extends State<_GuidanceCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('TODAY\'S GUIDANCE', style: GoogleFonts.dmSans(
+          Text(AppLocalizations.of(context)!.todaysGuidance, style: GoogleFonts.dmSans(
               fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: widget.gold)),
           const SizedBox(height: 12),
 
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // DO column
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('DO', style: GoogleFonts.dmSans(
+              Text(AppLocalizations.of(context)!.doLabel, style: GoogleFonts.dmSans(
                   fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: successColor)),
               const SizedBox(height: 8),
               ...dos.map((item) => Padding(
@@ -1406,7 +1408,7 @@ class _GuidanceCardState extends State<_GuidanceCard> {
 
             // AVOID column
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('AVOID', style: GoogleFonts.dmSans(
+              Text(AppLocalizations.of(context)!.avoidLabel, style: GoogleFonts.dmSans(
                   fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: dangerColor)),
               const SizedBox(height: 8),
               ...avoids.map((item) => Padding(
@@ -1457,7 +1459,7 @@ class _ActiveEnergyCardState extends State<_ActiveEnergyCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionLabel('Active in Your Chart'),
+        SectionLabel(AppLocalizations.of(context)!.activeInYourChart),
         const SizedBox(height: 8),
         AstroCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1545,7 +1547,7 @@ class _HourStrip extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionLabel('Hour by Hour'),
+        SectionLabel(AppLocalizations.of(context)!.hourByHour),
         const SizedBox(height: 8),
         SizedBox(
           height: 76,
@@ -1612,7 +1614,7 @@ class _HourStrip extends StatelessWidget {
           const SizedBox(width: 14),
           _LegendDot(color: warningColor, label: 'Watch'),
           const SizedBox(width: 14),
-          Text('Tap any hour for detail',
+          Text(AppLocalizations.of(context)!.tapAnyHourDetail,
               style: GoogleFonts.dmSans(fontSize: 10,
                   color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight)),
         ]),
@@ -1732,7 +1734,7 @@ class _HourStrip extends StatelessWidget {
 
             // Good for
             if (goodFor.isNotEmpty) ...[
-              Text('BEST FOR THIS HOUR',
+              Text(AppLocalizations.of(context)!.bestForThisHour,
                   style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
                       letterSpacing: 1, color: successColor)),
               const SizedBox(height: 8),
@@ -1752,7 +1754,7 @@ class _HourStrip extends StatelessWidget {
 
             // Avoid
             if (avoidList.isNotEmpty) ...[
-              Text('AVOID THIS HOUR',
+              Text(AppLocalizations.of(context)!.avoidThisHour,
                   style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
                       letterSpacing: 1, color: dangerColor)),
               const SizedBox(height: 8),
@@ -1774,7 +1776,7 @@ class _HourStrip extends StatelessWidget {
               const SizedBox(height: 12),
               Divider(color: border, thickness: 0.5),
               const SizedBox(height: 10),
-              Text('WHY THIS HOUR',
+              Text(AppLocalizations.of(context)!.whyThisHour,
                   style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700,
                       letterSpacing: 1, color: secondary)),
               const SizedBox(height: 8),
@@ -1874,11 +1876,11 @@ class _ErrorView extends StatelessWidget {
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Text('Could not load today\'s reading',
+      Text(AppLocalizations.of(context)!.couldNotLoadReading,
           style: GoogleFonts.dmSans(fontSize: 13, color: secondary)),
       const SizedBox(height: 16),
       GestureDetector(onTap: onRetry,
-          child: Text('Try again', style: GoogleFonts.dmSans(fontSize: 13, color: gold))),
+          child: Text(AppLocalizations.of(context)!.tryAgain, style: GoogleFonts.dmSans(fontSize: 13, color: gold))),
     ]));
   }
 }
@@ -1890,7 +1892,7 @@ class _NoProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
-    return Center(child: Text('Complete your profile to begin',
+    return Center(child: Text(AppLocalizations.of(context)!.completeProfileToBegin,
         style: GoogleFonts.dmSans(fontSize: 13, color: gold)));
   }
 }
@@ -1927,7 +1929,7 @@ class _AccidentWarningCard extends StatelessWidget {
         Row(children: [
           Icon(Icons.warning_amber_rounded, size: 15, color: accentColor),
           const SizedBox(width: 8),
-          Text('PHYSICAL CAUTION',
+          Text(AppLocalizations.of(context)!.physicalCaution,
               style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w700,
                   letterSpacing: 1, color: accentColor)),
         ]),
@@ -1940,7 +1942,7 @@ class _AccidentWarningCard extends StatelessWidget {
           const SizedBox(height: 10),
           Divider(color: border, height: 1, thickness: 0.5),
           const SizedBox(height: 8),
-          Text('CAUTION WINDOWS TODAY',
+          Text(AppLocalizations.of(context)!.cautionWindowsToday,
               style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w600,
                   letterSpacing: 0.8, color: secondary)),
           const SizedBox(height: 6),
@@ -1970,7 +1972,7 @@ class _AccidentWarningCard extends StatelessWidget {
             );
           }),
           const SizedBox(height: 6),
-          Text('You will be notified 1 hour before each window.',
+          Text(AppLocalizations.of(context)!.notifiedHourBefore,
               style: GoogleFonts.dmSans(fontSize: 10,
                   color: secondary.withOpacity(0.6), fontStyle: FontStyle.italic)),
         ],
@@ -2065,7 +2067,7 @@ class _HoursCardState extends State<_HoursCard> {
           ],
           if (goodFor.isNotEmpty) ...[
             const SizedBox(height: 18),
-            Text('GOOD FOR', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1,
+            Text(AppLocalizations.of(context)!.goodFor, style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1,
                 color: widget.isDark ? AppColors.successDark : AppColors.success)),
             const SizedBox(height: 8),
             Wrap(spacing: 8, runSpacing: 8, children: goodFor.map((g) => Container(
@@ -2077,7 +2079,7 @@ class _HoursCardState extends State<_HoursCard> {
           ],
           if (avoid.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text('GO EASY ON', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1,
+            Text(AppLocalizations.of(context)!.goEasyOn, style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1,
                 color: const Color(0xFFF59E0B))),
             const SizedBox(height: 8),
             Wrap(spacing: 8, runSpacing: 8, children: avoid.map((a) => Container(
@@ -2107,7 +2109,7 @@ class _HoursCardState extends State<_HoursCard> {
         : (nowGood.isNotEmpty ? 'Good for ${nowGood.first}' : 'A steady stretch');
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SectionLabel('Hour by Hour'),
+      SectionLabel(AppLocalizations.of(context)!.hourByHour),
       const SizedBox(height: 10),
 
       // ── RIGHT NOW — hero card ──
@@ -2133,7 +2135,7 @@ class _HoursCardState extends State<_HoursCard> {
               const SizedBox(width: 14),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  Text('RIGHT NOW', style: GoogleFonts.dmSans(
+                  Text(AppLocalizations.of(context)!.rightNow, style: GoogleFonts.dmSans(
                       fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1.3, color: gold)),
                   const SizedBox(width: 8),
                   Text(_fmt(widget.currentHour), style: GoogleFonts.dmSans(
@@ -2151,7 +2153,7 @@ class _HoursCardState extends State<_HoursCard> {
                     style: GoogleFonts.dmSans(fontSize: 13.5, height: 1.4, fontWeight: FontWeight.w500, color: primary)),
                 const SizedBox(height: 4),
                 Row(children: [
-                  Text('Tap for details', style: GoogleFonts.dmSans(fontSize: 10.5, color: gold.withOpacity(0.9))),
+                  Text(AppLocalizations.of(context)!.tapForDetails, style: GoogleFonts.dmSans(fontSize: 10.5, color: gold.withOpacity(0.9))),
                   Icon(Icons.chevron_right, size: 14, color: gold.withOpacity(0.9)),
                 ]),
               ])),
@@ -2160,7 +2162,7 @@ class _HoursCardState extends State<_HoursCard> {
         ),
       const SizedBox(height: 16),
 
-      Text('THE REST OF YOUR DAY', style: GoogleFonts.dmSans(
+      Text(AppLocalizations.of(context)!.restOfYourDay, style: GoogleFonts.dmSans(
           fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: secondary)),
       const SizedBox(height: 8),
 
@@ -2232,7 +2234,7 @@ class _HoursCardState extends State<_HoursCard> {
                                 fontWeight: isNow ? FontWeight.w700 : FontWeight.w500, color: primary))),
                         if (isNow)
                           Padding(padding: const EdgeInsets.only(right: 6),
-                            child: Text('now', style: GoogleFonts.dmSans(
+                            child: Text(AppLocalizations.of(context)!.nowLower, style: GoogleFonts.dmSans(
                                 fontSize: 9, fontWeight: FontWeight.w700, color: gold))),
                         Expanded(child: Text(good.isNotEmpty ? good.first : 'steady',
                             maxLines: 1, overflow: TextOverflow.ellipsis,

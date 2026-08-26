@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../../core/providers/today_provider.dart';
 import '../me/me_screen.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class InsightsScreen extends ConsumerStatefulWidget {
   const InsightsScreen({super.key});
@@ -159,7 +160,7 @@ class _WeeklyTab extends ConsumerWidget {
               const SizedBox(height: 14),
 
               // Domain signals — full text, no truncation
-              SectionLabel('This Week'),
+              SectionLabel(AppLocalizations.of(context)!.thisWeek),
               const SizedBox(height: 8),
               _SignalList(items: [
                 if ((data['money_this_week'] as String? ?? '').isNotEmpty)
@@ -215,7 +216,7 @@ class _MonthlyTab extends ConsumerWidget {
               const SizedBox(height: 14),
 
               // Phase timeline
-              SectionLabel('Month Arc'),
+              SectionLabel(AppLocalizations.of(context)!.monthArc),
               const SizedBox(height: 8),
               _PhaseTimeline(phases: data['phases'] as List? ?? [], isDark: isDark, gold: gold),
               const SizedBox(height: 14),
@@ -238,7 +239,7 @@ class _MonthlyTab extends ConsumerWidget {
               const SizedBox(height: 14),
 
               // Domain cards — expandable
-              SectionLabel('Life Domains'),
+              SectionLabel(AppLocalizations.of(context)!.lifeDomains),
               const SizedBox(height: 8),
               _ExpandableDomain(
                 icon: Icons.account_balance_wallet_outlined,
@@ -335,7 +336,7 @@ class _YearlyTab extends ConsumerWidget {
               const SizedBox(height: 14),
 
               // Domain cards with pattern
-              SectionLabel('Your Year'),
+              SectionLabel(AppLocalizations.of(context)!.yourYear),
               const SizedBox(height: 8),
               _YearlyDomainCard(
                 icon: Icons.account_balance_wallet_outlined, title: 'Money',
@@ -732,7 +733,7 @@ class _PhaseTimeline extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(color: gold.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                        child: Text('NOW', style: GoogleFonts.dmSans(fontSize: 8, fontWeight: FontWeight.w700, color: gold)),
+                        child: Text(AppLocalizations.of(context)!.nowUpper, style: GoogleFonts.dmSans(fontSize: 8, fontWeight: FontWeight.w700, color: gold)),
                       ),
                     ],
                   ]),
@@ -838,7 +839,7 @@ class _CurrentChapterCard extends StatelessWidget {
         Row(children: [
           Icon(Icons.hourglass_bottom_outlined, size: 13, color: gold),
           const SizedBox(width: 6),
-          Text('YOUR CURRENT CHAPTER', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: gold)),
+          Text(AppLocalizations.of(context)!.yourCurrentChapter, style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: gold)),
         ]),
         const SizedBox(height: 10),
         Text(chapter['what_is_actually_happening'] as String? ?? '',
@@ -933,9 +934,9 @@ class _RetryView extends StatelessWidget {
   Widget build(BuildContext context) {
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Text('Could not load insights', style: GoogleFonts.dmSans(fontSize: 13, color: secondary)),
+      Text(AppLocalizations.of(context)!.couldNotLoadInsights, style: GoogleFonts.dmSans(fontSize: 13, color: secondary)),
       const SizedBox(height: 12),
-      GestureDetector(onTap: onRetry, child: Text('Retry', style: GoogleFonts.dmSans(fontSize: 13, color: gold))),
+      GestureDetector(onTap: onRetry, child: Text(AppLocalizations.of(context)!.retryLabel, style: GoogleFonts.dmSans(fontSize: 13, color: gold))),
     ]));
   }
 }
@@ -966,7 +967,7 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionLabel('This Week'),
+        SectionLabel(AppLocalizations.of(context)!.thisWeek),
         const SizedBox(height: 8),
         AstroCard(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1068,7 +1069,7 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
                         ],
                           const SizedBox(height: 10),
                           if (goodFor.isNotEmpty) ...[
-                            Text('GOOD FOR', style: GoogleFonts.dmSans(
+                            Text(AppLocalizations.of(context)!.goodFor, style: GoogleFonts.dmSans(
                                 fontSize: 9, fontWeight: FontWeight.w700,
                                 letterSpacing: 0.8, color: successColor)),
                             const SizedBox(height: 5),
@@ -1086,7 +1087,7 @@ class _DaysBreakdownState extends State<_DaysBreakdown> {
                           ],
                           if (watchOut.isNotEmpty) ...[
                             const SizedBox(height: 8),
-                            Text('WATCH OUT', style: GoogleFonts.dmSans(
+                            Text(AppLocalizations.of(context)!.watchOut, style: GoogleFonts.dmSans(
                                 fontSize: 9, fontWeight: FontWeight.w700,
                                 letterSpacing: 0.8, color: dangerColor)),
                             const SizedBox(height: 5),
@@ -1152,7 +1153,7 @@ class _WeeksBreakdownState extends State<_WeeksBreakdown> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionLabel('Week by Week'),
+        SectionLabel(AppLocalizations.of(context)!.weekByWeek),
         const SizedBox(height: 8),
         AstroCard(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1192,7 +1193,7 @@ class _WeeksBreakdownState extends State<_WeeksBreakdown> {
                                 color: widget.gold.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Text('NOW', style: GoogleFonts.dmSans(
+                              child: Text(AppLocalizations.of(context)!.nowUpper, style: GoogleFonts.dmSans(
                                   fontSize: 8, fontWeight: FontWeight.w700, color: widget.gold)),
                             ),
                           Container(
@@ -1214,7 +1215,7 @@ class _WeeksBreakdownState extends State<_WeeksBreakdown> {
                               fontSize: 12, color: secondary, height: 1.5)),
                           const SizedBox(height: 10),
                           if (goodFor.isNotEmpty) ...[
-                            Text('GOOD FOR', style: GoogleFonts.dmSans(
+                            Text(AppLocalizations.of(context)!.goodFor, style: GoogleFonts.dmSans(
                                 fontSize: 9, fontWeight: FontWeight.w700,
                                 letterSpacing: 0.8, color: successColor)),
                             const SizedBox(height: 5),
@@ -1232,7 +1233,7 @@ class _WeeksBreakdownState extends State<_WeeksBreakdown> {
                           ],
                           if (watchOut.isNotEmpty) ...[
                             const SizedBox(height: 8),
-                            Text('WATCH OUT', style: GoogleFonts.dmSans(
+                            Text(AppLocalizations.of(context)!.watchOut, style: GoogleFonts.dmSans(
                                 fontSize: 9, fontWeight: FontWeight.w700,
                                 letterSpacing: 0.8, color: dangerColor)),
                             const SizedBox(height: 5),
@@ -1298,7 +1299,7 @@ class _MonthsBreakdownState extends State<_MonthsBreakdown> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionLabel('Month by Month'),
+        SectionLabel(AppLocalizations.of(context)!.monthByMonth),
         const SizedBox(height: 8),
         AstroCard(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1341,7 +1342,7 @@ class _MonthsBreakdownState extends State<_MonthsBreakdown> {
                                 color: widget.gold.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Text('NOW', style: GoogleFonts.dmSans(
+                              child: Text(AppLocalizations.of(context)!.nowUpper, style: GoogleFonts.dmSans(
                                   fontSize: 8, fontWeight: FontWeight.w700, color: widget.gold)),
                             ),
                           const Spacer(),
@@ -1364,7 +1365,7 @@ class _MonthsBreakdownState extends State<_MonthsBreakdown> {
                               fontSize: 12, color: secondary, height: 1.5)),
                           const SizedBox(height: 10),
                           if (bestFor.isNotEmpty) ...[
-                            Text('BEST FOR', style: GoogleFonts.dmSans(
+                            Text(AppLocalizations.of(context)!.bestFor, style: GoogleFonts.dmSans(
                                 fontSize: 9, fontWeight: FontWeight.w700,
                                 letterSpacing: 0.8, color: successColor)),
                             const SizedBox(height: 5),
@@ -1382,7 +1383,7 @@ class _MonthsBreakdownState extends State<_MonthsBreakdown> {
                           ],
                           if (caution.isNotEmpty) ...[
                             const SizedBox(height: 8),
-                            Text('CAUTION', style: GoogleFonts.dmSans(
+                            Text(AppLocalizations.of(context)!.cautionUpper, style: GoogleFonts.dmSans(
                                 fontSize: 9, fontWeight: FontWeight.w700,
                                 letterSpacing: 0.8, color: dangerColor)),
                             const SizedBox(height: 5),
@@ -1463,13 +1464,13 @@ class _DaySummaryRow extends StatelessWidget {
     return Row(children: [
       Icon(Icons.circle, size: 7, color: successColor),
       const SizedBox(width: 5),
-      Text('Best: ${bestDays.take(2).map((d) => d['day'] as String? ?? '').join(', ')}',
+      Text('${AppLocalizations.of(context)!.bestLabel}: ${bestDays.take(2).map((d) => d['day'] as String? ?? '').join(', ')}',
           style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
       if (heavyDays.isNotEmpty) ...[
         const SizedBox(width: 14),
         Icon(Icons.circle, size: 7, color: warnColor),
         const SizedBox(width: 5),
-        Text('Caution: ${heavyDays.take(2).map((d) => d['day'] as String? ?? '').join(', ')}',
+        Text('${AppLocalizations.of(context)!.cautionLabel}: ${heavyDays.take(2).map((d) => d['day'] as String? ?? '').join(', ')}',
             style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
       ],
     ]);

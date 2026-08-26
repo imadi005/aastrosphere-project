@@ -8,6 +8,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/api_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class ChatMessage {
   final String role;
@@ -36,6 +37,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   String? _userDob;
   String? _uid;
   bool _isTyping = false;
+  bool _welcomeMessageAdded = false;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
@@ -43,19 +45,29 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _loadUserDob();
-    _addWelcomeMessage();
-    
+
     _fadeController = AnimationController(
-      vsync: this, 
+      vsync: this,
       duration: const Duration(milliseconds: 600)
     );
     _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _fadeController.forward();
-    
+
     _ctrl.addListener(_onTyping);
     // _historyLoading will be set false in _loadHistory
   }
-  
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // AppLocalizations isn't available yet during initState — this is the
+    // first safe point where the InheritedWidget dependency is attached.
+    if (!_welcomeMessageAdded) {
+      _welcomeMessageAdded = true;
+      _addWelcomeMessage(context);
+    }
+  }
+
   void _onTyping() {
     if (_ctrl.text.isNotEmpty && !_isTyping) {
       setState(() => _isTyping = true);
@@ -64,22 +76,10 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
     }
   }
   
-  void _addWelcomeMessage() {
+  void _addWelcomeMessage(BuildContext context) {
     _messages.add(ChatMessage(
       role: 'assistant',
-      content: '''
-✨ **Namaskar** ✨
-
-I'm your personal astro guide. Ask me anything about:
-
-• **Astrology** - Planets, zodiac, nakshatra
-• **Career** - Job switch, promotion, business
-• **Relationships** - Love, marriage, family vibes
-• **Finance** - Money, investments, wealth
-• **Health** - Wellness, remedies, lifestyle
-
-**What's on your mind?** 🙏
-''',
+      content: AppLocalizations.of(context)!.askWelcomeMessage,
     ));
   }
 
@@ -257,11 +257,11 @@ I'm your personal astro guide. Ask me anything about:
     });
   }
   
-  void _clearChat() {
+  void _clearChat(BuildContext context) {
     if (!kIsWeb) HapticFeedback.selectionClick();
     setState(() {
       _messages.clear();
-      _addWelcomeMessage();
+      _addWelcomeMessage(context);
     });
     // Clear from Firestore too
     if (_uid != null) {
@@ -291,7 +291,7 @@ I'm your personal astro guide. Ask me anything about:
     
     return Scaffold(
       backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
-      appBar: _buildAppBar(gold, secondary, isDark),
+      appBar: _buildAppBar(context, gold, secondary, isDark),
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -310,7 +310,8 @@ I'm your personal astro guide. Ask me anything about:
     );
   }
   
-  PreferredSizeWidget _buildAppBar(Color gold, Color secondary, bool isDark) {
+  PreferredSizeWidget _buildAppBar(BuildContext context, Color gold, Color secondary, bool isDark) {
+    final t = AppLocalizations.of(context)!;
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -321,21 +322,21 @@ I'm your personal astro guide. Ask me anything about:
         children: [
           Row(
             children: [
-              Text('Ask ', style: GoogleFonts.cormorantGaramond(
-                fontSize: 24, 
-                fontWeight: FontWeight.bold, 
+              Text(t.askWord, style: GoogleFonts.cormorantGaramond(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
                 color: gold,
                 letterSpacing: -0.5,
               )),
-              Text('Anything', style: GoogleFonts.cormorantGaramond(
-                fontSize: 24, 
-                fontWeight: FontWeight.w600, 
+              Text(t.anythingWord, style: GoogleFonts.cormorantGaramond(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white : Colors.black87,
                 letterSpacing: -0.5,
               )),
             ],
           ),
-          Text('by Pankajj Kumar Mishra', 
+          Text(t.byPankajj,
             style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
         ],
       ),
@@ -343,8 +344,8 @@ I'm your personal astro guide. Ask me anything about:
         if (_messages.length > 1)
           IconButton(
             icon: Icon(Icons.delete_outline_rounded, size: 20, color: secondary),
-            onPressed: _clearChat,
-            tooltip: 'Clear chat',
+            onPressed: () => _clearChat(context),
+            tooltip: t.clearChat,
             splashRadius: 24,
           ),
       ],
@@ -371,7 +372,7 @@ I'm your personal astro guide. Ask me anything about:
           ),
           const SizedBox(height: 24),
           Text(
-            'Ask your question for\nastrological guidance',
+            AppLocalizations.of(context)!.askQuestionGuidance,
             textAlign: TextAlign.center,
             style: GoogleFonts.dmSans(
               fontSize: 16,
@@ -393,7 +394,7 @@ I'm your personal astro guide. Ask me anything about:
                 Icon(Icons.psychology_alt_rounded, size: 16, color: gold),
                 const SizedBox(width: 8),
                 Text(
-                  'Career · Love · Money · Health',
+                  AppLocalizations.of(context)!.careerLoveMoneyHealth,
                   style: GoogleFonts.dmSans(fontSize: 12, color: gold),
                 ),
               ],
@@ -564,7 +565,7 @@ I'm your personal astro guide. Ask me anything about:
                       minLines: 1,
                       style: GoogleFonts.dmSans(fontSize: 15, height: 1.2),
                       decoration: InputDecoration(
-                        hintText: _isTyping ? 'Typing...' : 'Ask your question...',
+                        hintText: _isTyping ? AppLocalizations.of(context)!.typingLabel : AppLocalizations.of(context)!.askYourQuestion,
                         hintStyle: TextStyle(
                           color: secondary.withOpacity(0.5),
                           fontSize: 14,
