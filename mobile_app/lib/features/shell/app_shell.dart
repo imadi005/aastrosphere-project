@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/providers/role_provider.dart';
 import '../../core/services/midnight_refresh.dart';
 import '../../core/providers/theme_provider.dart';
+import '../../core/widgets/language_picker.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/services/analytics_service.dart';
@@ -289,6 +290,17 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
           return RoleToggle(isAstrologer: isAstrologer, onToggle: onRoleToggle);
         }),
         const SizedBox(width: 8),
+        Consumer(builder: (context, ref, _) {
+          return GestureDetector(
+            onTap: () => showLanguagePicker(context, ref),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Icon(Icons.language, size: 18,
+                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+            ),
+          );
+        }),
+        const SizedBox(width: 4),
         ThemeToggleButton(isDark: isDark, onToggle: onThemeToggle),
         const SizedBox(width: 4),
         Consumer(builder: (context, ref, _) {

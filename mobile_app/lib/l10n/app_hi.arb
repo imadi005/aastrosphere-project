@@ -1,0 +1,53 @@
+{
+  "@@locale": "hi",
+
+  "appTitle": "Aastrosphere",
+
+  "navToday": "आज",
+  "navInsights": "जानकारी",
+  "navAsk": "पूछें",
+  "navCircle": "सर्कल",
+  "navChart": "चार्ट",
+  "navMe": "मैं",
+  "navClients": "क्लाइंट",
+
+  "selectYourLanguage": "अपनी भाषा चुनें",
+  "changeLanguage": "भाषा बदलें",
+  "languageUpdated": "भाषा अपडेट हो गई",
+
+  "continueLabel": "जारी रखें",
+  "getOtp": "OTP प्राप्त करें",
+  "verifyAndContinue": "सत्यापित करें और जारी रखें",
+  "cancel": "रद्द करें",
+  "save": "सहेजें",
+  "done": "हो गया",
+  "letsDiveIn": "शुरू करें",
+
+  "userLogin": "उपयोगकर्ता लॉगिन",
+  "astrologerLogin": "ज्योतिषी लॉगिन",
+  "enterPhoneToContinue": "जारी रखने के लिए अपना फ़ोन नंबर दर्ज करें",
+  "enterOtpSentTo": "इस नंबर पर भेजा गया 6-अंकों का कोड दर्ज करें",
+  "areYouA": "क्या आप हैं",
+  "choosePath": "अपना रास्ता चुनें",
+  "userRole": "उपयोगकर्ता",
+  "userRoleDesc": "दैनिक मार्गदर्शन, व्यक्तिगत चार्ट और रिमाइंडर",
+  "astrologerRole": "ज्योतिषी",
+  "astrologerRoleDesc": "चार्ट, टाइमलाइन और क्लाइंट रिपोर्ट पढ़ें",
+
+  "logout": "लॉगआउट",
+  "askAnything": "कुछ भी पूछें",
+  "askYourQuestion": "अपना सवाल पूछें...",
+  "clearChat": "चैट साफ़ करें",
+
+  "todayTab": "आज",
+  "insightsTab": "जानकारी",
+  "chartTab": "चार्ट",
+  "circleTab": "सर्कल",
+
+  "lockIn": "लॉक इन करें",
+  "todaysPriority": "आज की प्राथमिकता",
+  "luckyColor": "शुभ रंग",
+  "coreNumbers": "मूल अंक",
+  "runningPeriods": "चालू अवधि",
+  "dayAnalysis": "दिन का विश्लेषण"
+}

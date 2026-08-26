@@ -1,0 +1,53 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Aastrosphere",
+
+  "navToday": "Today",
+  "navInsights": "Insights",
+  "navAsk": "Ask",
+  "navCircle": "Circle",
+  "navChart": "Chart",
+  "navMe": "Me",
+  "navClients": "Clients",
+
+  "selectYourLanguage": "Select your language",
+  "changeLanguage": "Change language",
+  "languageUpdated": "Language updated",
+
+  "continueLabel": "Continue",
+  "getOtp": "Get OTP",
+  "verifyAndContinue": "Verify & Continue",
+  "cancel": "Cancel",
+  "save": "Save",
+  "done": "Done",
+  "letsDiveIn": "Let's Dive In",
+
+  "userLogin": "User Login",
+  "astrologerLogin": "Astrologer Login",
+  "enterPhoneToContinue": "Enter your phone number to continue",
+  "enterOtpSentTo": "Enter the 6-digit code sent to",
+  "areYouA": "Are you a",
+  "choosePath": "Choose your path",
+  "userRole": "User",
+  "userRoleDesc": "Daily guidance, personal chart and reminders",
+  "astrologerRole": "Astrologer",
+  "astrologerRoleDesc": "Read charts, timelines and client reports",
+
+  "logout": "Logout",
+  "askAnything": "Ask Anything",
+  "askYourQuestion": "Ask your question...",
+  "clearChat": "Clear chat",
+
+  "todayTab": "Today",
+  "insightsTab": "Insights",
+  "chartTab": "Chart",
+  "circleTab": "Circle",
+
+  "lockIn": "Lock in",
+  "todaysPriority": "Today's Priority",
+  "luckyColor": "Lucky Color",
+  "coreNumbers": "Core Numbers",
+  "runningPeriods": "Running Periods",
+  "dayAnalysis": "Day Analysis"
+}

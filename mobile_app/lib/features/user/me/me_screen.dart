@@ -6,6 +6,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
 import '../../ask/ask_screen.dart';
 import '../../../core/providers/today_provider.dart';
+import '../../../core/providers/locale_provider.dart';
+import '../../../core/widgets/language_picker.dart';
 import '../../auth/providers/user_provider.dart';
 
 class MeScreen extends ConsumerWidget {
@@ -49,7 +51,9 @@ class MeScreen extends ConsumerWidget {
                 // pricing is being redesigned around the chatbot (per-question tiers:
                 // 1@₹30, 3@₹70, 5@₹100 + question splitting/sorting). The ConsultScreen
                 // and astrologer-side answer flow are left intact for reuse/rework.
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+                _LanguageRow(isDark: isDark, gold: gold),
+                const SizedBox(height: 8),
                 _SignOutButton(isDark: isDark),
               ],
             ),
@@ -383,6 +387,45 @@ class ProfileHeader extends StatelessWidget {
   String _dobStr(DateTime d) {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return '${d.day} ${months[d.month-1]} ${d.year}';
+  }
+}
+
+// ─── Language switcher row ─────────────────────────────────────────────────
+class _LanguageRow extends ConsumerWidget {
+  final bool isDark;
+  final Color gold;
+  const _LanguageRow({required this.isDark, required this.gold});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final code = ref.watch(localeProvider).languageCode;
+    final lang = kAppLanguages.firstWhere((l) => l.code == code, orElse: () => kAppLanguages.first);
+
+    return GestureDetector(
+      onTap: () => showLanguagePicker(context, ref),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: border, width: 0.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.language, size: 16, color: gold),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text('Language', style: GoogleFonts.dmSans(fontSize: 13,
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+            ),
+            Text(lang.nativeName, style: GoogleFonts.dmSans(fontSize: 13, color: secondary)),
+            const SizedBox(width: 6),
+            Icon(Icons.chevron_right, size: 16, color: secondary),
+          ],
+        ),
+      ),
+    );
   }
 }
 

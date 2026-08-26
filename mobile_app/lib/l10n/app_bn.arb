@@ -1,0 +1,53 @@
+{
+  "@@locale": "bn",
+
+  "appTitle": "Aastrosphere",
+
+  "navToday": "আজ",
+  "navInsights": "অন্তর্দৃষ্টি",
+  "navAsk": "জিজ্ঞাসা",
+  "navCircle": "বৃত্ত",
+  "navChart": "চার্ট",
+  "navMe": "আমি",
+  "navClients": "ক্লায়েন্ট",
+
+  "selectYourLanguage": "আপনার ভাষা নির্বাচন করুন",
+  "changeLanguage": "ভাষা পরিবর্তন করুন",
+  "languageUpdated": "ভাষা আপডেট হয়েছে",
+
+  "continueLabel": "চালিয়ে যান",
+  "getOtp": "OTP পান",
+  "verifyAndContinue": "যাচাই করুন এবং চালিয়ে যান",
+  "cancel": "বাতিল",
+  "save": "সংরক্ষণ করুন",
+  "done": "সম্পন্ন",
+  "letsDiveIn": "শুরু করা যাক",
+
+  "userLogin": "ব্যবহারকারী লগইন",
+  "astrologerLogin": "জ্যোতিষী লগইন",
+  "enterPhoneToContinue": "চালিয়ে যেতে আপনার ফোন নম্বর লিখুন",
+  "enterOtpSentTo": "এই নম্বরে পাঠানো ৬-সংখ্যার কোড লিখুন",
+  "areYouA": "আপনি কি একজন",
+  "choosePath": "আপনার পথ বেছে নিন",
+  "userRole": "ব্যবহারকারী",
+  "userRoleDesc": "দৈনিক নির্দেশনা, ব্যক্তিগত চার্ট এবং রিমাইন্ডার",
+  "astrologerRole": "জ্যোতিষী",
+  "astrologerRoleDesc": "চার্ট, টাইমলাইন এবং ক্লায়েন্ট রিপোর্ট পড়ুন",
+
+  "logout": "লগআউট",
+  "askAnything": "যেকোনো কিছু জিজ্ঞাসা করুন",
+  "askYourQuestion": "আপনার প্রশ্ন জিজ্ঞাসা করুন...",
+  "clearChat": "চ্যাট মুছুন",
+
+  "todayTab": "আজ",
+  "insightsTab": "অন্তর্দৃষ্টি",
+  "chartTab": "চার্ট",
+  "circleTab": "বৃত্ত",
+
+  "lockIn": "লক ইন করুন",
+  "todaysPriority": "আজকের অগ্রাধিকার",
+  "luckyColor": "ভাগ্যবান রঙ",
+  "coreNumbers": "মূল সংখ্যা",
+  "runningPeriods": "চলমান সময়কাল",
+  "dayAnalysis": "দিনের বিশ্লেষণ"
+}

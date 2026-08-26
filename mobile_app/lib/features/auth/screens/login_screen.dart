@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aastrosphere/common/widgets/spinning_wheel.dart';
 import 'package:aastrosphere/core/theme/app_theme.dart';
+import 'package:aastrosphere/core/providers/locale_provider.dart';
+import 'package:aastrosphere/core/widgets/language_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:aastrosphere/features/auth/screens/otp_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   final String role; // 'User' ya 'Astrologer'
   const LoginScreen({super.key, required this.role});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
@@ -184,6 +187,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                         ),
                       ),
+                      const SizedBox(height: 20),
+
+                      // Language selector
+                      TextButton.icon(
+                        onPressed: () => showLanguagePicker(context, ref),
+                        icon: const Icon(Icons.language, size: 16, color: AppColors.gold),
+                        label: Text(
+                          _currentLanguageLabel(ref.watch(localeProvider).languageCode),
+                          style: const TextStyle(color: AppColors.gold, fontSize: 13),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -193,6 +207,11 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
     );
+  }
+
+  String _currentLanguageLabel(String code) {
+    final lang = kAppLanguages.firstWhere((l) => l.code == code, orElse: () => kAppLanguages.first);
+    return 'Select your language  ·  ${lang.nativeName}';
   }
 }
 

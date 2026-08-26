@@ -1,0 +1,53 @@
+{
+  "@@locale": "te",
+
+  "appTitle": "Aastrosphere",
+
+  "navToday": "ఈరోజు",
+  "navInsights": "అంతర్దృష్టులు",
+  "navAsk": "అడగండి",
+  "navCircle": "సర్కిల్",
+  "navChart": "చార్ట్",
+  "navMe": "నేను",
+  "navClients": "క్లయింట్లు",
+
+  "selectYourLanguage": "మీ భాషను ఎంచుకోండి",
+  "changeLanguage": "భాషను మార్చండి",
+  "languageUpdated": "భాష నవీకరించబడింది",
+
+  "continueLabel": "కొనసాగించు",
+  "getOtp": "OTP పొందండి",
+  "verifyAndContinue": "ధృవీకరించి కొనసాగించు",
+  "cancel": "రద్దు చేయి",
+  "save": "సేవ్ చేయి",
+  "done": "పూర్తయింది",
+  "letsDiveIn": "మొదలుపెడదాం",
+
+  "userLogin": "వినియోగదారు లాగిన్",
+  "astrologerLogin": "జ్యోతిష్కుడు లాగిన్",
+  "enterPhoneToContinue": "కొనసాగించడానికి మీ ఫోన్ నంబర్‌ను నమోదు చేయండి",
+  "enterOtpSentTo": "ఈ నంబర్‌కు పంపిన 6-అంకెల కోడ్‌ను నమోదు చేయండి",
+  "areYouA": "మీరు ఒక",
+  "choosePath": "మీ మార్గాన్ని ఎంచుకోండి",
+  "userRole": "వినియోగదారు",
+  "userRoleDesc": "రోజువారీ మార్గదర్శకత్వం, వ్యక్తిగత చార్ట్ మరియు రిమైండర్‌లు",
+  "astrologerRole": "జ్యోతిష్కుడు",
+  "astrologerRoleDesc": "చార్ట్‌లు, టైమ్‌లైన్‌లు మరియు క్లయింట్ నివేదికలను చదవండి",
+
+  "logout": "లాగ్ అవుట్",
+  "askAnything": "ఏదైనా అడగండి",
+  "askYourQuestion": "మీ ప్రశ్న అడగండి...",
+  "clearChat": "చాట్ క్లియర్ చేయి",
+
+  "todayTab": "ఈరోజు",
+  "insightsTab": "అంతర్దృష్టులు",
+  "chartTab": "చార్ట్",
+  "circleTab": "సర్కిల్",
+
+  "lockIn": "లాక్ చేయి",
+  "todaysPriority": "ఈరోజు ప్రాధాన్యత",
+  "luckyColor": "అదృష్ట రంగు",
+  "coreNumbers": "ప్రధాన సంఖ్యలు",
+  "runningPeriods": "కొనసాగుతున్న కాలాలు",
+  "dayAnalysis": "రోజు విశ్లేషణ"
+}

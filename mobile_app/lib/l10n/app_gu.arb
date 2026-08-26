@@ -1,0 +1,53 @@
+{
+  "@@locale": "gu",
+
+  "appTitle": "Aastrosphere",
+
+  "navToday": "આજે",
+  "navInsights": "સૂઝ",
+  "navAsk": "પૂછો",
+  "navCircle": "સર્કલ",
+  "navChart": "ચાર્ટ",
+  "navMe": "હું",
+  "navClients": "ક્લાયન્ટ",
+
+  "selectYourLanguage": "તમારી ભાષા પસંદ કરો",
+  "changeLanguage": "ભાષા બદલો",
+  "languageUpdated": "ભાષા અપડેટ થઈ",
+
+  "continueLabel": "ચાલુ રાખો",
+  "getOtp": "OTP મેળવો",
+  "verifyAndContinue": "ચકાસો અને ચાલુ રાખો",
+  "cancel": "રદ કરો",
+  "save": "સાચવો",
+  "done": "થઈ ગયું",
+  "letsDiveIn": "ચાલો શરૂ કરીએ",
+
+  "userLogin": "વપરાશકર્તા લૉગિન",
+  "astrologerLogin": "જ્યોતિષી લૉગિન",
+  "enterPhoneToContinue": "ચાલુ રાખવા માટે તમારો ફોન નંબર દાખલ કરો",
+  "enterOtpSentTo": "આ નંબર પર મોકલેલો 6-અંકનો કોડ દાખલ કરો",
+  "areYouA": "શું તમે છો",
+  "choosePath": "તમારો માર્ગ પસંદ કરો",
+  "userRole": "વપરાશકર્તા",
+  "userRoleDesc": "દૈનિક માર્ગદર્શન, વ્યક્તિગત ચાર્ટ અને રિમાઇન્ડર",
+  "astrologerRole": "જ્યોતિષી",
+  "astrologerRoleDesc": "ચાર્ટ, ટાઇમલાઇન અને ક્લાયન્ટ રિપોર્ટ વાંચો",
+
+  "logout": "લૉગઆઉટ",
+  "askAnything": "કંઈપણ પૂછો",
+  "askYourQuestion": "તમારો પ્રશ્ન પૂછો...",
+  "clearChat": "ચેટ સાફ કરો",
+
+  "todayTab": "આજે",
+  "insightsTab": "સૂઝ",
+  "chartTab": "ચાર્ટ",
+  "circleTab": "સર્કલ",
+
+  "lockIn": "લૉક ઇન કરો",
+  "todaysPriority": "આજની પ્રાથમિકતા",
+  "luckyColor": "શુભ રંગ",
+  "coreNumbers": "મુખ્ય અંકો",
+  "runningPeriods": "ચાલુ સમયગાળા",
+  "dayAnalysis": "દિવસનું વિશ્લેષણ"
+}
