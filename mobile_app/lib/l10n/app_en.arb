@@ -44,6 +44,13 @@
   "chartTab": "Chart",
   "circleTab": "Circle",
 
+  "timelineTab": "Timeline",
+  "patternTab": "Pattern",
+  "reportsTab": "Reports",
+  "consultTab": "Consult",
+  "comingSoon": "Coming soon",
+  "modeClient": "Client",
+
   "lockIn": "Lock in",
   "todaysPriority": "Today's Priority",
   "luckyColor": "Lucky Color",

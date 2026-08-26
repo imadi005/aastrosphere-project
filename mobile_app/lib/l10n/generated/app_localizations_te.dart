@@ -120,6 +120,24 @@ class AppLocalizationsTe extends AppLocalizations {
   String get circleTab => 'సర్కిల్';
 
   @override
+  String get timelineTab => 'టైమ్‌లైన్';
+
+  @override
+  String get patternTab => 'సరళి';
+
+  @override
+  String get reportsTab => 'నివేదికలు';
+
+  @override
+  String get consultTab => 'సంప్రదింపు';
+
+  @override
+  String get comingSoon => 'త్వరలో వస్తుంది';
+
+  @override
+  String get modeClient => 'క్లయింట్';
+
+  @override
   String get lockIn => 'లాక్ చేయి';
 
   @override

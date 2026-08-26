@@ -44,6 +44,13 @@
   "chartTab": "চার্ট",
   "circleTab": "বৃত্ত",
 
+  "timelineTab": "টাইমলাইন",
+  "patternTab": "প্যাটার্ন",
+  "reportsTab": "রিপোর্ট",
+  "consultTab": "পরামর্শ",
+  "comingSoon": "শীঘ্রই আসছে",
+  "modeClient": "ক্লায়েন্ট",
+
   "lockIn": "লক ইন করুন",
   "todaysPriority": "আজকের অগ্রাধিকার",
   "luckyColor": "ভাগ্যবান রঙ",

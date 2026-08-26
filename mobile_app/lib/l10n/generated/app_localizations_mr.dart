@@ -118,6 +118,24 @@ class AppLocalizationsMr extends AppLocalizations {
   String get circleTab => 'सर्कल';
 
   @override
+  String get timelineTab => 'टाइमलाइन';
+
+  @override
+  String get patternTab => 'नमुना';
+
+  @override
+  String get reportsTab => 'अहवाल';
+
+  @override
+  String get consultTab => 'सल्ला';
+
+  @override
+  String get comingSoon => 'लवकरच येत आहे';
+
+  @override
+  String get modeClient => 'क्लायंट';
+
+  @override
   String get lockIn => 'लॉक इन करा';
 
   @override

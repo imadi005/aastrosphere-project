@@ -117,6 +117,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get circleTab => 'Circle';
 
   @override
+  String get timelineTab => 'Timeline';
+
+  @override
+  String get patternTab => 'Pattern';
+
+  @override
+  String get reportsTab => 'Reports';
+
+  @override
+  String get consultTab => 'Consult';
+
+  @override
+  String get comingSoon => 'Coming soon';
+
+  @override
+  String get modeClient => 'Client';
+
+  @override
   String get lockIn => 'Lock in';
 
   @override

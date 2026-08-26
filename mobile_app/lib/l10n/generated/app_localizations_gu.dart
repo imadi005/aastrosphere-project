@@ -117,6 +117,24 @@ class AppLocalizationsGu extends AppLocalizations {
   String get circleTab => 'સર્કલ';
 
   @override
+  String get timelineTab => 'ટાઇમલાઇન';
+
+  @override
+  String get patternTab => 'પેટર્ન';
+
+  @override
+  String get reportsTab => 'અહેવાલો';
+
+  @override
+  String get consultTab => 'સલાહ';
+
+  @override
+  String get comingSoon => 'ટૂંક સમયમાં આવે છે';
+
+  @override
+  String get modeClient => 'ક્લાયન્ટ';
+
+  @override
   String get lockIn => 'લૉક ઇન કરો';
 
   @override

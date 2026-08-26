@@ -44,6 +44,13 @@
   "chartTab": "ચાર્ટ",
   "circleTab": "સર્કલ",
 
+  "timelineTab": "ટાઇમલાઇન",
+  "patternTab": "પેટર્ન",
+  "reportsTab": "અહેવાલો",
+  "consultTab": "સલાહ",
+  "comingSoon": "ટૂંક સમયમાં આવે છે",
+  "modeClient": "ક્લાયન્ટ",
+
   "lockIn": "લૉક ઇન કરો",
   "todaysPriority": "આજની પ્રાથમિકતા",
   "luckyColor": "શુભ રંગ",

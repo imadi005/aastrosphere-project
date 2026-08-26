@@ -118,6 +118,24 @@ class AppLocalizationsHi extends AppLocalizations {
   String get circleTab => 'सर्कल';
 
   @override
+  String get timelineTab => 'टाइमलाइन';
+
+  @override
+  String get patternTab => 'पैटर्न';
+
+  @override
+  String get reportsTab => 'रिपोर्ट';
+
+  @override
+  String get consultTab => 'सलाह';
+
+  @override
+  String get comingSoon => 'जल्द आ रहा है';
+
+  @override
+  String get modeClient => 'क्लाइंट';
+
+  @override
   String get lockIn => 'लॉक इन करें';
 
   @override

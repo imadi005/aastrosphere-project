@@ -118,6 +118,24 @@ class AppLocalizationsBn extends AppLocalizations {
   String get circleTab => 'বৃত্ত';
 
   @override
+  String get timelineTab => 'টাইমলাইন';
+
+  @override
+  String get patternTab => 'প্যাটার্ন';
+
+  @override
+  String get reportsTab => 'রিপোর্ট';
+
+  @override
+  String get consultTab => 'পরামর্শ';
+
+  @override
+  String get comingSoon => 'শীঘ্রই আসছে';
+
+  @override
+  String get modeClient => 'ক্লায়েন্ট';
+
+  @override
   String get lockIn => 'লক ইন করুন';
 
   @override

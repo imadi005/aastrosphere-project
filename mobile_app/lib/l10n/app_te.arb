@@ -44,6 +44,13 @@
   "chartTab": "చార్ట్",
   "circleTab": "సర్కిల్",
 
+  "timelineTab": "టైమ్‌లైన్",
+  "patternTab": "సరళి",
+  "reportsTab": "నివేదికలు",
+  "consultTab": "సంప్రదింపు",
+  "comingSoon": "త్వరలో వస్తుంది",
+  "modeClient": "క్లయింట్",
+
   "lockIn": "లాక్ చేయి",
   "todaysPriority": "ఈరోజు ప్రాధాన్యత",
   "luckyColor": "అదృష్ట రంగు",

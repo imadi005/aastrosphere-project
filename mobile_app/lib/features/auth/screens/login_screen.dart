@@ -7,6 +7,7 @@ import 'package:aastrosphere/core/providers/locale_provider.dart';
 import 'package:aastrosphere/core/widgets/language_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:aastrosphere/features/auth/screens/otp_screen.dart';
+import 'package:aastrosphere/l10n/generated/app_localizations.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   final String role; // 'User' ya 'Astrologer'
@@ -127,12 +128,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       // Title (Dynamic)
                       Text(
-                        '${widget.role} Login',
+                        widget.role == 'Astrologer'
+                            ? AppLocalizations.of(context)!.astrologerLogin
+                            : AppLocalizations.of(context)!.userLogin,
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Enter your phone number to continue',
+                        AppLocalizations.of(context)!.enterPhoneToContinue,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppColors.textSecondaryLight,
@@ -179,7 +182,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   child: CircularProgressIndicator(color: AppColors.bgLight),
                                 )
                               : Text(
-                                  'Get OTP',
+                                  AppLocalizations.of(context)!.getOtp,
                                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                     color: AppColors.bgLight,
                                     fontWeight: FontWeight.bold,
@@ -194,7 +197,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: () => showLanguagePicker(context, ref),
                         icon: const Icon(Icons.language, size: 16, color: AppColors.gold),
                         label: Text(
-                          _currentLanguageLabel(ref.watch(localeProvider).languageCode),
+                          _currentLanguageLabel(context, ref.watch(localeProvider).languageCode),
                           style: const TextStyle(color: AppColors.gold, fontSize: 13),
                         ),
                       ),
@@ -209,9 +212,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  String _currentLanguageLabel(String code) {
+  String _currentLanguageLabel(BuildContext context, String code) {
     final lang = kAppLanguages.firstWhere((l) => l.code == code, orElse: () => kAppLanguages.first);
-    return 'Select your language  ·  ${lang.nativeName}';
+    return '${AppLocalizations.of(context)!.selectYourLanguage}  ·  ${lang.nativeName}';
   }
 }
 

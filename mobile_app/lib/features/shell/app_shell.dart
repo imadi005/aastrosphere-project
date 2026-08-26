@@ -5,6 +5,7 @@ import '../../core/providers/role_provider.dart';
 import '../../core/services/midnight_refresh.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/widgets/language_picker.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/services/analytics_service.dart';
@@ -78,13 +79,16 @@ class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObser
     }
   }
 
-  static const _items = [
-    BottomNavigationBarItem(icon: Icon(Icons.wb_sunny_outlined), activeIcon: Icon(Icons.wb_sunny), label: 'Today'),
-    BottomNavigationBarItem(icon: Icon(Icons.auto_awesome_outlined), activeIcon: Icon(Icons.auto_awesome), label: 'Insights'),
-    BottomNavigationBarItem(icon: Icon(Icons.auto_awesome_outlined), activeIcon: Icon(Icons.auto_awesome), label: 'Ask'),
-    BottomNavigationBarItem(icon: Icon(Icons.people_outline), activeIcon: Icon(Icons.people), label: 'Circle'),
-    BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view), label: 'Chart'),
-  ];
+  List<BottomNavigationBarItem> _items(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    return [
+      BottomNavigationBarItem(icon: const Icon(Icons.wb_sunny_outlined), activeIcon: const Icon(Icons.wb_sunny), label: t.navToday),
+      BottomNavigationBarItem(icon: const Icon(Icons.auto_awesome_outlined), activeIcon: const Icon(Icons.auto_awesome), label: t.navInsights),
+      BottomNavigationBarItem(icon: const Icon(Icons.auto_awesome_outlined), activeIcon: const Icon(Icons.auto_awesome), label: t.navAsk),
+      BottomNavigationBarItem(icon: const Icon(Icons.people_outline), activeIcon: const Icon(Icons.people), label: t.navCircle),
+      BottomNavigationBarItem(icon: const Icon(Icons.grid_view_outlined), activeIcon: const Icon(Icons.grid_view), label: t.navChart),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +110,7 @@ class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObser
           _AttributionFooter(isDark: isDark),
           _BottomNav(
             currentIndex: index,
-            items: _items,
+            items: _items(context),
             onTap: (i) => ref.read(_userIndexProvider.notifier).state = i,
           ),
         ],
@@ -129,13 +133,16 @@ class _AstrologerShell extends ConsumerWidget {
     MoreScreen(),
   ];
 
-  static const _clientItems = [
-    BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view), label: 'Chart'),
-    BottomNavigationBarItem(icon: Icon(Icons.timeline_outlined), activeIcon: Icon(Icons.timeline), label: 'Timeline'),
-    BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Pattern'),
-    BottomNavigationBarItem(icon: Icon(Icons.description_outlined), activeIcon: Icon(Icons.description), label: 'Reports'),
-    BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), activeIcon: Icon(Icons.chat_bubble), label: 'Consult'),
-  ];
+  static List<BottomNavigationBarItem> _clientItems(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    return [
+      BottomNavigationBarItem(icon: const Icon(Icons.grid_view_outlined), activeIcon: const Icon(Icons.grid_view), label: t.navChart),
+      BottomNavigationBarItem(icon: const Icon(Icons.timeline_outlined), activeIcon: const Icon(Icons.timeline), label: t.timelineTab),
+      BottomNavigationBarItem(icon: const Icon(Icons.person_outline), activeIcon: const Icon(Icons.person), label: t.patternTab),
+      BottomNavigationBarItem(icon: const Icon(Icons.description_outlined), activeIcon: const Icon(Icons.description), label: t.reportsTab),
+      BottomNavigationBarItem(icon: const Icon(Icons.chat_bubble_outline), activeIcon: const Icon(Icons.chat_bubble), label: t.consultTab),
+    ];
+  }
 
   static const _meScreens = [
     TodayScreen(),
@@ -144,12 +151,15 @@ class _AstrologerShell extends ConsumerWidget {
     AskScreen(),
   ];
 
-  static const _meItems = [
-    BottomNavigationBarItem(icon: Icon(Icons.wb_sunny_outlined), activeIcon: Icon(Icons.wb_sunny), label: 'Today'),
-    BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), activeIcon: Icon(Icons.grid_view), label: 'Chart'),
-    BottomNavigationBarItem(icon: Icon(Icons.auto_awesome_outlined), activeIcon: Icon(Icons.auto_awesome), label: 'Insights'),
-    BottomNavigationBarItem(icon: Icon(Icons.auto_awesome_outlined), activeIcon: Icon(Icons.auto_awesome), label: 'Ask'),
-  ];
+  static List<BottomNavigationBarItem> _meItems(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    return [
+      BottomNavigationBarItem(icon: const Icon(Icons.wb_sunny_outlined), activeIcon: const Icon(Icons.wb_sunny), label: t.navToday),
+      BottomNavigationBarItem(icon: const Icon(Icons.grid_view_outlined), activeIcon: const Icon(Icons.grid_view), label: t.navChart),
+      BottomNavigationBarItem(icon: const Icon(Icons.auto_awesome_outlined), activeIcon: const Icon(Icons.auto_awesome), label: t.navInsights),
+      BottomNavigationBarItem(icon: const Icon(Icons.auto_awesome_outlined), activeIcon: const Icon(Icons.auto_awesome), label: t.navAsk),
+    ];
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -181,12 +191,12 @@ class _AstrologerShell extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: border, width: 0.5)),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-                _ModeChip(label: 'Client', active: !isMeView, gold: gold, isDark: isDark,
+                _ModeChip(label: AppLocalizations.of(context)!.modeClient, active: !isMeView, gold: gold, isDark: isDark,
                     onTap: () {
                       ref.read(_astroMeViewProvider.notifier).state = false;
                       ref.read(_astroIndexProvider.notifier).state = 0;
                     }),
-                _ModeChip(label: 'Me', active: isMeView, gold: gold, isDark: isDark,
+                _ModeChip(label: AppLocalizations.of(context)!.navMe, active: isMeView, gold: gold, isDark: isDark,
                     onTap: () {
                       ref.read(_astroMeViewProvider.notifier).state = true;
                       ref.read(_astroIndexProvider.notifier).state = 0;
@@ -213,7 +223,7 @@ class _AstrologerShell extends ConsumerWidget {
           _AttributionFooter(isDark: isDark, label: 'Aastrosphere by Pankajj Kumar Mishra  ( Ank Jyotish & Palmist )'),
           _BottomNav(
             currentIndex: index,
-            items: isMeView ? _meItems : _clientItems,
+            items: isMeView ? _meItems(context) : _clientItems(context),
             onTap: (i) => ref.read(_astroIndexProvider.notifier).state = i,
           ),
         ],

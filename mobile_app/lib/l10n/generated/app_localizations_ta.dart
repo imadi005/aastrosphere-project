@@ -120,6 +120,24 @@ class AppLocalizationsTa extends AppLocalizations {
   String get circleTab => 'வட்டம்';
 
   @override
+  String get timelineTab => 'காலவரிசை';
+
+  @override
+  String get patternTab => 'முறை';
+
+  @override
+  String get reportsTab => 'அறிக்கைகள்';
+
+  @override
+  String get consultTab => 'ஆலோசனை';
+
+  @override
+  String get comingSoon => 'விரைவில் வரும்';
+
+  @override
+  String get modeClient => 'வாடிக்கையாளர்';
+
+  @override
   String get lockIn => 'பூட்டு';
 
   @override

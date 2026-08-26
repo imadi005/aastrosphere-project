@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../providers/locale_provider.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Opens the "Select your language" bottom sheet. Call from anywhere —
 /// the login screens and the post-login settings toggle both use this.
@@ -47,7 +48,7 @@ class _LanguagePickerSheet extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  Text('Select your language',
+                  Text(AppLocalizations.of(context)!.selectYourLanguage,
                       style: GoogleFonts.cormorantGaramond(
                         fontSize: 20, fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white : Colors.black87,
@@ -95,7 +96,7 @@ class _LanguagePickerSheet extends ConsumerWidget {
                               color: secondary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Text('Coming soon',
+                            child: Text(AppLocalizations.of(context)!.comingSoon,
                                 style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
                           ),
                   );

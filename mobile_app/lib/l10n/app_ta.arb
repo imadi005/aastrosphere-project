@@ -44,6 +44,13 @@
   "chartTab": "விளக்கப்படம்",
   "circleTab": "வட்டம்",
 
+  "timelineTab": "காலவரிசை",
+  "patternTab": "முறை",
+  "reportsTab": "அறிக்கைகள்",
+  "consultTab": "ஆலோசனை",
+  "comingSoon": "விரைவில் வரும்",
+  "modeClient": "வாடிக்கையாளர்",
+
   "lockIn": "பூட்டு",
   "todaysPriority": "இன்றைய முன்னுரிமை",
   "luckyColor": "அதிர்ஷ்ட நிறம்",

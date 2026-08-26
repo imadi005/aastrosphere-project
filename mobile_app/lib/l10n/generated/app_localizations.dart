@@ -324,6 +324,42 @@ abstract class AppLocalizations {
   /// **'Circle'**
   String get circleTab;
 
+  /// No description provided for @timelineTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline'**
+  String get timelineTab;
+
+  /// No description provided for @patternTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Pattern'**
+  String get patternTab;
+
+  /// No description provided for @reportsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get reportsTab;
+
+  /// No description provided for @consultTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Consult'**
+  String get consultTab;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
+
+  /// No description provided for @modeClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Client'**
+  String get modeClient;
+
   /// No description provided for @lockIn.
   ///
   /// In en, this message translates to:
