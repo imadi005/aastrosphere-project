@@ -391,6 +391,42 @@ RESPONSE RULES:
 9. NEVER ask for information already given in conversation history. Check history before asking anything.`;
 }
 
+// ─── Hard safety net: strip any Vedic/planet jargon that slips through ────────
+// Prompt instructions alone aren't 100% reliable — the model sees raw planet/
+// dasha vocabulary in the chart data and knowledge chunks above, and can echo
+// it even when told not to. This runs on every response as a final guarantee
+// the user never sees it, independent of model compliance.
+const JARGON_REPLACEMENTS = [
+  [/\bmaha\s*dasha\b/gi, 'long-term period'],
+  [/\bantar\s*dasha\b/gi, 'current period'],
+  [/\bmahadasha\b/gi, 'long-term period'],
+  [/\bantardasha\b/gi, 'current period'],
+  [/\bdasha\b/gi, 'period'],
+  [/\bmaha\b/gi, 'long-term'],
+  [/\bantar\b/gi, 'current'],
+  [/\bank jyotish\b/gi, 'numerology'],
+  [/\bjyotish\b/gi, 'numerology'],
+  [/\bvedic\b/gi, ''],
+  [/\bketu\b/gi, 'Insight'],
+  [/\brahu\b/gi, 'Change'],
+  [/\bsaturn\b/gi, 'Discipline'],
+  [/\bjupiter\b/gi, 'Wisdom'],
+  [/\bmercury\b/gi, 'Intellect'],
+  [/\bvenus\b/gi, 'Harmony'],
+  [/\bmars\b/gi, 'Drive'],
+  [/\bsun\b/gi, 'Confidence'],
+  [/\bmoon\b/gi, 'Emotion'],
+];
+
+export function neutralizeAnswer(text) {
+  if (!text) return text;
+  let out = text;
+  for (const [pattern, replacement] of JARGON_REPLACEMENTS) {
+    out = out.replace(pattern, replacement);
+  }
+  return out.replace(/[ \t]{2,}/g, ' ');
+}
+
 // ─── Extract other person DOB from conversation ───────────────────────────────
 export function extractOtherDob(messages, primaryDob) {
   const dobPattern = /\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})\b/g;

@@ -33,7 +33,7 @@ import {
 } from './prediction_engine.js';
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
-import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis, buildFullChartForChat, smartParseDob } from './ask_engine.js';
+import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis, buildFullChartForChat, smartParseDob, neutralizeAnswer } from './ask_engine.js';
 import { buildScanContext } from './event_scanner.js';
 import { buildDayCharacteristics } from './day_characteristics.js';
 import { requireAuth, requireCredits, FREE_TRIAL_CREDITS } from './authMiddleware.js';
@@ -1029,7 +1029,7 @@ Active yogas: ${otherChart.yogas || 'none detected'}
     }
 
     const data = await response.json();
-    const answer = data.content?.[0]?.text || '';
+    const answer = neutralizeAnswer(data.content?.[0]?.text || '');
 
     res.json({
       answer,
