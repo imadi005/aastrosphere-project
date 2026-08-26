@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../providers/role_provider.dart';
+import '../providers/locale_provider.dart';
 import '../../features/auth/providers/user_provider.dart';
 
 String _dobToIso(DateTime dob) => dob.toIso8601String();
@@ -29,7 +30,8 @@ final todayDataProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref)
   final iso = _dobToIso(user.dob);
   // Persist dob so the background notification worker can fetch fresh data
   SharedPreferences.getInstance().then((p) => p.setString('notif_dob', iso));
-  return ApiService.getToday(iso);
+  final lang = ref.watch(localeProvider).languageCode;
+  return ApiService.getToday(iso, lang: lang);
 });
 
 final lifeInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {

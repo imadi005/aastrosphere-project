@@ -5,6 +5,24 @@
 // Keeps the SAME underlying logic (daily number + rating) — only the words change.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import {
+  DAY_TAGS_I18N, DAY_SUMMARY_BASE_I18N, DAY_PRIORITY_I18N,
+  DAY_DO_I18N, DAY_AVOID_I18N, DAY_INSIGHT_I18N, RATING_LABELS_I18N,
+  CONNECTORS_I18N,
+} from './user_daily_content_i18n.js';
+
+function connectorsFor(lang) {
+  return (lang && lang !== 'en' && CONNECTORS_I18N[lang]) || null;
+}
+
+// Picks the translated table for `lang` if one exists, else falls back to
+// the English table — so an untranslated language never breaks, it just
+// shows English until translated.
+function localized(table, i18nTable, lang) {
+  if (lang && lang !== 'en' && i18nTable[lang]) return i18nTable[lang];
+  return table;
+}
+
 // ─── Varied day tags (changes day to day, not fixed per number) ──────────────
 // Picked by date so the same "daily number" doesn't always show the same tag.
 const DAY_TAGS = {
@@ -33,12 +51,14 @@ const DAY_SUMMARY_BASE = {
 };
 
 // ─── Rating-aware opener — shifts the tone for tougher days ───────────────────
-function summaryFor(daily, rating) {
-  const base = DAY_SUMMARY_BASE[daily] || "Take today as it comes and act with a little extra awareness.";
+function summaryFor(daily, rating, lang) {
+  const table = localized(DAY_SUMMARY_BASE, DAY_SUMMARY_BASE_I18N, lang);
+  const c = connectorsFor(lang);
+  const base = table[daily] || (c ? c.fallback : "Take today as it comes and act with a little extra awareness.");
   if (rating === 'favorable') return base;
   if (rating === 'good') return base;
-  if (rating === 'caution') return `Take it a bit easy today. ${base}`;
-  if (rating === 'avoid') return `A tricky day — keep things low-key and hold off on big decisions. ${base}`;
+  if (rating === 'caution') return c ? `${c.takeItEasy} ${base}` : `Take it a bit easy today. ${base}`;
+  if (rating === 'avoid') return c ? `${c.trickyDay} ${base}` : `A tricky day — keep things low-key and hold off on big decisions. ${base}`;
   return base;
 }
 
@@ -101,10 +121,12 @@ const DAY_INSIGHT = {
   9: "Today your energy is high, which makes it a great day to take bold action and finish things you've been avoiding. Put that energy into work, exercise, or tackling a tough task head-on. Just be careful — the same energy can turn into anger or rushed decisions if you're not aware. Use the drive, but stay in control.",
 };
 
-export function buildPlainInsight(daily, rating) {
-  const base = DAY_INSIGHT[daily] || "Take today as it comes and act with a little extra awareness.";
-  if (rating === 'avoid') return `This is a quieter, trickier day, so keep things low-key and avoid big moves. ${base}`;
-  if (rating === 'caution') return `Take today a bit easy. ${base}`;
+export function buildPlainInsight(daily, rating, lang) {
+  const table = localized(DAY_INSIGHT, DAY_INSIGHT_I18N, lang);
+  const c = connectorsFor(lang);
+  const base = table[daily] || (c ? c.fallback : "Take today as it comes and act with a little extra awareness.");
+  if (rating === 'avoid') return c ? `${c.quieterDay} ${base}` : `This is a quieter, trickier day, so keep things low-key and avoid big moves. ${base}`;
+  if (rating === 'caution') return c ? `${c.takeItEasy} ${base}` : `Take today a bit easy. ${base}`;
   return base;
 }
 
@@ -117,23 +139,31 @@ const RATING_LABELS = {
   avoid:     ["Slow day", "Take it easy", "Low-key day", "Quiet day", "Keep it light", "Rest & recharge"],
 };
 
-function ratingLabelFor(rating, dayOfYear) {
-  const pool = RATING_LABELS[rating] || RATING_LABELS.caution;
+function ratingLabelFor(rating, dayOfYear, lang) {
+  const table = localized(RATING_LABELS, RATING_LABELS_I18N, lang);
+  const pool = table[rating] || table.caution;
   return pool[dayOfYear % pool.length];
 }
 
 // ─── Main builder — returns everything the Today card needs, in plain English ─
-export function buildUserDailyContent(daily, rating, dayOfYear = 0) {
-  const tags = DAY_TAGS[daily] || DAY_TAGS[1];
+// `lang` is an optional ISO code ('hi','bn','ta','te','mr','gu'); omitted or
+// 'en' (or any language without a translated table yet) returns English.
+export function buildUserDailyContent(daily, rating, dayOfYear = 0, lang = 'en') {
+  const tagsTable = localized(DAY_TAGS, DAY_TAGS_I18N, lang);
+  const tags = tagsTable[daily] || tagsTable[1];
   const tag = tags[(dayOfYear + (daily || 1)) % tags.length];
+
+  const priorityTable = localized(DAY_PRIORITY, DAY_PRIORITY_I18N, lang);
+  const doTable = localized(DAY_DO, DAY_DO_I18N, lang);
+  const avoidTable = localized(DAY_AVOID, DAY_AVOID_I18N, lang);
 
   return {
     tag,                                   // short, varies day to day
-    rating_label: ratingLabelFor(rating, dayOfYear), // varied badge text (e.g. "Strong day")
-    summary: summaryFor(daily, rating),    // plain 1–2 line day summary
-    insight: buildPlainInsight(daily, rating), // plain full insight (no jargon)
-    priority: DAY_PRIORITY[daily] || DAY_PRIORITY[1], // one clear line
-    do: rotate(DAY_DO[daily] || DAY_DO[1], 4, dayOfYear),       // exactly 4 short items
-    avoid: rotate(DAY_AVOID[daily] || DAY_AVOID[1], 4, dayOfYear), // exactly 4 short items
+    rating_label: ratingLabelFor(rating, dayOfYear, lang), // varied badge text (e.g. "Strong day")
+    summary: summaryFor(daily, rating, lang),    // plain 1–2 line day summary
+    insight: buildPlainInsight(daily, rating, lang), // plain full insight (no jargon)
+    priority: priorityTable[daily] || priorityTable[1], // one clear line
+    do: rotate(doTable[daily] || doTable[1], 4, dayOfYear),       // exactly 4 short items
+    avoid: rotate(avoidTable[daily] || avoidTable[1], 4, dayOfYear), // exactly 4 short items
   };
 }

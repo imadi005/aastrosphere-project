@@ -152,7 +152,7 @@ app.post('/api/chart/date', (req, res) => {
 // ─── /api/today ───────────────────────────────────────────────
 app.post('/api/today', (req, res) => {
   try {
-    const { dob, client_date, client_hour } = req.body;
+    const { dob, client_date, client_hour, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
 
     // Always use client's local date/time — server runs UTC which differs by timezone
@@ -163,6 +163,7 @@ app.post('/api/today', (req, res) => {
       : now.getHours();
 
     const ctx = buildChartContext(dob, today);
+    ctx.lang = lang;
     const daily = generateDailyPrediction(ctx);
     const hourly = generateHourlyPredictions(ctx);
 
@@ -860,9 +861,10 @@ app.post('/api/insights/deep', (req, res) => {
 // ─── /api/insights/daily ──────────────────────────────────────
 app.post('/api/insights/daily', (req, res) => {
   try {
-    const { dob } = req.body;
+    const { dob, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
     const ctx = buildChartContext(dob);
+    ctx.lang = lang;
     const daily = generateDailyPrediction(ctx);
     const hourly = generateHourlyPredictions(ctx);
     res.json({ ...daily, best_hours: hourly.best, caution_hours: hourly.caution });

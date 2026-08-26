@@ -123,11 +123,12 @@ class ApiService {
   }
 
   // ─── TODAY — always sends client's local date+hour ───────────────────
-  static Future<Map<String, dynamic>> getToday(String dob) =>
+  static Future<Map<String, dynamic>> getToday(String dob, {String? lang}) =>
       _post('/api/today', {
         'dob': dob,
         'client_date': clientDate,
         'client_hour': _clientHour,
+        if (lang != null) 'lang': lang,
       });
 
   // ─── INSIGHTS — always send client date ──────────────────────────────
@@ -237,7 +238,7 @@ class ApiService {
       _authedPost('/api/ask', {
         'dob': dob,
         'messages': messages,
-        'client_date': clientDate ?? clientDate,
+        'client_date': clientDate ?? ApiService.clientDate,
       });
 
   /// Current question-credit balance / subscription status, without

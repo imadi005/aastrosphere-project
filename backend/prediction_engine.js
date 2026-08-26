@@ -479,7 +479,9 @@ export function generateDailyPrediction(ctx) {
   const dayScore = getDayScore({ ...ctx, rating });
 
   // ── Plain-English content for the Today card (simple language, no jargon) ──
-  const userContent = buildUserDailyContent(daily, rating, dayOfYear);
+  // ctx.lang: optional ISO code from the client's selected app language —
+  // falls back to English automatically for any language not yet translated.
+  const userContent = buildUserDailyContent(daily, rating, dayOfYear, ctx.lang);
 
   return {
     quote,
