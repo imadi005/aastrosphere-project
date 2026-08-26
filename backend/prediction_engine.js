@@ -360,7 +360,7 @@ function getChartModifiers(nums, freq, basic, destiny, natalNums = []) {
 // Based on active yogas + maha+antar+daily combination
 export function getPrimaryAction(ctx) {
   // 4-layer composer — maha + antar + monthly + daily (plain English, 6561 combos)
-  return buildPriority(ctx.maha, ctx.antar, ctx.monthly, ctx.daily);
+  return buildPriority(ctx.maha, ctx.antar, ctx.monthly, ctx.daily, ctx.lang);
 }
 
 // Legacy kept for reference

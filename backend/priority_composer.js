@@ -79,9 +79,11 @@ const AVOID = {
        tough: ["Don't pick fights at home or work today.","Don't act on anger — let it cool first."] },
 };
 
+import { DO_I18N, AVOID_I18N, RISK_OVERRIDE_I18N } from './priority_composer_i18n.js';
+
 const clamp9 = (n) => { const x = Number(n); if (!x || x < 1) return 1; return ((Math.floor(x) - 1) % 9) + 1; };
 
-export function buildPriority(maha, antar, monthly, daily) {
+export function buildPriority(maha, antar, monthly, daily, lang) {
   const m = clamp9(maha), a = clamp9(antar), mo = clamp9(monthly), d = clamp9(daily);
 
   // 1) Combine the three period layers vs today → support score
@@ -93,15 +95,18 @@ export function buildPriority(maha, antar, monthly, daily) {
   const condition = support >= 2 ? 'strong' : support <= -2 ? 'tough' : 'mixed';
 
   // 2) Pick a clean line from the matching pool; period mix decides which variant
+  const doPool = (lang && DO_I18N[lang]?.[d]) || DO[d];
+  const avoidPool = (lang && AVOID_I18N[lang]?.[d]) || AVOID[d];
   const pick = (pools) => { const arr = pools[condition]; return arr[(m * 7 + a * 13 + mo * 5) % arr.length]; };
-  const doLine = pick(DO[d]);
-  let avoidLine = pick(AVOID[d]);
+  const doLine = pick(doPool);
+  let avoidLine = pick(avoidPool);
 
   // 3) Risk-combo override on the AVOID (physical / financial caution)
   const layers = [m, a, mo];
   const pair = (x, y) => (d === x && layers.includes(y)) || (d === y && layers.includes(x));
-  if (pair(4, 9)) avoidLine = "Be extra careful with driving, machinery, and anything physical today — don't rush.";
-  else if (pair(4, 8)) avoidLine = "Avoid big money commitments today — the odds of a costly mistake are higher than usual.";
+  const RO = (lang && RISK_OVERRIDE_I18N[lang]) || null;
+  if (pair(4, 9)) avoidLine = RO?.pair49 || "Be extra careful with driving, machinery, and anything physical today — don't rush.";
+  else if (pair(4, 8)) avoidLine = RO?.pair48 || "Avoid big money commitments today — the odds of a costly mistake are higher than usual.";
 
   return { do: doLine, avoid: avoidLine };
 }
