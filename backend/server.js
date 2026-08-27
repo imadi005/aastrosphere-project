@@ -33,6 +33,7 @@ import {
 } from './prediction_engine.js';
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
 import { NUMBER_IN_RELATIONSHIP_I18N, localizedCompat } from './compatibility_library_i18n.js';
+import { PAIR_DYNAMICS_I18N } from './compatibility_pair_dynamics_i18n.js';
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
 import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis, buildFullChartForChat, smartParseDob, neutralizeAnswer } from './ask_engine.js';
 import { buildScanContext } from './event_scanner.js';
@@ -413,9 +414,9 @@ app.post('/api/compatibility', (req, res) => {
 
     // Natal compatibility score
     const natalKey = [Math.min(b1,b2), Math.max(b1,b2)].join('_');
-    const natalPair = PAIR_DYNAMICS[natalKey] || {};
+    const natalPair = localizedCompat(PAIR_DYNAMICS, PAIR_DYNAMICS_I18N, natalKey, lang) || {};
     const destinyKey = [Math.min(d1,d2), Math.max(d1,d2)].join('_');
-    const destinyPair = PAIR_DYNAMICS[destinyKey] || {};
+    const destinyPair = localizedCompat(PAIR_DYNAMICS, PAIR_DYNAMICS_I18N, destinyKey, lang) || {};
 
     // ── Book-accurate scoring: Vedic planetary relationship model ────────────
     // Standard planetary friend/enemy/neutral relationships (Lo Shu / Vedic)
