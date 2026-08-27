@@ -582,9 +582,12 @@ app.post('/api/compatibility', optionalAuth, async (req, res) => {
 
     res.json(gateResponse(
       raw,
-      ['score', 'level', 'level_icon', 'relationship_label', 'today'],
+      // `core` is free — one real paragraph about the dynamic, so a first-time
+      // user gets substance instead of just a score. strength/tension/growth,
+      // what each person brings, and today's detailed guidance stay premium.
+      ['score', 'level', 'level_icon', 'relationship_label', 'today', 'core'],
       subscribed,
-      'Full compatibility breakdown — what you bring to each other, growth areas, and detailed today-guidance — unlock with Premium.'
+      'See what works, the tension to navigate, growth areas, what you each bring — plus full today\'s guidance — unlock with Premium.'
     ));
   } catch (e) {
     res.status(500).json({ error: e.message });

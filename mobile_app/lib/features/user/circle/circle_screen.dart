@@ -240,23 +240,21 @@ class _FriendCardState extends State<_FriendCard> {
               ]),
             ),
 
-            // Tab content — Overall/Dynamics are entirely premium content
-            // when compat['locked'] is true (see /api/compatibility gating);
-            // Today handles its own partial lock internally since score/
-            // energy/label stay free even without a subscription.
+            // Tab content — Today handles its own partial lock internally
+            // (score/energy/label stay free). Overall shows `core` for free
+            // and gates the rest (strength/tension/growth/etc.) internally.
+            // Dynamics (what each person brings) is entirely premium.
             Padding(
               padding: const EdgeInsets.all(16),
               child: _activeTab == 0
                   ? _TodayTab(today: today!, isDark: isDark, gold: gold)
-                  : (_compat!['locked'] == true)
-                      ? PremiumLockCard(
-                          title: _activeTab == 1
-                              ? AppLocalizations.of(context)!.overallTab
-                              : AppLocalizations.of(context)!.dynamicsTab,
-                          preview: _compat!['locked_preview'] as String? ?? '',
-                        )
-                      : _activeTab == 1
-                          ? _OverallTab(compat: _compat!, isDark: isDark, gold: gold)
+                  : _activeTab == 1
+                      ? _OverallTab(compat: _compat!, isDark: isDark, gold: gold)
+                      : (_compat!['locked'] == true)
+                          ? PremiumLockCard(
+                              title: AppLocalizations.of(context)!.dynamicsTab,
+                              preview: _compat!['locked_preview'] as String? ?? '',
+                            )
                           : _DynamicsTab(compat: _compat!, isDark: isDark, gold: gold),
             ),
 
@@ -418,6 +416,7 @@ class _OverallTab extends StatelessWidget {
     final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
 
     final core = compat['core'] as String? ?? '';
+    final locked = compat['locked'] == true;
     final strength = compat['strength'] as String? ?? '';
     final tension = compat['tension'] as String? ?? '';
     final growth = compat['growth'] as String? ?? '';
@@ -425,6 +424,14 @@ class _OverallTab extends StatelessWidget {
     final friendship = compat['friendship'] as String?;
     final destinyNote = compat['destiny_note'] as String?;
     final relationLabel = compat['relationship_label'] as String? ?? 'Close connection';
+
+    if (locked) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(core, style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.65)),
+        const SizedBox(height: 14),
+        PremiumLockCard(preview: compat['locked_preview'] as String? ?? ''),
+      ]);
+    }
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(core, style: GoogleFonts.dmSans(fontSize: 13, color: primary, height: 1.65)),
