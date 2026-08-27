@@ -143,20 +143,26 @@ class _AstrologerShell extends ConsumerWidget {
     ];
   }
 
+  // "Me" mode is the astrologer experiencing the app as a regular user would
+  // — same screens, same order, same tab set as _UserShell, so nothing an
+  // astrologer's own account can do disappears just because they're on the
+  // astrologer side of the app.
   static const _meScreens = [
     TodayScreen(),
-    ChartScreen(),
     InsightsScreen(),
     AskScreen(),
+    CircleScreen(),
+    ChartScreen(),
   ];
 
   static List<BottomNavigationBarItem> _meItems(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return [
       BottomNavigationBarItem(icon: const Icon(Icons.wb_sunny_outlined), activeIcon: const Icon(Icons.wb_sunny), label: t.navToday),
-      BottomNavigationBarItem(icon: const Icon(Icons.grid_view_outlined), activeIcon: const Icon(Icons.grid_view), label: t.navChart),
       BottomNavigationBarItem(icon: const Icon(Icons.auto_awesome_outlined), activeIcon: const Icon(Icons.auto_awesome), label: t.navInsights),
       BottomNavigationBarItem(icon: const Icon(Icons.auto_awesome_outlined), activeIcon: const Icon(Icons.auto_awesome), label: t.navAsk),
+      BottomNavigationBarItem(icon: const Icon(Icons.people_outline), activeIcon: const Icon(Icons.people), label: t.navCircle),
+      BottomNavigationBarItem(icon: const Icon(Icons.grid_view_outlined), activeIcon: const Icon(Icons.grid_view), label: t.navChart),
     ];
   }
 
@@ -182,6 +188,13 @@ class _AstrologerShell extends ConsumerWidget {
           title: Text('Aastrosphere', style: GoogleFonts.cormorantGaramond(
               fontSize: 17, fontWeight: FontWeight.w400, color: gold, letterSpacing: 0.5)),
           actions: [
+            // Same User/Astrologer control shown in the User shell's app bar
+            // for astrologer accounts — without this, switching into
+            // Astrologer mode had no way back except signing out, and the
+            // Client/Me toggle below (a different, unrelated switch) looked
+            // like it had replaced it.
+            RoleToggle(isAstrologer: true, onToggle: () => ref.read(roleProvider.notifier).toggle()),
+            const SizedBox(width: 8),
             // Me / Client toggle
             Container(
               margin: const EdgeInsets.symmetric(vertical: 10),
