@@ -809,7 +809,7 @@ class PdfReportBuilder {
     final rows = <pw.TableRow>[];
     rows.add(pw.TableRow(
       decoration: pw.BoxDecoration(color: _card),
-      children: ['DATES','MONTHLY','FINANCE','HEALTH','RISKY DAYS','NOTES'].map((h) =>
+      children: ['DATES','MONTHLY','FINANCE','HEALTH','RISKY DAYS','RESULTS OF MONTHLY DASHA'].map((h) =>
         pw.Padding(padding: const pw.EdgeInsets.all(5),
           child: pw.Text(h, style: pw.TextStyle(fontSize: 6.5, color: _muted,
               fontWeight: pw.FontWeight.bold, letterSpacing: 0.3)))).toList()));
@@ -831,7 +831,20 @@ class PdfReportBuilder {
                       mNum == 9 && (s.antarNum == 4 || s.mahaNum == 4);
       final bg = isCurrent ? _goldBg : (hasRisk ? _dangerBg : (months.indexOf(m) % 2 == 0 ? _white : _card));
       final nc = isCurrent ? _gold : (hasRisk ? _danger : _body);
-      final notes = cauts.isNotEmpty ? cauts.first : (bestFor.isNotEmpty ? 'Best for: ${bestFor.first}' : '--');
+      // Every month number has caution + best_for text in MONTH_CHARACTER, so
+      // this should never actually be empty — but a saved/legacy report can
+      // be missing fields, so fall through to label/character rather than
+      // ever showing a blank "--" cell.
+      final character = _trim(m['character'] as String?, 70);
+      final notes = cauts.isNotEmpty
+          ? cauts.first
+          : bestFor.isNotEmpty
+              ? 'Best for: ${bestFor.first}'
+              : label.isNotEmpty
+                  ? label
+                  : character.isNotEmpty
+                      ? character
+                      : 'Steady month — no major shifts flagged.';
 
       final riskyDays = (m['risky_days'] as List?)?.cast<int>() ?? [];
       final luckyDays = (m['lucky_days'] as List?)?.cast<int>() ?? [];
