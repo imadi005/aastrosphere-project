@@ -3,36 +3,45 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 
-/// The single paywall surface for the whole app — every "Unlock with
-/// Premium" button (Chart, Insights, Circle, and the Ask out-of-credits
-/// screen) opens this same sheet, so pricing only needs to be explained once.
+/// The single paywall surface for the whole app. Every purchase prompt —
+/// PremiumLockCard's "Unlock with Premium" button, Ask's out-of-credits
+/// moment, anywhere else a paywall is triggered — pushes this as a full
+/// screen via [PlansScreen.open], never a bottom sheet or inline dialog.
+/// That keeps pricing/feature explanation consistent in one place, and
+/// because it's a normal Navigator push, popping it (on purchase success,
+/// or via the back button) returns the user to exactly the screen and
+/// state they were in when the prompt fired — no separate "return to"
+/// bookkeeping needed.
 ///
 /// Pricing itself is fetched live from /api/pricing (backend/pricing.js is
 /// the single source of truth) rather than hardcoded here, so prices can
 /// change without an app release.
-class PaywallSheet {
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const _PaywallSheetContent(),
+class PlansScreen extends StatefulWidget {
+  const PlansScreen({super.key});
+
+  /// Pushes the plans screen on top of whatever the caller is showing.
+  /// Awaiting this future resolves when the user leaves the screen (either
+  /// by going back, or — once real billing is wired — after a purchase
+  /// completes and the screen pops itself), so callers can refresh their
+  /// data afterward if they want to reflect newly-unlocked content:
+  ///   await PlansScreen.open(context);
+  ///   ref.invalidate(someProvider); // pick up the new subscription state
+  static Future<void> open(BuildContext context) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PlansScreen()),
     );
   }
-}
-
-class _PaywallSheetContent extends StatefulWidget {
-  const _PaywallSheetContent();
 
   @override
-  State<_PaywallSheetContent> createState() => _PaywallSheetContentState();
+  State<PlansScreen> createState() => _PlansScreenState();
 }
 
-class _PaywallSheetContentState extends State<_PaywallSheetContent> {
+class _PlansScreenState extends State<PlansScreen> {
   Map<String, dynamic>? _pricing;
   bool _loading = true;
   String? _error;
   String _selectedSubPlanId = 'sub_annual';
+  bool _purchasing = false;
 
   @override
   void initState() {
@@ -54,47 +63,47 @@ class _PaywallSheetContentState extends State<_PaywallSheetContent> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final bg = isDark ? AppColors.bgDark : AppColors.bgLight;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.85,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (context, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return Scaffold(
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.close_rounded, color: primary),
+          onPressed: () => Navigator.of(context).pop(),
         ),
+      ),
+      body: SafeArea(
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Text(_error!, style: GoogleFonts.dmSans(color: secondary), textAlign: TextAlign.center),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text(_error!, style: GoogleFonts.dmSans(color: secondary), textAlign: TextAlign.center),
+                      const SizedBox(height: 12),
+                      TextButton(onPressed: () { setState(() => _loading = true); _load(); }, child: const Text('Retry')),
+                    ]),
                   ))
                 : ListView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                     children: [
-                      Center(
-                        child: Container(
-                          width: 40, height: 4,
-                          decoration: BoxDecoration(color: border, borderRadius: BorderRadius.circular(2)),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
                       Text(
                         '✨ Unlock Everything',
-                        style: GoogleFonts.cormorantGaramond(fontSize: 28, fontWeight: FontWeight.bold, color: gold),
+                        style: GoogleFonts.cormorantGaramond(fontSize: 30, fontWeight: FontWeight.bold, color: gold),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'One subscription unlocks your full Chart Analysis, complete Insights, unlimited compatibility reports, and unlimited Ask — everything, everywhere in the app.',
+                        'One subscription unlocks every premium screen in the app.',
                         style: GoogleFonts.dmSans(fontSize: 13, height: 1.5, color: secondary),
                       ),
                       const SizedBox(height: 20),
+                      _buildFeatureList(isDark, gold, primary, secondary, border),
+                      const SizedBox(height: 24),
                       ..._buildSubscriptionCards(isDark, gold, secondary, border),
                       const SizedBox(height: 28),
                       Row(
@@ -111,12 +120,51 @@ class _PaywallSheetContentState extends State<_PaywallSheetContent> {
                       ..._buildPackRow(isDark, gold, secondary, border),
                       const SizedBox(height: 16),
                       Text(
-                        'Subscribing unlocks every screen in the app, not just Ask. Packs and single questions are for Ask only.',
+                        'Subscribing unlocks Chart, Insights, and Circle too. Packs and single questions are for Ask only.',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.dmSans(fontSize: 11, color: secondary),
                       ),
                     ],
                   ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureList(bool isDark, Color gold, Color primary, Color secondary, Color border) {
+    const features = [
+      (Icons.chat_bubble_outline_rounded, 'Unlimited Ask', 'Chat as much as you want, no credits to track'),
+      (Icons.auto_awesome_rounded, 'Full Chart Day Analysis', 'Every finding for today — accident risk, opportunities, all of it'),
+      (Icons.calendar_month_rounded, 'Complete Insights', 'Weekly, Monthly, Yearly, and your full Deep Profile'),
+      (Icons.favorite_rounded, 'Unlimited Compatibility Reports', 'Check with anyone in your Circle, anytime'),
+    ];
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bgCardDark : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: border, width: 0.5),
+      ),
+      child: Column(
+        children: features.map((f) {
+          final (icon, title, subtitle) = f;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                width: 32, height: 32,
+                decoration: BoxDecoration(color: gold.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                child: Icon(icon, size: 16, color: gold),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(title, style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: primary)),
+                  Text(subtitle, style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
+                ]),
+              ),
+            ]),
+          );
+        }).toList(),
       ),
     );
   }
@@ -185,7 +233,7 @@ class _PaywallSheetContentState extends State<_PaywallSheetContent> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () => _handlePurchase(context, kind: 'subscription', id: _selectedSubPlanId),
+            onPressed: _purchasing ? null : () => _handlePurchase(kind: 'subscription', id: _selectedSubPlanId),
             style: ElevatedButton.styleFrom(
               backgroundColor: gold,
               foregroundColor: Colors.black87,
@@ -193,7 +241,9 @@ class _PaywallSheetContentState extends State<_PaywallSheetContent> {
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text('Subscribe', style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.w700)),
+            child: _purchasing
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.black87)))
+                : Text('Subscribe', style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.w700)),
           ),
         ),
       );
@@ -212,7 +262,7 @@ class _PaywallSheetContentState extends State<_PaywallSheetContent> {
             final pack = packs[i];
             final popular = pack['popular'] == true;
             return GestureDetector(
-              onTap: () => _handlePurchase(context, kind: 'pack', id: pack['id'] as String),
+              onTap: _purchasing ? null : () => _handlePurchase(kind: 'pack', id: pack['id'] as String),
               child: Container(
                 width: 110,
                 padding: const EdgeInsets.all(12),
@@ -242,11 +292,19 @@ class _PaywallSheetContentState extends State<_PaywallSheetContent> {
     ];
   }
 
-  void _handlePurchase(BuildContext context, {required String kind, required String id}) {
-    // Play Billing / App Store purchase flow isn't wired up yet — this is
+  Future<void> _handlePurchase({required String kind, required String id}) async {
+    // Play Billing / App Store purchase flow isn't wired up yet -- this is
     // the one remaining piece (needs products created in Play Console /
     // App Store Connect first, then receipt verification calling
     // grantCredits()/activateSubscription() in authMiddleware.js).
+    //
+    // Once wired, the success path here should look like:
+    //   setState(() => _purchasing = true);
+    //   final ok = await BillingService.purchase(kind: kind, productId: id);
+    //   if (!mounted) return;
+    //   setState(() => _purchasing = false);
+    //   if (ok && mounted) Navigator.of(context).pop(); // returns to origin screen
+    //   else showError(...);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Payments are coming soon — check back shortly!')),
     );

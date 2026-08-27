@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
-import 'paywall_sheet.dart';
+import 'plans_screen.dart';
 
 /// Renders whatever a gated API response's `locked`/`locked_preview` (or a
 /// nested field's `locked`/`preview`) fields describe — a compact card with
-/// the teaser text and an "Unlock with Premium" CTA that opens [PaywallSheet].
+/// the teaser text and an "Unlock with Premium" CTA that pushes [PlansScreen].
 /// Used identically across Chart, Insights, and Circle so a subscriber only
-/// ever needs to learn this one interaction.
+/// ever needs to learn this one interaction, and popping the plans screen
+/// (back button, or a successful purchase) always returns to this exact card.
 class PremiumLockCard extends StatelessWidget {
   final String preview;
   final String? title;
@@ -61,7 +62,7 @@ class PremiumLockCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => PaywallSheet.show(context),
+              onPressed: () => PlansScreen.open(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: gold,
                 foregroundColor: Colors.black87,
