@@ -24,6 +24,7 @@ import {
 import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
 import { DAY_CHARACTER_I18N, WEEK_CHARACTER_I18N, MONTH_CHARACTER_I18N, localizedChar } from './breakdown_library_i18n.js';
 import { DEEP_NUMBER_PROFILES_I18N, DEEP_DASHA_EXPERIENCE_I18N, HONEST_WARNINGS_I18N, PERSONAL_PATTERNS_I18N, localizedDeep } from './deep_library_i18n.js';
+import { DEEP_COMBINATIONS_I18N, DEEP_COMBINATIONS_EXTENDED_I18N } from './deep_combinations_i18n.js';
 import { getDayDefinition } from './day_definition_library.js';
 import { getDayScore } from './day_score_library.js';
 import { getPriorityAction } from './priority_action_library.js';
@@ -39,9 +40,11 @@ import {
 } from './numerology.js';
 
 // ─── Deep library lookup ─────────────────────────────────────────────────────
-export function getDeepCombination(a, b) {
+export function getDeepCombination(a, b, lang = null) {
   const key = [a, b].sort((x,y) => x-y).join('_');
-  return DEEP_COMBINATIONS[key] || DEEP_COMBINATIONS_EXTENDED[key] || null;
+  if (DEEP_COMBINATIONS[key]) return localizedDeep(DEEP_COMBINATIONS, DEEP_COMBINATIONS_I18N, key, lang);
+  if (DEEP_COMBINATIONS_EXTENDED[key]) return localizedDeep(DEEP_COMBINATIONS_EXTENDED, DEEP_COMBINATIONS_EXTENDED_I18N, key, lang);
+  return null;
 }
 
 export function getPersonalPattern(basic, destiny, lang = null) {

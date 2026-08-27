@@ -775,7 +775,7 @@ app.post('/api/insights/deep', (req, res) => {
     // Core profile
     const basicProfile = getDeepNumberProfile(basic, destiny, maha.number, natalNums, lang);
     const destinyProfile = getDeepNumberProfile(destiny, basic, maha.number, natalNums, lang);
-    const combo = getDeepCombination(basic, destiny);
+    const combo = getDeepCombination(basic, destiny, lang);
     const pattern = getPersonalPattern(basic, destiny, lang);
     const dashaExp = getDashaExperience(maha.number, antar.number, lang);
     const warnings = getHonestWarnings(yogas, annualFreq, maha.number, antar.number, lang);
@@ -784,7 +784,7 @@ app.post('/api/insights/deep', (req, res) => {
     const natalCombos = [];
     for (let i = 0; i < natalNums.length; i++) {
       for (let j = i+1; j < natalNums.length; j++) {
-        const c = getDeepCombination(natalNums[i], natalNums[j]);
+        const c = getDeepCombination(natalNums[i], natalNums[j], lang);
         if (c) natalCombos.push({ numbers: [natalNums[i], natalNums[j]], ...c });
       }
     }
