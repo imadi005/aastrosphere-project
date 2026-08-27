@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/numerology/numerology_engine.dart';
 import '../providers/astro_client_provider.dart';
+import '../widgets/analysis_context_banner.dart';
 import '../../auth/providers/user_provider.dart';
 
 class AstroDailyScreen extends ConsumerStatefulWidget {
@@ -67,6 +68,7 @@ class _AstroDailyScreenState extends ConsumerState<AstroDailyScreen>
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     final useClient = ref.watch(astroUseClientDobProvider);
     final clientDob = ref.watch(astroClientDobProvider);
+    final clientName = ref.watch(astroClientNameProvider);
     final userAsync = ref.watch(userProfileProvider);
     final activeDob = useClient ? clientDob : userAsync.valueOrNull?.dob;
 
@@ -81,6 +83,7 @@ class _AstroDailyScreenState extends ConsumerState<AstroDailyScreen>
         Padding(padding: const EdgeInsets.fromLTRB(16,12,16,4),
           child: Align(alignment: Alignment.centerLeft,
             child: Text('Readings', style: GoogleFonts.cormorantGaramond(fontSize: 22, color: gold, fontWeight: FontWeight.w400)))),
+        AnalysisContextBanner(dob: activeDob, isClient: useClient, clientName: clientName),
         TabBar(
           controller: _tabs,
           isScrollable: true,

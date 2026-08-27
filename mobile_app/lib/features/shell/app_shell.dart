@@ -24,7 +24,7 @@ import '../astrologer/chart/astro_chart_screen.dart';
 import '../astrologer/timeline/timeline_screen.dart';
 import '../astrologer/daily/daily_screen.dart';
 import '../astrologer/report/astro_report_screen.dart';
-import '../astrologer/more/more_screen.dart';
+import '../consult/consult_screen.dart';
 
 final _userIndexProvider = StateProvider<int>((ref) => 0);
 final _astroIndexProvider = StateProvider<int>((ref) => 0);
@@ -130,7 +130,7 @@ class _AstrologerShell extends ConsumerWidget {
     TimelineScreen(),
     AstroDailyScreen(),
     AstroReportScreen(),
-    MoreScreen(),
+    AstrologerConsultScreen(),
   ];
 
   static List<BottomNavigationBarItem> _clientItems(BuildContext context) {

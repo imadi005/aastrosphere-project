@@ -691,11 +691,6 @@ class AstrologerConsultScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent, elevation: 0,
-        title: Text('Consultations',
-            style: GoogleFonts.cormorantGaramond(fontSize: 20, color: gold)),
-      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('consultations')
@@ -708,14 +703,49 @@ class AstrologerConsultScreen extends StatelessWidget {
           final answered = docs.where((d) =>
               (d.data() as Map)['status'] == 'answered').toList();
 
-          return DefaultTabController(
-            length: 2,
-            child: Column(children: [
+          return SafeArea(
+            child: DefaultTabController(
+              length: 2,
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 2),
+                child: Text('Consultations',
+                    style: GoogleFonts.cormorantGaramond(
+                        fontSize: 22, color: gold, fontWeight: FontWeight.w400)),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Text(
+                  pending.isEmpty
+                      ? 'Your client question queue is clear.'
+                      : '${pending.length} client ${pending.length == 1 ? 'session is' : 'sessions are'} waiting for your response.',
+                  style: GoogleFonts.dmSans(fontSize: 11, color: secondary),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Row(children: [
+                  Expanded(child: _QueueMetric(
+                    label: 'TO ANSWER', value: pending.length.toString(),
+                    icon: Icons.mark_unread_chat_alt_outlined,
+                    color: isDark ? AppColors.warningDark : AppColors.warning,
+                    isDark: isDark,
+                  )),
+                  const SizedBox(width: 10),
+                  Expanded(child: _QueueMetric(
+                    label: 'COMPLETED', value: answered.length.toString(),
+                    icon: Icons.task_alt_outlined,
+                    color: isDark ? AppColors.successDark : AppColors.success,
+                    isDark: isDark,
+                  )),
+                ]),
+              ),
               TabBar(
                 labelColor: gold,
                 unselectedLabelColor: secondary,
                 indicatorColor: gold,
                 labelStyle: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600),
+                dividerColor: Colors.transparent,
                 tabs: [
                   Tab(text: 'Pending (${pending.length})'),
                   Tab(text: 'Answered (${answered.length})'),
@@ -726,9 +756,55 @@ class AstrologerConsultScreen extends StatelessWidget {
                 _ConsultList(docs: answered, isDark: isDark, gold: gold),
               ])),
             ]),
+            ),
           );
         },
       ),
+    );
+  }
+}
+
+class _QueueMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final bool isDark;
+  const _QueueMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border, width: 0.5),
+      ),
+      child: Row(children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(9)),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(width: 9),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(value, style: GoogleFonts.cormorantGaramond(
+              fontSize: 20, height: 1, color: primary, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 3),
+          Text(label, style: GoogleFonts.dmSans(
+              fontSize: 8, letterSpacing: 0.6, color: color, fontWeight: FontWeight.w700)),
+        ]),
+      ]),
     );
   }
 }

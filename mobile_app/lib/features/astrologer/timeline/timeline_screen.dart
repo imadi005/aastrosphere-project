@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/numerology/numerology_engine.dart';
 import '../../../core/services/api_service.dart';
 import '../providers/astro_client_provider.dart';
+import '../widgets/analysis_context_banner.dart';
 import '../../auth/providers/user_provider.dart';
 
 // ─── Grid position map (same as grid widget) ────────────────────────────────
@@ -22,10 +23,17 @@ class TimelineScreen extends ConsumerWidget {
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     final useClient = ref.watch(astroUseClientDobProvider);
     final clientDob = ref.watch(astroClientDobProvider);
+    final clientName = ref.watch(astroClientNameProvider);
     final userAsync = ref.watch(userProfileProvider);
     final activeDob = useClient ? clientDob : userAsync.valueOrNull?.dob;
     if (activeDob == null) return _NoDob(isDark: isDark, gold: gold);
-    return _TimelineBody(dob: activeDob, isDark: isDark, gold: gold);
+    return _TimelineBody(
+      dob: activeDob,
+      isDark: isDark,
+      gold: gold,
+      isClient: useClient,
+      clientName: clientName,
+    );
   }
 }
 
@@ -47,7 +55,15 @@ class _NoDob extends StatelessWidget {
 
 class _TimelineBody extends StatefulWidget {
   final DateTime dob; final bool isDark; final Color gold;
-  const _TimelineBody({required this.dob, required this.isDark, required this.gold});
+  final bool isClient;
+  final String clientName;
+  const _TimelineBody({
+    required this.dob,
+    required this.isDark,
+    required this.gold,
+    required this.isClient,
+    required this.clientName,
+  });
   @override State<_TimelineBody> createState() => _TimelineBodyState();
 }
 
@@ -109,6 +125,8 @@ class _TimelineBodyState extends State<_TimelineBody> with SingleTickerProviderS
       body: SafeArea(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(padding: const EdgeInsets.fromLTRB(16,12,16,8),
           child: Text('Timeline', style: GoogleFonts.cormorantGaramond(fontSize: 22, color: gold, fontWeight: FontWeight.w400))),
+
+        AnalysisContextBanner(dob: widget.dob, isClient: widget.isClient, clientName: widget.clientName),
 
         // Current summary strip — fetched from the backend (single source of truth)
         Padding(padding: const EdgeInsets.fromLTRB(16,0,16,10),
