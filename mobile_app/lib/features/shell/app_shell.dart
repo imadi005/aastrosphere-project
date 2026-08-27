@@ -119,12 +119,19 @@ class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObser
 }
 
 // ─── Astrologer Shell ─────────────────────────────────────────────────────────
-final _astroMeViewProvider = StateProvider<bool>((ref) => false); // false=client, true=me
-
+// One toggle only: User vs Astrologer (which whole app experience you want).
+// "Whose chart am I looking at" is a second, orthogonal question, and it's
+// already answered per-tool by astroUseClientDobProvider (the Client/My
+// Chart switch on the Chart tab, read by Chart/Timeline/Daily/Reports alike
+// via AnalysisContextBanner) — that state is shared across all four tools,
+// so setting it once on Chart carries over everywhere. Stacking a second
+// top-level "Client/Me" mode switch on top of that duplicated the same
+// choice at a clunkier level (swapping the whole tab set) and, worse, gave
+// "Me" mode its own smaller tab set that silently dropped Circle. Removed.
 class _AstrologerShell extends ConsumerWidget {
   const _AstrologerShell();
 
-  static const _clientScreens = [
+  static const _screens = [
     AstroChartScreen(),
     TimelineScreen(),
     AstroDailyScreen(),
@@ -132,7 +139,7 @@ class _AstrologerShell extends ConsumerWidget {
     AstrologerConsultScreen(),
   ];
 
-  static List<BottomNavigationBarItem> _clientItems(BuildContext context) {
+  static List<BottomNavigationBarItem> _items(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return [
       BottomNavigationBarItem(icon: const Icon(Icons.grid_view_outlined), activeIcon: const Icon(Icons.grid_view), label: t.navChart),
@@ -143,37 +150,12 @@ class _AstrologerShell extends ConsumerWidget {
     ];
   }
 
-  // "Me" mode is the astrologer experiencing the app as a regular user would
-  // — same screens, same order, same tab set as _UserShell, so nothing an
-  // astrologer's own account can do disappears just because they're on the
-  // astrologer side of the app.
-  static const _meScreens = [
-    TodayScreen(),
-    InsightsScreen(),
-    AskScreen(),
-    CircleScreen(),
-    ChartScreen(),
-  ];
-
-  static List<BottomNavigationBarItem> _meItems(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
-    return [
-      BottomNavigationBarItem(icon: const Icon(Icons.wb_sunny_outlined), activeIcon: const Icon(Icons.wb_sunny), label: t.navToday),
-      BottomNavigationBarItem(icon: const Icon(Icons.auto_awesome_outlined), activeIcon: const Icon(Icons.auto_awesome), label: t.navInsights),
-      BottomNavigationBarItem(icon: const Icon(Icons.auto_awesome_outlined), activeIcon: const Icon(Icons.auto_awesome), label: t.navAsk),
-      BottomNavigationBarItem(icon: const Icon(Icons.people_outline), activeIcon: const Icon(Icons.people), label: t.navCircle),
-      BottomNavigationBarItem(icon: const Icon(Icons.grid_view_outlined), activeIcon: const Icon(Icons.grid_view), label: t.navChart),
-    ];
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final index = ref.watch(_astroIndexProvider);
     final isDark = ref.watch(themeProvider) == ThemeMode.dark;
-    final isMeView = ref.watch(_astroMeViewProvider);
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return Scaffold(
       appBar: PreferredSize(
@@ -188,34 +170,12 @@ class _AstrologerShell extends ConsumerWidget {
           title: Text('Aastrosphere', style: GoogleFonts.cormorantGaramond(
               fontSize: 17, fontWeight: FontWeight.w400, color: gold, letterSpacing: 0.5)),
           actions: [
-            // Same User/Astrologer control shown in the User shell's app bar
-            // for astrologer accounts — without this, switching into
-            // Astrologer mode had no way back except signing out, and the
-            // Client/Me toggle below (a different, unrelated switch) looked
-            // like it had replaced it.
+            // Only top-level toggle in this shell — switches the whole app
+            // experience back to the regular User side. Same control the
+            // User shell's app bar shows for astrologer accounts, so there's
+            // always a consistent way back regardless of which side you're on.
             RoleToggle(isAstrologer: true, onToggle: () => ref.read(roleProvider.notifier).toggle()),
             const SizedBox(width: 8),
-            // Me / Client toggle
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: border, width: 0.5)),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                _ModeChip(label: AppLocalizations.of(context)!.modeClient, active: !isMeView, gold: gold, isDark: isDark,
-                    onTap: () {
-                      ref.read(_astroMeViewProvider.notifier).state = false;
-                      ref.read(_astroIndexProvider.notifier).state = 0;
-                    }),
-                _ModeChip(label: AppLocalizations.of(context)!.navMe, active: isMeView, gold: gold, isDark: isDark,
-                    onTap: () {
-                      ref.read(_astroMeViewProvider.notifier).state = true;
-                      ref.read(_astroIndexProvider.notifier).state = 0;
-                    }),
-              ]),
-            ),
-            const SizedBox(width: 6),
             GestureDetector(
               onTap: () => _showSignOutDialog(context, ref),
               child: Padding(padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -226,37 +186,20 @@ class _AstrologerShell extends ConsumerWidget {
           ],
         ),
       ),
-      body: isMeView
-          ? IndexedStack(index: index, children: _meScreens)
-          : IndexedStack(index: index, children: _clientScreens),
+      body: IndexedStack(index: index, children: _screens),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _AttributionFooter(isDark: isDark, label: 'Aastrosphere by Pankajj Kumar Mishra  ( Ank Jyotish & Palmist )'),
           _BottomNav(
             currentIndex: index,
-            items: isMeView ? _meItems(context) : _clientItems(context),
+            items: _items(context),
             onTap: (i) => ref.read(_astroIndexProvider.notifier).state = i,
           ),
         ],
       ),
     );
   }
-}
-
-class _ModeChip extends StatelessWidget {
-  final String label; final bool active; final Color gold; final bool isDark; final VoidCallback onTap;
-  const _ModeChip({required this.label, required this.active, required this.gold,
-      required this.isDark, required this.onTap});
-  @override Widget build(BuildContext context) => GestureDetector(onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: active ? gold.withOpacity(0.15) : Colors.transparent,
-        borderRadius: BorderRadius.circular(7)),
-      child: Text(label, style: GoogleFonts.dmSans(fontSize: 11,
-          fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-          color: active ? gold : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)))));
 }
 
 // ─── Shared App Bar ───────────────────────────────────────────────────────────
