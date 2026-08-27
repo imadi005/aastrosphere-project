@@ -41,8 +41,13 @@ class ChatMessage {
 }
 
 class AskScreen extends StatefulWidget {
-  const AskScreen({super.key});
-  
+  /// When set, this question is auto-filled and sent as soon as the chat is
+  /// ready (used by the Chart screen's "Ask for my personalized insight"
+  /// tap-to-explain flow) — the user never has to type it themselves.
+  final String? initialQuestion;
+
+  const AskScreen({super.key, this.initialQuestion});
+
   @override
   State<AskScreen> createState() => _AskScreenState();
 }
@@ -59,6 +64,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   String? _uid;
   bool _isTyping = false;
   bool _welcomeMessageAdded = false;
+  bool _initialQuestionSent = false;
   ChatMessage? _replyTarget;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -66,7 +72,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _loadUserDob();
+    _loadUserDob().then((_) => _maybeSendInitialQuestion());
 
     _fadeController = AnimationController(
       vsync: this,
@@ -98,6 +104,17 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
     }
   }
   
+  void _maybeSendInitialQuestion() {
+    if (_initialQuestionSent) return;
+    final q = widget.initialQuestion;
+    if (q == null || q.isEmpty || _userDob == null) return;
+    _initialQuestionSent = true;
+    _ctrl.text = q;
+    // Let the welcome message + history finish rendering first so the
+    // question lands as a natural next bubble, not a jarring first-frame jump.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _send());
+  }
+
   void _addWelcomeMessage(BuildContext context) {
     _messages.add(ChatMessage(
       role: 'assistant',

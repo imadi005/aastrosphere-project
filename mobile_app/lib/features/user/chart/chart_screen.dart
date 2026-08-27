@@ -9,6 +9,7 @@ import '../../../core/providers/locale_provider.dart';
 import '../../../core/services/api_service.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import 'chart_explainer.dart';
 
 // Planet names for the 9 numerology energies — always shown in English here.
 const Map<int, String> kNeutralEnergyLabel = {
@@ -319,23 +320,26 @@ class _ChartView extends StatelessWidget {
               _PeriodRow(label: AppLocalizations.of(context)!.longTermPhase, number: maha['number'] as int,
                   planet: kNeutralEnergyLabel[maha['number'] as int] ?? '',
                   period: '${_yr(maha['start'])} – ${_yr(maha['end'])}',
-                  color: gold, isDark: isDark),
+                  color: gold, isDark: isDark, type: ChartPeriodType.maha, gold: gold),
               Divider(color: border, height: 16, thickness: 0.5),
               _PeriodRow(label: AppLocalizations.of(context)!.currentPhase, number: antar['number'] as int,
                   planet: kNeutralEnergyLabel[antar['number'] as int] ?? '',
                   period: '${_mo(antar['start'])} – ${_mo(antar['end'])}',
-                  color: isDark ? AppColors.successDark : AppColors.success, isDark: isDark),
+                  color: isDark ? AppColors.successDark : AppColors.success, isDark: isDark,
+                  type: ChartPeriodType.antar, gold: gold),
               Divider(color: border, height: 16, thickness: 0.5),
               _PeriodRow(label: AppLocalizations.of(context)!.monthlyLabel, number: monthly['number'] as int,
                   planet: kNeutralEnergyLabel[monthly['number'] as int] ?? '',
                   period: '${_dt(monthly['start'])} – ${_dt(monthly['end'])}',
-                  color: const Color(0xFF6366F1), isDark: isDark),
+                  color: const Color(0xFF6366F1), isDark: isDark,
+                  type: ChartPeriodType.monthly, gold: gold),
               if (daily != null) ...[
                 Divider(color: border, height: 16, thickness: 0.5),
                 _PeriodRow(label: AppLocalizations.of(context)!.dailyLabel, number: daily,
                     planet: '',
                     period: targetDate ?? '',
-                    color: const Color(0xFF06B6D4), isDark: isDark),
+                    color: const Color(0xFF06B6D4), isDark: isDark,
+                    type: ChartPeriodType.daily, gold: gold),
               ],
               if (hourly != null) ...[
                 Divider(color: border, height: 16, thickness: 0.5),
@@ -344,7 +348,8 @@ class _ChartView extends StatelessWidget {
                     period: targetHour != null
                         ? '${targetHour > 12 ? targetHour - 12 : targetHour == 0 ? 12 : targetHour}:00 ${targetHour < 12 ? 'AM' : 'PM'}'
                         : '',
-                    color: const Color(0xFFF59E0B), isDark: isDark),
+                    color: const Color(0xFFF59E0B), isDark: isDark,
+                    type: ChartPeriodType.hourly, gold: gold),
               ],
             ]),
           ),
@@ -378,13 +383,13 @@ class _ChartView extends StatelessWidget {
             Expanded(child: _CoreNumberCard(
               label: AppLocalizations.of(context)!.basicLabel, sublabel: AppLocalizations.of(context)!.innerSelf,
               number: basic, planet: kNeutralEnergyLabel[basic] ?? '',
-              gold: gold, isDark: isDark,
+              gold: gold, isDark: isDark, type: ChartPeriodType.basic,
             )),
             const SizedBox(width: 10),
             Expanded(child: _CoreNumberCard(
               label: AppLocalizations.of(context)!.destinyLabel, sublabel: AppLocalizations.of(context)!.lifePath,
               number: destiny, planet: kNeutralEnergyLabel[destiny] ?? '',
-              gold: gold, isDark: isDark,
+              gold: gold, isDark: isDark, type: ChartPeriodType.destiny,
             )),
           ]),
           const SizedBox(height: 16),
@@ -484,6 +489,11 @@ class _GridWidget extends StatelessWidget {
       [kNeutralEnergyLabel[6]!, kNeutralEnergyLabel[7]!, kNeutralEnergyLabel[5]!],
       [kNeutralEnergyLabel[2]!, kNeutralEnergyLabel[8]!, kNeutralEnergyLabel[4]!],
     ];
+    const gridNumbers = [
+      [3, 1, 9],
+      [6, 7, 5],
+      [2, 8, 4],
+    ];
 
     return Container(
       decoration: BoxDecoration(
@@ -499,6 +509,7 @@ class _GridWidget extends StatelessWidget {
               final isLast = col == 2;
               final isLastRow = row == 2;
               final planet = planetLabels[row][col];
+              final gridNumber = gridNumbers[row][col];
 
               return Expanded(
                 child: Container(
@@ -509,7 +520,7 @@ class _GridWidget extends StatelessWidget {
                       bottom: isLastRow ? BorderSide.none : BorderSide(color: border, width: 0.5),
                     ),
                   ),
-                  child: _GridCell(cell: cell, planet: planet, isDark: isDark, gold: gold),
+                  child: _GridCell(cell: cell, planet: planet, number: gridNumber, isDark: isDark, gold: gold),
                 ),
               );
             })),
@@ -523,10 +534,11 @@ class _GridWidget extends StatelessWidget {
 class _GridCell extends StatelessWidget {
   final List<dynamic> cell;
   final String planet;
+  final int number;
   final bool isDark;
   final Color gold;
 
-  const _GridCell({required this.cell, required this.planet, required this.isDark, required this.gold});
+  const _GridCell({required this.cell, required this.planet, required this.number, required this.isDark, required this.gold});
 
   @override
   Widget build(BuildContext context) {
@@ -539,7 +551,10 @@ class _GridCell extends StatelessWidget {
           style: GoogleFonts.dmSans(fontSize: 18, color: textTertiary)));
     }
 
-    return Padding(
+    return InkWell(
+      onTap: () => showChartExplainer(context, type: ChartPeriodType.grid, number: number,
+          isDark: isDark, gold: gold, gridCount: '${cell.length}'),
+      child: Padding(
       padding: const EdgeInsets.all(6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -570,6 +585,7 @@ class _GridCell extends StatelessWidget {
               textAlign: TextAlign.center),
         ],
       ),
+      ),
     );
   }
 }
@@ -580,17 +596,19 @@ class _PeriodRow extends StatelessWidget {
   final int number;
   final Color color;
   final bool isDark;
+  final ChartPeriodType? type;
+  final Color gold;
 
   const _PeriodRow({
     required this.label, required this.number, required this.planet,
     required this.period, required this.color, required this.isDark,
+    this.type, this.gold = Colors.amber,
   });
 
   @override
   Widget build(BuildContext context) {
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
-    final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    return Row(children: [
+    final row = Row(children: [
       Container(width: 6, height: 6,
           decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
       const SizedBox(width: 10),
@@ -606,8 +624,18 @@ class _PeriodRow extends StatelessWidget {
           const SizedBox(width: 4),
           Text(planet, style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
         ],
+        if (type != null) ...[
+          const SizedBox(width: 6),
+          Icon(Icons.info_outline, size: 14, color: secondary.withOpacity(0.5)),
+        ],
       ]),
     ]);
+    if (type == null) return row;
+    return InkWell(
+      onTap: () => showChartExplainer(context, type: type!, number: number, isDark: isDark, gold: gold),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: row),
+    );
   }
 }
 
@@ -617,10 +645,12 @@ class _CoreNumberCard extends StatelessWidget {
   final int number;
   final Color gold;
   final bool isDark;
+  final ChartPeriodType? type;
 
   const _CoreNumberCard({
     required this.label, required this.sublabel, required this.number,
     required this.planet, required this.gold, required this.isDark,
+    this.type,
   });
 
   @override
@@ -628,6 +658,9 @@ class _CoreNumberCard extends StatelessWidget {
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     return AstroCard(
       padding: const EdgeInsets.all(16),
+      onTap: type == null
+          ? null
+          : () => showChartExplainer(context, type: type!, number: number, isDark: isDark, gold: gold),
       child: Row(children: [
         Text('$number', style: GoogleFonts.cormorantGaramond(
             fontSize: 36, color: gold, height: 1)),
@@ -639,6 +672,7 @@ class _CoreNumberCard extends StatelessWidget {
           Text(sublabel, style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
           Text(planet, style: GoogleFonts.dmSans(fontSize: 10, color: secondary)),
         ])),
+        if (type != null) Icon(Icons.info_outline, size: 14, color: secondary.withOpacity(0.5)),
       ]),
     );
   }
