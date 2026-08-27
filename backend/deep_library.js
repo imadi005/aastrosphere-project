@@ -582,8 +582,18 @@ export const HONEST_WARNINGS = {
   },
   bandhan_yoga_active: {
     short: "The feeling of being trapped isn't imagination — something is genuinely constraining your movement right now.",
-    detail: "Legal, health, or circumstantial constraints are elevated. Not inevitable — but probable if existing pressures aren't actively managed.",
-    probability: "Legal or health issue requiring attention: moderate-to-high probability in current period.",
+    detail: "Legal, health, or circumstantial constraints are elevated, along with accident risk — drive carefully and avoid rushing into physical situations. Elevated chance of a procedure or surgery coming up in this window too. Not inevitable — but probable if existing pressures aren't actively managed.",
+    probability: "Legal, health, or accident-related issue requiring attention: moderate-to-high probability in current period.",
+  },
+  row_bandhan_active: {
+    short: "Physical caution matters more than usual right now — accident risk is genuinely elevated in this window.",
+    detail: "A structural pattern in your chart is currently active, raising the chance of accidents or physical mishaps. Slow down on anything involving speed, machinery, or rushed decisions.",
+    probability: "Moderate-to-high probability of a physical incident if extra care isn't taken in this period.",
+  },
+  depression_yoga_active: {
+    short: "The heaviness you're feeling has a real source — this period weighs on mood more than usual, alongside physical risk.",
+    detail: "A structural pattern in your chart is currently active, carrying both emotional weight (low mood, withdrawal) and elevated accident/mishap risk at the same time. Protecting sleep, routine, and physical caution both matter here.",
+    probability: "Moderate-to-high probability of a low-mood stretch and/or a physical mishap in this period without active management.",
   },
   multiple_7_active: {
     short: "The instability isn't outside you — it's in the energy of this period. Things that feel permanent are temporary. Things that feel permanent are temporary.",

@@ -119,8 +119,18 @@ export function getHonestWarnings(yogas, freqMap, maha, antar, lang = null) {
   const W = (key) => localizedDeep(HONEST_WARNINGS, HONEST_WARNINGS_I18N, key, lang);
 
   if (yogaIds.includes('financial_bandhan')) warnings.push(W('financial_bandhan_active'));
-  if (yogaIds.includes('bandhan')) warnings.push(W('bandhan_yoga_active'));
   if (yogaIds.includes('defamation_risk')) warnings.push(W('defamation_risk_active'));
+
+  // Natal bandhan yogas are permanent structural facts of the chart, but per
+  // the source rule they only actively bite when the CURRENT maha or antar
+  // touches the same numbers that form the yoga — otherwise the constraint
+  // is present but dormant. Gate the warning (not the yoga's presence in the
+  // chart) on that, matching the existing "HIGH ACCIDENT RISK" day-level
+  // checks elsewhere in this file, which use the same maha/antar-touch test.
+  const dashaTouches = (...nums) => nums.includes(maha) || nums.includes(antar);
+  if (yogaIds.includes('bandhan') && dashaTouches(4, 9)) warnings.push(W('bandhan_yoga_active'));
+  if (yogaIds.includes('row_bandhan') && dashaTouches(8, 4)) warnings.push(W('row_bandhan_active'));
+  if (yogaIds.includes('depression_yoga') && dashaTouches(2, 8)) warnings.push(W('depression_yoga_active'));
 
   const freq7 = freqMap[7] || 0;
   const freq9 = freqMap[9] || 0;
@@ -250,7 +260,8 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
   }
 
   // ── BANDHAN YOGA (9+4 without 5) ──────────────────────────────────────────
-  // 5 is the grid blocker between 9 and 4 — check natal for absence of 5
+  // 5 is the grid blocker between 9 and 4 (last column: 9-5-4) — check natal
+  // for absence of 5. Also carries elevated surgery risk (per source rule).
   if (natalNums.includes(9) && natalNums.includes(4) && !natalNums.includes(5)) {
     yogas.push({ id: 'bandhan', name: 'Constraint Energy', positive: false });
   }
@@ -259,6 +270,21 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
   // Check natal — Dasha bringing 9 should not cancel a natal financial bandhan
   if (natalNums.includes(5) && natalNums.includes(4) && !natalNums.includes(9)) {
     yogas.push({ id: 'financial_bandhan', name: 'Financial Caution', positive: false });
+  }
+
+  // ── ROW BANDHAN (8+4 without 2) ───────────────────────────────────────────
+  // Last row is 2-8-4. 2 is the blocker between 8 and 4 — its absence lets 8
+  // and 4 connect directly, an accident-risk combination (source rule).
+  if (natalNums.includes(8) && natalNums.includes(4) && !natalNums.includes(2)) {
+    yogas.push({ id: 'row_bandhan', name: 'Physical Constraint', positive: false });
+  }
+
+  // ── DEPRESSION YOGA (2+8 without 4) ───────────────────────────────────────
+  // Same last row (2-8-4), missing 4 instead of 2 — a different gap in the
+  // same row, and per the source rule this one carries both depression risk
+  // and accident/mishap risk, not just one or the other.
+  if (natalNums.includes(2) && natalNums.includes(8) && !natalNums.includes(4)) {
+    yogas.push({ id: 'depression_yoga', name: 'Emotional Weight', positive: false });
   }
 
   // ── VIPREET RAJ (2+8+4) ───────────────────────────────────────────────────
@@ -355,6 +381,8 @@ function getChartModifiers(nums, freq, basic, destiny, natalNums = []) {
   if (nums.includes(5) && nums.includes(7)) mods.push('has_easy_money');
   if (nums.includes(9) && nums.includes(4) && !nums.includes(5)) mods.push('has_bandhan');
   if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) mods.push('has_financial_bandhan');
+  if (nums.includes(8) && nums.includes(4) && !nums.includes(2)) mods.push('has_row_bandhan');
+  if (nums.includes(2) && nums.includes(8) && !nums.includes(4)) mods.push('has_depression_yoga');
   if (nums.includes(3) && nums.includes(7) && nums.includes(9)) mods.push('has_spiritual_379');
   if ((freq[2] || 0) >= 2) mods.push('multiple_2');
   if ((freq[4] || 0) >= 2 && (freq[4] % 2 !== 0)) mods.push('multiple_4_odd');

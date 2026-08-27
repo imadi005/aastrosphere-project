@@ -609,6 +609,8 @@ export const CHART_MODIFIERS = {
   has_easy_money: "Easy Money combination (5-7) means financial luck runs through your life. The money comes, sometimes from unexpected directions. The practice is keeping it.",
   has_bandhan: "Bandhan Yoga in your chart means certain periods will feel constricting. The way through is not force but navigation — understanding the constraint and working with it.",
   has_financial_bandhan: "Financial Bandhan in your chart means money management requires active discipline. Your natural tendency is to spend — building systems that spend for you (savings, investments) is the antidote.",
+  has_row_bandhan: "This combination in your chart raises physical accident risk during the periods that activate it. The way through is caution, not avoidance — slow down on anything involving speed, machinery, or rushed decisions.",
+  has_depression_yoga: "This combination in your chart carries both emotional weight and physical accident risk during the periods that activate it. Protecting sleep, routine, and physical caution both matter more than usual in those windows.",
   has_spiritual_379: "The spiritual 3-7-9 triad means your deepest insights come from spiritual or philosophical engagement. Ignoring this dimension creates the instability; embracing it creates the clarity.",
   multiple_1_no_destiny: "Multiple 1s without destiny 1 in your chart means ambition runs high but recognition can feel elusive. The work is allowing others to lead sometimes — the ego fights it but the wisdom knows it.",
   multiple_2: "Multiple 2s in your chart means emotional sensitivity is your superpower and your vulnerability. Creative output is extraordinary. Emotional resilience requires active cultivation.",
