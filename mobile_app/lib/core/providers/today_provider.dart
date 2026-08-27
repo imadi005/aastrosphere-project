@@ -64,7 +64,8 @@ final yearlyInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>(
 final deepInsightsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final user = await ref.watch(smartProfileProvider.future);
   if (user == null) throw Exception('No user profile');
-  return ApiService.getDeepInsights(_dobToIso(user.dob));
+  final lang = ref.watch(localeProvider).languageCode;
+  return ApiService.getDeepInsights(_dobToIso(user.dob), lang);
 });
 
 final chartDataProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {

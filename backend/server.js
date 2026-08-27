@@ -751,7 +751,7 @@ app.post('/api/predict/prashna', (req, res) => {
 // Returns the deep profile — personal patterns, dasha experience, honest warnings
 app.post('/api/insights/deep', (req, res) => {
   try {
-    const { dob } = req.body;
+    const { dob, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
 
     const d = new Date(dob);
@@ -770,12 +770,12 @@ app.post('/api/insights/deep', (req, res) => {
     const yogas = ctx.yogas;
 
     // Core profile
-    const basicProfile = getDeepNumberProfile(basic, destiny, maha.number, natalNums);
-    const destinyProfile = getDeepNumberProfile(destiny, basic, maha.number, natalNums);
+    const basicProfile = getDeepNumberProfile(basic, destiny, maha.number, natalNums, lang);
+    const destinyProfile = getDeepNumberProfile(destiny, basic, maha.number, natalNums, lang);
     const combo = getDeepCombination(basic, destiny);
     const pattern = getPersonalPattern(basic, destiny);
-    const dashaExp = getDashaExperience(maha.number, antar.number);
-    const warnings = getHonestWarnings(yogas, annualFreq, maha.number, antar.number);
+    const dashaExp = getDashaExperience(maha.number, antar.number, lang);
+    const warnings = getHonestWarnings(yogas, annualFreq, maha.number, antar.number, lang);
 
     // Natal combination insights (all natal pairs)
     const natalCombos = [];

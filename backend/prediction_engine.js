@@ -23,6 +23,7 @@ import {
 } from './daily_prediction_library.js';
 import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
 import { DAY_CHARACTER_I18N, WEEK_CHARACTER_I18N, MONTH_CHARACTER_I18N, localizedChar } from './breakdown_library_i18n.js';
+import { DEEP_NUMBER_PROFILES_I18N, DEEP_DASHA_EXPERIENCE_I18N, HONEST_WARNINGS_I18N, localizedDeep } from './deep_library_i18n.js';
 import { getDayDefinition } from './day_definition_library.js';
 import { getDayScore } from './day_score_library.js';
 import { getPriorityAction } from './priority_action_library.js';
@@ -49,8 +50,8 @@ export function getPersonalPattern(basic, destiny) {
   return PERSONAL_PATTERNS[key] || PERSONAL_PATTERNS[rev] || null;
 }
 
-export function getDashaExperience(mahaNum, antarNum = null) {
-  const base = DEEP_DASHA_EXPERIENCE[`maha_${mahaNum}`] || null;
+export function getDashaExperience(mahaNum, antarNum = null, lang = null) {
+  const base = localizedDeep(DEEP_DASHA_EXPERIENCE, DEEP_DASHA_EXPERIENCE_I18N, `maha_${mahaNum}`, lang);
   if (!base || !antarNum) return base;
   // Layer antar context on top of maha base
   const ANTAR_OVERLAY = {
@@ -70,8 +71,8 @@ export function getDashaExperience(mahaNum, antarNum = null) {
   };
 }
 
-export function getDeepNumberProfile(num, destinyNum = null, mahaNum = null, natalNums = []) {
-  const base = DEEP_NUMBER_PROFILES[num] || null;
+export function getDeepNumberProfile(num, destinyNum = null, mahaNum = null, natalNums = [], lang = null) {
+  const base = localizedDeep(DEEP_NUMBER_PROFILES, DEEP_NUMBER_PROFILES_I18N, num, lang);
   if (!base) return null;
 
   // Enrich current_chapter with maha context
@@ -106,23 +107,24 @@ export function getDeepNumberProfile(num, destinyNum = null, mahaNum = null, nat
   };
 }
 
-export function getHonestWarnings(yogas, freqMap, maha, antar) {
+export function getHonestWarnings(yogas, freqMap, maha, antar, lang = null) {
   const warnings = [];
   const yogaIds = yogas.map(y => y.id);
+  const W = (key) => localizedDeep(HONEST_WARNINGS, HONEST_WARNINGS_I18N, key, lang);
 
-  if (yogaIds.includes('financial_bandhan')) warnings.push(HONEST_WARNINGS.financial_bandhan_active);
-  if (yogaIds.includes('bandhan')) warnings.push(HONEST_WARNINGS.bandhan_yoga_active);
-  if (yogaIds.includes('defamation_risk')) warnings.push(HONEST_WARNINGS.defamation_risk_active);
+  if (yogaIds.includes('financial_bandhan')) warnings.push(W('financial_bandhan_active'));
+  if (yogaIds.includes('bandhan')) warnings.push(W('bandhan_yoga_active'));
+  if (yogaIds.includes('defamation_risk')) warnings.push(W('defamation_risk_active'));
 
   const freq7 = freqMap[7] || 0;
   const freq9 = freqMap[9] || 0;
   const freq4 = freqMap[4] || 0;
-  if (freq7 >= 2) warnings.push(HONEST_WARNINGS.multiple_7_active);
-  if (freq9 >= 2) warnings.push(HONEST_WARNINGS.multiple_9_active);
-  if (freq4 >= 2) warnings.push(HONEST_WARNINGS.double_4_active);
+  if (freq7 >= 2) warnings.push(W('multiple_7_active'));
+  if (freq9 >= 2) warnings.push(W('multiple_9_active'));
+  if (freq4 >= 2) warnings.push(W('double_4_active'));
 
   // Early Maha 8 (years 1-4)
-  if (maha === 8) warnings.push(HONEST_WARNINGS.maha_8_early);
+  if (maha === 8) warnings.push(W('maha_8_early'));
 
   return warnings;
 }

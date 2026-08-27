@@ -217,8 +217,11 @@ class ApiService {
   static Future<Map<String, dynamic>> getLifeInsights(String dob) =>
       _post('/api/insights/life', {'dob': dob});
 
-  static Future<Map<String, dynamic>> getDeepInsights(String dob) =>
-      _post('/api/insights/deep', {'dob': dob});
+  static Future<Map<String, dynamic>> getDeepInsights(String dob, [String? lang]) =>
+      _post('/api/insights/deep', {
+        'dob': dob,
+        if (lang != null) 'lang': lang,
+      });
 
   static Future<Map<String, dynamic>> getDailyInsights(String dob) =>
       _post('/api/insights/daily', {'dob': dob});
