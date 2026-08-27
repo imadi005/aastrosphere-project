@@ -7,7 +7,6 @@ import '../../../core/widgets/premium_lock_card.dart';
 import '../../../core/providers/today_provider.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../../core/services/api_service.dart';
-import '../../auth/providers/user_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'chart_explainer.dart';
 
@@ -34,7 +33,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gold = isDark ? AppColors.goldLight : AppColors.gold;
-    final userAsync = ref.watch(userProfileProvider);
+    final userAsync = ref.watch(smartProfileProvider);
     final chartAsync = ref.watch(chartDataProvider);
 
     return userAsync.when(

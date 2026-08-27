@@ -129,14 +129,21 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
     
     try {
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      final dob = (doc.data()?['dob'] as Timestamp?)?.toDate();
+      var dob = (doc.data()?['dob'] as Timestamp?)?.toDate();
+      // Astrologers using their own "Me" chat may not have a `users` doc —
+      // same users-then-astrologers fallback as astrologerProfileProvider,
+      // so Ask never silently fails to load a dob for them.
+      if (dob == null) {
+        final astroDoc = await FirebaseFirestore.instance.collection('astrologers').doc(uid).get();
+        dob = (astroDoc.data()?['dob'] as Timestamp?)?.toDate();
+      }
       if (dob != null && mounted) {
-        setState(() => _userDob = dob.toIso8601String());
+        setState(() => _userDob = dob!.toIso8601String());
       }
       // Load chat history
       await _loadHistory(uid);
     } catch (e) {
-      debugPrint('Error loading: \$e');
+      debugPrint('Error loading: $e');
       if (mounted) setState(() => _historyLoading = false);
     }
   }
@@ -173,7 +180,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
         }
       }
     } catch (e) {
-      debugPrint('History load error: \$e');
+      debugPrint('History load error: $e');
     }
     if (mounted) setState(() => _historyLoading = false);
   }
@@ -200,7 +207,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
           .collection('chat_history').doc('messages')
           .set({'messages': toSave, 'updated_at': FieldValue.serverTimestamp()});
     } catch (e) {
-      debugPrint('History save error: \$e');
+      debugPrint('History save error: $e');
     }
   }
 
