@@ -6,6 +6,22 @@ import '../shell/app_shell.dart';
 import '../user/chart/chart_explainer.dart';
 import '../user/chart/chart_screen.dart' show kNeutralEnergyLabel;
 
+// This screen is part of the signup flow, which is English-only throughout
+// this app (language selection happens later, from inside the main shell) —
+// so unlike chart_explainer.dart's localized planet meanings, this stays a
+// small English-only copy rather than pulling from AppLocalizations.
+const Map<int, String> _kOnboardingPlanetMeaning = {
+  1: 'Leadership, confidence, and the drive to be seen as the authority in the room.',
+  2: 'Emotions, relationships, and intuition — how you connect and how you feel things.',
+  3: 'Wisdom, ethics, and growth — the part of you that thinks about right and wrong.',
+  4: 'Unconventional thinking and sudden change — ideas and shifts that don\'t follow a straight line.',
+  5: 'Intellect, communication, and business — quick thinking and sharp decisions.',
+  6: 'Love, beauty, and comfort — relationships, aesthetics, and the good life.',
+  7: 'Detachment and inner depth — intuition, spirituality, and letting go.',
+  8: 'Discipline and long-term results — the slow, hard-earned kind of success.',
+  9: 'Action, courage, and drive — the energy that pushes you to compete and move.',
+};
+
 /// Shown once, right after signup — before the (text-dense) Today tab.
 /// The point is a graphical first impression: a newcomer with zero
 /// numerology background should be able to glance at this and get the
@@ -220,7 +236,7 @@ class _CurrentPhaseChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final maha = (data['maha'] as Map<String, dynamic>)['number'] as int;
     final planet = kNeutralEnergyLabel[maha] ?? '';
-    final meaning = kPlanetMeaning[maha] ?? '';
+    final meaning = _kOnboardingPlanetMeaning[maha] ?? '';
     final bg = isDark ? AppColors.bgCardDark : AppColors.bgCardLight;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 

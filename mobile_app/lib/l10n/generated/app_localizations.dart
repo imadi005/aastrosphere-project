@@ -941,6 +941,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Their name'**
   String get theirNameHint;
+
+  /// No description provided for @planetMeaning1.
+  ///
+  /// In en, this message translates to:
+  /// **'Leadership, confidence, and the drive to be seen as the authority in the room.'**
+  String get planetMeaning1;
+
+  /// No description provided for @planetMeaning2.
+  ///
+  /// In en, this message translates to:
+  /// **'Emotions, relationships, and intuition — how you connect and how you feel things.'**
+  String get planetMeaning2;
+
+  /// No description provided for @planetMeaning3.
+  ///
+  /// In en, this message translates to:
+  /// **'Wisdom, ethics, and growth — the part of you that thinks about right and wrong.'**
+  String get planetMeaning3;
+
+  /// No description provided for @planetMeaning4.
+  ///
+  /// In en, this message translates to:
+  /// **'Unconventional thinking and sudden change — ideas and shifts that don\'t follow a straight line.'**
+  String get planetMeaning4;
+
+  /// No description provided for @planetMeaning5.
+  ///
+  /// In en, this message translates to:
+  /// **'Intellect, communication, and business — quick thinking and sharp decisions.'**
+  String get planetMeaning5;
+
+  /// No description provided for @planetMeaning6.
+  ///
+  /// In en, this message translates to:
+  /// **'Love, beauty, and comfort — relationships, aesthetics, and the good life.'**
+  String get planetMeaning6;
+
+  /// No description provided for @planetMeaning7.
+  ///
+  /// In en, this message translates to:
+  /// **'Detachment and inner depth — intuition, spirituality, and letting go.'**
+  String get planetMeaning7;
+
+  /// No description provided for @planetMeaning8.
+  ///
+  /// In en, this message translates to:
+  /// **'Discipline and long-term results — the slow, hard-earned kind of success.'**
+  String get planetMeaning8;
+
+  /// No description provided for @planetMeaning9.
+  ///
+  /// In en, this message translates to:
+  /// **'Action, courage, and drive — the energy that pushes you to compete and move.'**
+  String get planetMeaning9;
+
+  /// No description provided for @explainerBasicNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Number'**
+  String get explainerBasicNumberLabel;
+
+  /// No description provided for @explainerDestinyNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Destiny Number'**
+  String get explainerDestinyNumberLabel;
+
+  /// No description provided for @explainerGridLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth Grid'**
+  String get explainerGridLabel;
+
+  /// No description provided for @explainerWhatThisMeans.
+  ///
+  /// In en, this message translates to:
+  /// **'What this means'**
+  String get explainerWhatThisMeans;
+
+  /// No description provided for @explainerAskButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for my personalized insight'**
+  String get explainerAskButton;
+
+  /// No description provided for @periodExplainMaha.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the dominant theme running through your life for this multi-year stretch — it colors your big decisions, opportunities, and challenges until it ends.'**
+  String get periodExplainMaha;
+
+  /// No description provided for @periodExplainAntar.
+  ///
+  /// In en, this message translates to:
+  /// **'Inside your long-term phase, this is the specific sub-theme active right now for a few months — it shapes what actually shows up day to day.'**
+  String get periodExplainAntar;
+
+  /// No description provided for @periodExplainMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'A shorter-term flavor layered on top of your longer cycles — highlighted for the current month only.'**
+  String get periodExplainMonthly;
+
+  /// No description provided for @periodExplainDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'The most immediate, short-term influence — today\'s specific energy.'**
+  String get periodExplainDaily;
+
+  /// No description provided for @periodExplainHourly.
+  ///
+  /// In en, this message translates to:
+  /// **'The most fine-grained layer — useful for timing a decision within the next hour or two.'**
+  String get periodExplainHourly;
+
+  /// No description provided for @periodExplainBasic.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflects your inner self — how you naturally think and react, before the world shapes you.'**
+  String get periodExplainBasic;
+
+  /// No description provided for @periodExplainDestiny.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflects your life path — the overarching direction your life tends to move toward.'**
+  String get periodExplainDestiny;
+
+  /// No description provided for @periodExplainGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows how many times this number appears in your birth date. More repetitions mean this energy is more central to who you are.'**
+  String get periodExplainGrid;
+
+  /// No description provided for @askQuestionMaha.
+  ///
+  /// In en, this message translates to:
+  /// **'My Long-term Phase (Mahadasha) right now is {planet}. What does that mean for me and what should I expect during this phase?'**
+  String askQuestionMaha(String planet);
+
+  /// No description provided for @askQuestionAntar.
+  ///
+  /// In en, this message translates to:
+  /// **'My Current Phase (Antardasha) right now is {planet}. What does this specific combination mean for me right now?'**
+  String askQuestionAntar(String planet);
+
+  /// No description provided for @askQuestionMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'This month\'s number is {planet}. What does that mean for me this month?'**
+  String askQuestionMonthly(String planet);
+
+  /// No description provided for @askQuestionDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s number is {number}. What does that mean for me today?'**
+  String askQuestionDaily(int number);
+
+  /// No description provided for @askQuestionHourly.
+  ///
+  /// In en, this message translates to:
+  /// **'This hour\'s number is {number}. What does that mean for me right now?'**
+  String askQuestionHourly(int number);
+
+  /// No description provided for @askQuestionBasic.
+  ///
+  /// In en, this message translates to:
+  /// **'My Basic Number is {number} ({planet}). What does that mean about my inner self?'**
+  String askQuestionBasic(int number, String planet);
+
+  /// No description provided for @askQuestionDestiny.
+  ///
+  /// In en, this message translates to:
+  /// **'My Destiny Number is {number} ({planet}). What does that mean about my life path?'**
+  String askQuestionDestiny(int number, String planet);
+
+  /// No description provided for @askQuestionGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'In my birth chart grid, {planet} appears {count} time(s). What does that mean for me?'**
+  String askQuestionGrid(String planet, String count);
 }
 
 class _AppLocalizationsDelegate

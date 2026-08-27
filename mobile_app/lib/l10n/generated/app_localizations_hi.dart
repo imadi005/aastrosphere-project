@@ -437,4 +437,127 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get theirNameHint => 'उनका नाम';
+
+  @override
+  String get planetMeaning1 =>
+      'नेतृत्व, आत्मविश्वास, और कमरे में अधिकार के रूप में देखे जाने की चाह।';
+
+  @override
+  String get planetMeaning2 =>
+      'भावनाएं, रिश्ते, और अंतर्ज्ञान — आप कैसे जुड़ते हैं और चीज़ों को कैसे महसूस करते हैं।';
+
+  @override
+  String get planetMeaning3 =>
+      'बुद्धि, नैतिकता, और विकास — आपका वह हिस्सा जो सही-गलत के बारे में सोचता है।';
+
+  @override
+  String get planetMeaning4 =>
+      'अपरंपरागत सोच और अचानक बदलाव — ऐसे विचार और बदलाव जो सीधी रेखा में नहीं चलते।';
+
+  @override
+  String get planetMeaning5 =>
+      'बुद्धिमत्ता, संवाद, और व्यापार — तेज़ सोच और पैने फैसले।';
+
+  @override
+  String get planetMeaning6 =>
+      'प्यार, सुंदरता, और आराम — रिश्ते, सौंदर्य, और अच्छी ज़िंदगी।';
+
+  @override
+  String get planetMeaning7 =>
+      'वैराग्य और आंतरिक गहराई — अंतर्ज्ञान, आध्यात्मिकता, और छोड़ना।';
+
+  @override
+  String get planetMeaning8 =>
+      'अनुशासन और दीर्घकालिक परिणाम — धीमी पर मेहनत से अर्जित सफलता।';
+
+  @override
+  String get planetMeaning9 =>
+      'कार्रवाई, साहस, और जोश — वह ऊर्जा जो आपको आगे बढ़ने और मुकाबला करने के लिए प्रेरित करती है।';
+
+  @override
+  String get explainerBasicNumberLabel => 'बेसिक नंबर';
+
+  @override
+  String get explainerDestinyNumberLabel => 'डेस्टिनी नंबर';
+
+  @override
+  String get explainerGridLabel => 'जन्म ग्रिड';
+
+  @override
+  String get explainerWhatThisMeans => 'इसका क्या मतलब है';
+
+  @override
+  String get explainerAskButton => 'अपनी व्यक्तिगत जानकारी के लिए पूछें';
+
+  @override
+  String get periodExplainMaha =>
+      'यह इस बहु-वर्षीय अवधि के दौरान आपके जीवन की मुख्य थीम है — यह आपके बड़े फैसलों, अवसरों, और चुनौतियों को इसके खत्म होने तक प्रभावित करती है।';
+
+  @override
+  String get periodExplainAntar =>
+      'आपके लंबी अवधि के चरण के भीतर, यह कुछ महीनों के लिए अभी सक्रिय विशिष्ट उप-थीम है — यह तय करती है कि रोज़मर्रा में वास्तव में क्या सामने आता है।';
+
+  @override
+  String get periodExplainMonthly =>
+      'आपके लंबे चक्रों के ऊपर एक छोटी अवधि का रंग — सिर्फ चालू महीने के लिए हाइलाइट किया गया।';
+
+  @override
+  String get periodExplainDaily =>
+      'सबसे तुरंत, छोटी अवधि का प्रभाव — आज की विशेष ऊर्जा।';
+
+  @override
+  String get periodExplainHourly =>
+      'सबसे सूक्ष्म परत — अगले एक-दो घंटे में किसी फैसले का समय तय करने के लिए उपयोगी।';
+
+  @override
+  String get periodExplainBasic =>
+      'आपके भीतरी स्वभाव को दर्शाता है — दुनिया आपको ढालने से पहले आप स्वाभाविक रूप से कैसे सोचते और प्रतिक्रिया देते हैं।';
+
+  @override
+  String get periodExplainDestiny =>
+      'आपके जीवन पथ को दर्शाता है — वह समग्र दिशा जिसकी ओर आपका जीवन बढ़ता है।';
+
+  @override
+  String get periodExplainGrid =>
+      'दिखाता है कि यह अंक आपकी जन्मतिथि में कितनी बार आता है। जितनी ज़्यादा बार आता है, यह ऊर्जा आपके लिए उतनी ही केंद्रीय है।';
+
+  @override
+  String askQuestionMaha(String planet) {
+    return 'अभी मेरा लॉन्ग-टर्म फेज़ (महादशा) $planet है। इसका मेरे लिए क्या मतलब है और इस चरण के दौरान मुझे क्या उम्मीद करनी चाहिए?';
+  }
+
+  @override
+  String askQuestionAntar(String planet) {
+    return 'अभी मेरा करंट फेज़ (अंतर्दशा) $planet है। यह खास संयोजन अभी मेरे लिए क्या मतलब रखता है?';
+  }
+
+  @override
+  String askQuestionMonthly(String planet) {
+    return 'इस महीने का अंक $planet है। इसका इस महीने मेरे लिए क्या मतलब है?';
+  }
+
+  @override
+  String askQuestionDaily(int number) {
+    return 'आज का अंक $number है। इसका आज मेरे लिए क्या मतलब है?';
+  }
+
+  @override
+  String askQuestionHourly(int number) {
+    return 'इस घंटे का अंक $number है। इसका अभी मेरे लिए क्या मतलब है?';
+  }
+
+  @override
+  String askQuestionBasic(int number, String planet) {
+    return 'मेरा बेसिक नंबर $number ($planet) है। इसका मेरे भीतरी स्वभाव के बारे में क्या मतलब है?';
+  }
+
+  @override
+  String askQuestionDestiny(int number, String planet) {
+    return 'मेरा डेस्टिनी नंबर $number ($planet) है। इसका मेरे जीवन पथ के बारे में क्या मतलब है?';
+  }
+
+  @override
+  String askQuestionGrid(String planet, String count) {
+    return 'मेरे जन्म चार्ट ग्रिड में, $planet $count बार आता है। इसका मेरे लिए क्या मतलब है?';
+  }
 }

@@ -1,23 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../ask/ask_screen.dart';
 import 'chart_screen.dart' show kNeutralEnergyLabel;
-
-/// Short, static "what does this planet mean" glossary — shown instantly on
-/// tap, no network round trip. Kept intentionally brief; anything deeper
-/// routes into the Ask chat, which is where the real personalization lives.
-const Map<int, String> kPlanetMeaning = {
-  1: 'Leadership, confidence, and the drive to be seen as the authority in the room.',
-  2: 'Emotions, relationships, and intuition — how you connect and how you feel things.',
-  3: 'Wisdom, ethics, and growth — the part of you that thinks about right and wrong.',
-  4: 'Unconventional thinking and sudden change — ideas and shifts that don\'t follow a straight line.',
-  5: 'Intellect, communication, and business — quick thinking and sharp decisions.',
-  6: 'Love, beauty, and comfort — relationships, aesthetics, and the good life.',
-  7: 'Detachment and inner depth — intuition, spirituality, and letting go.',
-  8: 'Discipline and long-term results — the slow, hard-earned kind of success.',
-  9: 'Action, courage, and drive — the energy that pushes you to compete and move.',
-};
 
 /// One icon per planet — used for lightweight visual summaries (onboarding,
 /// grid highlights) where a wall of text isn't the right first impression.
@@ -35,65 +21,69 @@ const Map<int, IconData> kPlanetIcon = {
 
 enum ChartPeriodType { maha, antar, monthly, daily, hourly, basic, destiny, grid }
 
+/// Short, static "what does this planet mean" glossary — shown instantly on
+/// tap, no network round trip. Kept intentionally brief; anything deeper
+/// routes into the Ask chat, which is where the real personalization lives.
+String _planetMeaning(AppLocalizations t, int number) {
+  switch (number) {
+    case 1: return t.planetMeaning1;
+    case 2: return t.planetMeaning2;
+    case 3: return t.planetMeaning3;
+    case 4: return t.planetMeaning4;
+    case 5: return t.planetMeaning5;
+    case 6: return t.planetMeaning6;
+    case 7: return t.planetMeaning7;
+    case 8: return t.planetMeaning8;
+    case 9: return t.planetMeaning9;
+    default: return '';
+  }
+}
+
 class _PeriodContext {
   final String timeframeLabel;
   final String explanation;
   const _PeriodContext(this.timeframeLabel, this.explanation);
 }
 
-const Map<ChartPeriodType, _PeriodContext> _kPeriodContext = {
-  ChartPeriodType.maha: _PeriodContext(
-    'Long-term Phase',
-    'This is the dominant theme running through your life for this multi-year stretch — it colors your big decisions, opportunities, and challenges until it ends.',
-  ),
-  ChartPeriodType.antar: _PeriodContext(
-    'Current Phase',
-    'Inside your long-term phase, this is the specific sub-theme active right now for a few months — it shapes what actually shows up day to day.',
-  ),
-  ChartPeriodType.monthly: _PeriodContext(
-    'This Month',
-    'A shorter-term flavor layered on top of your longer cycles — highlighted for the current month only.',
-  ),
-  ChartPeriodType.daily: _PeriodContext(
-    'Today',
-    'The most immediate, short-term influence — today\'s specific energy.',
-  ),
-  ChartPeriodType.hourly: _PeriodContext(
-    'This Hour',
-    'The most fine-grained layer — useful for timing a decision within the next hour or two.',
-  ),
-  ChartPeriodType.basic: _PeriodContext(
-    'Basic Number',
-    'Reflects your inner self — how you naturally think and react, before the world shapes you.',
-  ),
-  ChartPeriodType.destiny: _PeriodContext(
-    'Destiny Number',
-    'Reflects your life path — the overarching direction your life tends to move toward.',
-  ),
-  ChartPeriodType.grid: _PeriodContext(
-    'Birth Grid',
-    'Shows how many times this number appears in your birth date. More repetitions mean this energy is more central to who you are.',
-  ),
-};
-
-String _buildQuestion(ChartPeriodType type, int number, String planet, {String? extra}) {
+_PeriodContext _periodContext(AppLocalizations t, ChartPeriodType type) {
   switch (type) {
     case ChartPeriodType.maha:
-      return 'My Long-term Phase (Mahadasha) right now is $planet. What does that mean for me and what should I expect during this phase?';
+      return _PeriodContext(t.longTermPhase, t.periodExplainMaha);
     case ChartPeriodType.antar:
-      return 'My Current Phase (Antardasha) right now is $planet. What does this specific combination mean for me right now?';
+      return _PeriodContext(t.currentPhase, t.periodExplainAntar);
     case ChartPeriodType.monthly:
-      return 'This month\'s number is $planet. What does that mean for me this month?';
+      return _PeriodContext(t.monthlyLabel, t.periodExplainMonthly);
     case ChartPeriodType.daily:
-      return 'Today\'s number is $number. What does that mean for me today?';
+      return _PeriodContext(t.dailyLabel, t.periodExplainDaily);
     case ChartPeriodType.hourly:
-      return 'This hour\'s number is $number. What does that mean for me right now?';
+      return _PeriodContext(t.hourlyLabel, t.periodExplainHourly);
     case ChartPeriodType.basic:
-      return 'My Basic Number is $number ($planet). What does that mean about my inner self?';
+      return _PeriodContext(t.explainerBasicNumberLabel, t.periodExplainBasic);
     case ChartPeriodType.destiny:
-      return 'My Destiny Number is $number ($planet). What does that mean about my life path?';
+      return _PeriodContext(t.explainerDestinyNumberLabel, t.periodExplainDestiny);
     case ChartPeriodType.grid:
-      return 'In my birth chart grid, $planet appears $extra time(s). What does that mean for me?';
+      return _PeriodContext(t.explainerGridLabel, t.periodExplainGrid);
+  }
+}
+
+String _buildQuestion(AppLocalizations t, ChartPeriodType type, int number, String planet, {String? extra}) {
+  switch (type) {
+    case ChartPeriodType.maha:
+      return t.askQuestionMaha(planet);
+    case ChartPeriodType.antar:
+      return t.askQuestionAntar(planet);
+    case ChartPeriodType.monthly:
+      return t.askQuestionMonthly(planet);
+    case ChartPeriodType.daily:
+      return t.askQuestionDaily(number);
+    case ChartPeriodType.hourly:
+      return t.askQuestionHourly(number);
+    case ChartPeriodType.basic:
+      return t.askQuestionBasic(number, planet);
+    case ChartPeriodType.destiny:
+      return t.askQuestionDestiny(number, planet);
+    case ChartPeriodType.grid:
+      return t.askQuestionGrid(planet, extra ?? '1');
   }
 }
 
@@ -105,10 +95,11 @@ void showChartExplainer(
   required Color gold,
   String? gridCount,
 }) {
+  final t = AppLocalizations.of(context)!;
   final planet = kNeutralEnergyLabel[number] ?? '';
-  final meaning = kPlanetMeaning[number] ?? '';
-  final ctx = _kPeriodContext[type]!;
-  final question = _buildQuestion(type, number, planet, extra: gridCount);
+  final meaning = _planetMeaning(t, number);
+  final ctx = _periodContext(t, type);
+  final question = _buildQuestion(t, type, number, planet, extra: gridCount);
 
   final bg = isDark ? AppColors.bgCardDark : AppColors.bgCardLight;
   final primary = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
@@ -153,7 +144,7 @@ void showChartExplainer(
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('${ctx.timeframeLabel} · $planet',
                   style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.w600, color: primary)),
-              Text('What this means', style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
+              Text(t.explainerWhatThisMeans, style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
             ])),
           ]),
           const SizedBox(height: 16),
@@ -173,7 +164,7 @@ void showChartExplainer(
                 );
               },
               icon: const Icon(Icons.auto_awesome, size: 16),
-              label: const Text('Ask for my personalized insight'),
+              label: Text(t.explainerAskButton),
               style: ElevatedButton.styleFrom(
                 backgroundColor: gold,
                 foregroundColor: Colors.black,

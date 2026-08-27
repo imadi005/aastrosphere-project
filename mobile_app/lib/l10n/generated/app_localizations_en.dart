@@ -436,4 +436,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get theirNameHint => 'Their name';
+
+  @override
+  String get planetMeaning1 =>
+      'Leadership, confidence, and the drive to be seen as the authority in the room.';
+
+  @override
+  String get planetMeaning2 =>
+      'Emotions, relationships, and intuition — how you connect and how you feel things.';
+
+  @override
+  String get planetMeaning3 =>
+      'Wisdom, ethics, and growth — the part of you that thinks about right and wrong.';
+
+  @override
+  String get planetMeaning4 =>
+      'Unconventional thinking and sudden change — ideas and shifts that don\'t follow a straight line.';
+
+  @override
+  String get planetMeaning5 =>
+      'Intellect, communication, and business — quick thinking and sharp decisions.';
+
+  @override
+  String get planetMeaning6 =>
+      'Love, beauty, and comfort — relationships, aesthetics, and the good life.';
+
+  @override
+  String get planetMeaning7 =>
+      'Detachment and inner depth — intuition, spirituality, and letting go.';
+
+  @override
+  String get planetMeaning8 =>
+      'Discipline and long-term results — the slow, hard-earned kind of success.';
+
+  @override
+  String get planetMeaning9 =>
+      'Action, courage, and drive — the energy that pushes you to compete and move.';
+
+  @override
+  String get explainerBasicNumberLabel => 'Basic Number';
+
+  @override
+  String get explainerDestinyNumberLabel => 'Destiny Number';
+
+  @override
+  String get explainerGridLabel => 'Birth Grid';
+
+  @override
+  String get explainerWhatThisMeans => 'What this means';
+
+  @override
+  String get explainerAskButton => 'Ask for my personalized insight';
+
+  @override
+  String get periodExplainMaha =>
+      'This is the dominant theme running through your life for this multi-year stretch — it colors your big decisions, opportunities, and challenges until it ends.';
+
+  @override
+  String get periodExplainAntar =>
+      'Inside your long-term phase, this is the specific sub-theme active right now for a few months — it shapes what actually shows up day to day.';
+
+  @override
+  String get periodExplainMonthly =>
+      'A shorter-term flavor layered on top of your longer cycles — highlighted for the current month only.';
+
+  @override
+  String get periodExplainDaily =>
+      'The most immediate, short-term influence — today\'s specific energy.';
+
+  @override
+  String get periodExplainHourly =>
+      'The most fine-grained layer — useful for timing a decision within the next hour or two.';
+
+  @override
+  String get periodExplainBasic =>
+      'Reflects your inner self — how you naturally think and react, before the world shapes you.';
+
+  @override
+  String get periodExplainDestiny =>
+      'Reflects your life path — the overarching direction your life tends to move toward.';
+
+  @override
+  String get periodExplainGrid =>
+      'Shows how many times this number appears in your birth date. More repetitions mean this energy is more central to who you are.';
+
+  @override
+  String askQuestionMaha(String planet) {
+    return 'My Long-term Phase (Mahadasha) right now is $planet. What does that mean for me and what should I expect during this phase?';
+  }
+
+  @override
+  String askQuestionAntar(String planet) {
+    return 'My Current Phase (Antardasha) right now is $planet. What does this specific combination mean for me right now?';
+  }
+
+  @override
+  String askQuestionMonthly(String planet) {
+    return 'This month\'s number is $planet. What does that mean for me this month?';
+  }
+
+  @override
+  String askQuestionDaily(int number) {
+    return 'Today\'s number is $number. What does that mean for me today?';
+  }
+
+  @override
+  String askQuestionHourly(int number) {
+    return 'This hour\'s number is $number. What does that mean for me right now?';
+  }
+
+  @override
+  String askQuestionBasic(int number, String planet) {
+    return 'My Basic Number is $number ($planet). What does that mean about my inner self?';
+  }
+
+  @override
+  String askQuestionDestiny(int number, String planet) {
+    return 'My Destiny Number is $number ($planet). What does that mean about my life path?';
+  }
+
+  @override
+  String askQuestionGrid(String planet, String count) {
+    return 'In my birth chart grid, $planet appears $count time(s). What does that mean for me?';
+  }
 }
