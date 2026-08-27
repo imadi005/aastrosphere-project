@@ -445,124 +445,124 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get planetMeaning1 =>
-      'Leadership, confidence, and the drive to be seen as the authority in the room.';
+      'தலைமைத்துவம், நம்பிக்கை, மற்றும் அறையில் அதிகாரியாக பார்க்கப்பட வேண்டும் என்ற உந்துதல்.';
 
   @override
   String get planetMeaning2 =>
-      'Emotions, relationships, and intuition — how you connect and how you feel things.';
+      'உணர்வுகள், உறவுகள், மற்றும் உள்ளுணர்வு — நீங்கள் எப்படி இணைகிறீர்கள் மற்றும் விஷயங்களை எப்படி உணர்கிறீர்கள்.';
 
   @override
   String get planetMeaning3 =>
-      'Wisdom, ethics, and growth — the part of you that thinks about right and wrong.';
+      'ஞானம், நெறிமுறை, மற்றும் வளர்ச்சி — சரி-தவறு பற்றி சிந்திக்கும் உங்கள் பகுதி.';
 
   @override
   String get planetMeaning4 =>
-      'Unconventional thinking and sudden change — ideas and shifts that don\'t follow a straight line.';
+      'மரபுசாராத சிந்தனை மற்றும் திடீர் மாற்றம் — நேர்கோட்டில் செல்லாத யோசனைகள் மற்றும் மாற்றங்கள்.';
 
   @override
   String get planetMeaning5 =>
-      'Intellect, communication, and business — quick thinking and sharp decisions.';
+      'அறிவு, தொடர்பு, மற்றும் வணிகம் — விரைவான சிந்தனை மற்றும் கூர்மையான முடிவுகள்.';
 
   @override
   String get planetMeaning6 =>
-      'Love, beauty, and comfort — relationships, aesthetics, and the good life.';
+      'காதல், அழகு, மற்றும் வசதி — உறவுகள், அழகியல், மற்றும் நல்ல வாழ்க்கை.';
 
   @override
   String get planetMeaning7 =>
-      'Detachment and inner depth — intuition, spirituality, and letting go.';
+      'பற்றின்மை மற்றும் உள் ஆழம் — உள்ளுணர்வு, ஆன்மீகம், மற்றும் விட்டுவிடுதல்.';
 
   @override
   String get planetMeaning8 =>
-      'Discipline and long-term results — the slow, hard-earned kind of success.';
+      'ஒழுக்கம் மற்றும் நீண்டகால முடிவுகள் — மெதுவான ஆனால் கடின உழைப்பால் ஈட்டிய வெற்றி.';
 
   @override
   String get planetMeaning9 =>
-      'Action, courage, and drive — the energy that pushes you to compete and move.';
+      'செயல், துணிச்சல், மற்றும் ஆற்றல் — உங்களை போட்டியிடவும் முன்னேறவும் தூண்டும் சக்தி.';
 
   @override
-  String get explainerBasicNumberLabel => 'Basic Number';
+  String get explainerBasicNumberLabel => 'அடிப்படை எண்';
 
   @override
-  String get explainerDestinyNumberLabel => 'Destiny Number';
+  String get explainerDestinyNumberLabel => 'விதி எண்';
 
   @override
-  String get explainerGridLabel => 'Birth Grid';
+  String get explainerGridLabel => 'பிறப்பு கட்டம்';
 
   @override
-  String get explainerWhatThisMeans => 'What this means';
+  String get explainerWhatThisMeans => 'இதன் அர்த்தம் என்ன';
 
   @override
-  String get explainerAskButton => 'Ask for my personalized insight';
+  String get explainerAskButton => 'எனது தனிப்பட்ட நுண்ணறிவுக்காக கேளுங்கள்';
 
   @override
   String get periodExplainMaha =>
-      'This is the dominant theme running through your life for this multi-year stretch — it colors your big decisions, opportunities, and challenges until it ends.';
+      'இந்த பல-வருட காலகட்டத்தில் இது உங்கள் வாழ்க்கையின் முக்கிய கருப்பொருள் — இது முடியும் வரை உங்கள் பெரிய முடிவுகள், வாய்ப்புகள், மற்றும் சவால்களை பாதிக்கிறது.';
 
   @override
   String get periodExplainAntar =>
-      'Inside your long-term phase, this is the specific sub-theme active right now for a few months — it shapes what actually shows up day to day.';
+      'உங்கள் நீண்டகால கட்டத்திற்குள், இது சில மாதங்களுக்கு இப்போது செயலில் உள்ள குறிப்பிட்ட துணை-கருப்பொருள் — இது தினசரி வாழ்க்கையில் உண்மையில் என்ன வெளிப்படுகிறது என்பதை வடிவமைக்கிறது.';
 
   @override
   String get periodExplainMonthly =>
-      'A shorter-term flavor layered on top of your longer cycles — highlighted for the current month only.';
+      'உங்கள் நீண்ட சுழற்சிகளின் மேல் ஒரு குறுகிய கால சாயல் — நடப்பு மாதத்திற்கு மட்டும் சிறப்பிக்கப்பட்டது.';
 
   @override
   String get periodExplainDaily =>
-      'The most immediate, short-term influence — today\'s specific energy.';
+      'மிகவும் உடனடி, குறுகிய கால தாக்கம் — இன்றைய குறிப்பிட்ட ஆற்றல்.';
 
   @override
   String get periodExplainHourly =>
-      'The most fine-grained layer — useful for timing a decision within the next hour or two.';
+      'மிகவும் நுணுக்கமான அடுக்கு — அடுத்த ஒன்று-இரண்டு மணிநேரத்தில் ஒரு முடிவை நேரம் பார்க்க பயனுள்ளது.';
 
   @override
   String get periodExplainBasic =>
-      'Reflects your inner self — how you naturally think and react, before the world shapes you.';
+      'உங்கள் உள் தன்மையை பிரதிபலிக்கிறது — உலகம் உங்களை வடிவமைப்பதற்கு முன் நீங்கள் இயல்பாக எப்படி சிந்திக்கிறீர்கள் மற்றும் எதிர்வினையாற்றுகிறீர்கள்.';
 
   @override
   String get periodExplainDestiny =>
-      'Reflects your life path — the overarching direction your life tends to move toward.';
+      'உங்கள் வாழ்க்கைப் பாதையை பிரதிபலிக்கிறது — உங்கள் வாழ்க்கை நகரும் ஒட்டுமொத்த திசை.';
 
   @override
   String get periodExplainGrid =>
-      'Shows how many times this number appears in your birth date. More repetitions mean this energy is more central to who you are.';
+      'இந்த எண் உங்கள் பிறந்த தேதியில் எத்தனை முறை தோன்றுகிறது என்பதைக் காட்டுகிறது. அதிக மறுநிகழ்வுகள் என்றால் இந்த ஆற்றல் உங்களுக்கு மிகவும் மையமானது.';
 
   @override
   String askQuestionMaha(String planet) {
-    return 'My Long-term Phase (Mahadasha) right now is $planet. What does that mean for me and what should I expect during this phase?';
+    return 'இப்போது எனது நீண்டகால கட்டம் (மகாதசை) $planet. இது எனக்கு என்ன அர்த்தம் மற்றும் இந்த கட்டத்தில் நான் என்ன எதிர்பார்க்க வேண்டும்?';
   }
 
   @override
   String askQuestionAntar(String planet) {
-    return 'My Current Phase (Antardasha) right now is $planet. What does this specific combination mean for me right now?';
+    return 'இப்போது எனது தற்போதைய கட்டம் (அந்தர்தசை) $planet. இந்த குறிப்பிட்ட சேர்க்கை இப்போது எனக்கு என்ன அர்த்தம்?';
   }
 
   @override
   String askQuestionMonthly(String planet) {
-    return 'This month\'s number is $planet. What does that mean for me this month?';
+    return 'இந்த மாதத்தின் எண் $planet. இது இந்த மாதம் எனக்கு என்ன அர்த்தம்?';
   }
 
   @override
   String askQuestionDaily(int number) {
-    return 'Today\'s number is $number. What does that mean for me today?';
+    return 'இன்றைய எண் $number. இது இன்று எனக்கு என்ன அர்த்தம்?';
   }
 
   @override
   String askQuestionHourly(int number) {
-    return 'This hour\'s number is $number. What does that mean for me right now?';
+    return 'இந்த மணிநேரத்தின் எண் $number. இது இப்போது எனக்கு என்ன அர்த்தம்?';
   }
 
   @override
   String askQuestionBasic(int number, String planet) {
-    return 'My Basic Number is $number ($planet). What does that mean about my inner self?';
+    return 'எனது அடிப்படை எண் $number ($planet). இது எனது உள் தன்மையைப் பற்றி என்ன அர்த்தம்?';
   }
 
   @override
   String askQuestionDestiny(int number, String planet) {
-    return 'My Destiny Number is $number ($planet). What does that mean about my life path?';
+    return 'எனது விதி எண் $number ($planet). இது எனது வாழ்க்கைப் பாதையைப் பற்றி என்ன அர்த்தம்?';
   }
 
   @override
   String askQuestionGrid(String planet, String count) {
-    return 'In my birth chart grid, $planet appears $count time(s). What does that mean for me?';
+    return 'எனது பிறப்பு விளக்கப்பட கட்டத்தில், $planet $count முறை தோன்றுகிறது. இது எனக்கு என்ன அர்த்தம்?';
   }
 }
