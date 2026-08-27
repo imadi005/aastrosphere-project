@@ -39,6 +39,8 @@ import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFr
 import { buildScanContext } from './event_scanner.js';
 import { buildDayCharacteristics } from './day_characteristics.js';
 import { requireAuth, requireCredits, FREE_TRIAL_CREDITS } from './authMiddleware.js';
+import { QUESTION_PACKS, SUBSCRIPTION_PLANS } from './pricing.js';
+import { optionalAuth, isSubscribed, gate, locked, gateResponse } from './premiumGate.js';
 import { getDb } from './firebaseAdmin.js';
 import { DEEP_NUMBER_PROFILES, DEEP_COMBINATIONS as DEEP_COMBINATION_LIBRARY } from './deep_library.js';
 
@@ -61,7 +63,7 @@ const CELL_PLANETS = {
   '2,0':'Moon',   '2,1':'Saturn','2,2':'Rahu',
 };
 
-function buildChartData(dob, targetDate, targetHour = null, lang = null) {
+function buildChartData(dob, targetDate, targetHour = null, lang = null, subscribed = false) {
   const d = new Date(dob);
   const day = d.getDate();
   const basic = basicNumber(day);
@@ -111,6 +113,22 @@ function buildChartData(dob, targetDate, targetHour = null, lang = null) {
   const _scorePred = generateDailyPrediction(_scoreCtx);
   const dayScore = _scorePred.day_score.score;
 
+  // Day Analysis is the paywall: the single highest-priority finding (already
+  // sorted accident > legal > financial > ... by analyzeDayChart) stays free,
+  // the rest are withheld — only their labels surface, as a hook, never the
+  // detail text. Shape is always { items, locked_count, locked_preview } so
+  // the client doesn't need to branch on subscription status to parse it.
+  const [firstFinding, ...restFindings] = dayAnalysis;
+  const visibleFindings = subscribed ? dayAnalysis : (firstFinding ? [firstFinding] : []);
+  const hiddenFindings = subscribed ? [] : restFindings;
+  const dayAnalysisGated = {
+    items: visibleFindings,
+    locked_count: hiddenFindings.length,
+    locked_preview: hiddenFindings.length > 0
+      ? `${hiddenFindings.length} more finding${hiddenFindings.length > 1 ? 's' : ''} today — including ${hiddenFindings.map(f => f.label).slice(0, 2).join(', ')}${hiddenFindings.length > 2 ? ', and more' : ''}.`
+      : null,
+  };
+
   return {
     basic, basicPlanet: PLANET_NAMES[basic],
     destiny, destinyPlanet: PLANET_NAMES[destiny],
@@ -123,30 +141,32 @@ function buildChartData(dob, targetDate, targetHour = null, lang = null) {
     grid: enhancedGrid,
     freqMap: buildFrequencyMap(dob, maha.number, antar.number, monthly.number),
     lucky,
-    day_analysis: dayAnalysis,
+    day_analysis: dayAnalysisGated,
     day_score: dayScore,
   };
 }
 
-app.post('/api/chart', (req, res) => {
+app.post('/api/chart', optionalAuth, async (req, res) => {
   try {
     const { dob, client_date, client_hour, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
     const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const hour = (client_hour !== undefined && client_hour !== null) ? parseInt(client_hour) : new Date().getHours();
-    res.json(buildChartData(dob, targetDate, hour, lang));
+    const subscribed = await isSubscribed(req.uid);
+    res.json(buildChartData(dob, targetDate, hour, lang, subscribed));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
 // ─── /api/chart/date — chart for any date+time ───────────────────────────────
-app.post('/api/chart/date', (req, res) => {
+app.post('/api/chart/date', optionalAuth, async (req, res) => {
   try {
     const { dob, date, hour, lang } = req.body;
     if (!dob || !date) return res.status(400).json({ error: 'dob and date required' });
     const targetHour = (hour !== undefined && hour !== null) ? parseInt(hour) : null;
-    res.json(buildChartData(dob, new Date(date).toISOString(), targetHour, lang));
+    const subscribed = await isSubscribed(req.uid);
+    res.json(buildChartData(dob, new Date(date).toISOString(), targetHour, lang, subscribed));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -313,6 +333,19 @@ app.post('/api/user/credits', requireAuth, async (req, res) => {
   }
 });
 
+// ─── /api/pricing — live paywall data, no auth required ────────────────────
+// Client fetches this instead of hardcoding prices, so numbers can change
+// without an app release. free_trial_credits is included so the paywall
+// copy ("you get N free questions") never drifts out of sync with the
+// actual server-enforced allowance.
+app.get('/api/pricing', (req, res) => {
+  res.json({
+    free_trial_credits: FREE_TRIAL_CREDITS,
+    question_packs: QUESTION_PACKS,
+    subscription_plans: SUBSCRIPTION_PLANS,
+  });
+});
+
 app.post('/api/dashas', (req, res) => {
   try {
     const { dob, type, pastYears, futureYears, pastMonths, futureMonths } = req.body;
@@ -374,10 +407,11 @@ app.post('/api/hourly', (req, res) => {
 
 // ─── /api/compatibility ─────────────────────────────────────────────────────
 
-app.post('/api/compatibility', (req, res) => {
+app.post('/api/compatibility', optionalAuth, async (req, res) => {
   try {
     const { dob1, dob2, client_date, client_hour, lang } = req.body;
     if (!dob1 || !dob2) return res.status(400).json({ error: 'dob1 and dob2 required' });
+    const subscribed = await isSubscribed(req.uid);
 
 
 
@@ -484,7 +518,24 @@ app.post('/api/compatibility', (req, res) => {
     const p1brings = localizedCompat(NUMBER_IN_RELATIONSHIP, NUMBER_IN_RELATIONSHIP_I18N, b1, lang) || {};
     const p2brings = localizedCompat(NUMBER_IN_RELATIONSHIP, NUMBER_IN_RELATIONSHIP_I18N, b2, lang) || {};
 
-    res.json({
+    // "Today" is partly free (score/energy/label — enough to glance at) and
+    // partly premium (the actual guidance text) — gated inline since it's
+    // nested, rather than via the flat top-level gateResponse allow-list.
+    const todayGated = subscribed
+      ? {
+          score: todayCompat.score, energy: todayCompat.energy, day_label: todayCompat.day_label,
+          headline: todayCompat.headline, detail: todayCompat.detail,
+          do_together: todayCompat.do_together, watch_together: todayCompat.watch_together,
+          daily1, daily2,
+        }
+      : {
+          score: todayCompat.score, energy: todayCompat.energy, day_label: todayCompat.day_label,
+          daily1, daily2,
+          locked: true,
+          locked_preview: "Today's detailed compatibility — what to do together and what to watch for — unlock with Premium.",
+        };
+
+    const raw = {
       score: baseScore,
       level,
       level_icon: levelIcon,
@@ -526,19 +577,15 @@ app.post('/api/compatibility', (req, res) => {
         conflict_style: p2brings.conflict_style,
       },
 
-      // Today
-      today: {
-        score: todayCompat.score,
-        energy: todayCompat.energy,
-        day_label: todayCompat.day_label,
-        headline: todayCompat.headline,
-        detail: todayCompat.detail,
-        do_together: todayCompat.do_together,
-        watch_together: todayCompat.watch_together,
-        daily1,
-        daily2,
-      },
-    });
+      today: todayGated,
+    };
+
+    res.json(gateResponse(
+      raw,
+      ['score', 'level', 'level_icon', 'relationship_label', 'today'],
+      subscribed,
+      'Full compatibility breakdown — what you bring to each other, growth areas, and detailed today-guidance — unlock with Premium.'
+    ));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -752,10 +799,11 @@ app.post('/api/predict/prashna', (req, res) => {
 
 // ─── /api/insights/deep ─────────────────────────────────────────
 // Returns the deep profile — personal patterns, dasha experience, honest warnings
-app.post('/api/insights/deep', (req, res) => {
+app.post('/api/insights/deep', optionalAuth, async (req, res) => {
   try {
     const { dob, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
+    const subscribed = await isSubscribed(req.uid);
 
     const d = new Date(dob);
     const basic = basicNumber(d.getDate());
@@ -789,7 +837,7 @@ app.post('/api/insights/deep', (req, res) => {
       }
     }
 
-    res.json({
+    const raw = {
       basic, destiny,
       maha: maha.number, antar: antar.number,
 
@@ -856,7 +904,14 @@ app.post('/api/insights/deep', (req, res) => {
         warning: c.warning,
         advice: c.advice,
       })),
-    });
+    };
+
+    res.json(gateResponse(
+      raw,
+      ['basic', 'destiny', 'maha', 'antar', 'core_nature', 'active_yogas'],
+      subscribed,
+      'Your life direction, core combination, recurring patterns, current chapter, honest warnings, and natal combinations — unlock with Premium.'
+    ));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -876,38 +931,47 @@ app.post('/api/insights/daily', (req, res) => {
 });
 
 // ─── /api/insights/weekly ─────────────────────────────────────
-app.post('/api/insights/weekly', (req, res) => {
+app.post('/api/insights/weekly', optionalAuth, async (req, res) => {
   try {
     const { dob, client_date, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
     const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const ctx = buildChartContext(dob, targetDate);
     ctx.lang = lang;
-    res.json(generateWeeklyPrediction(ctx, targetDate));
+    const subscribed = await isSubscribed(req.uid);
+    const raw = generateWeeklyPrediction(ctx, targetDate);
+    res.json(gateResponse(raw, ['overview'], subscribed,
+      'Full 7-day breakdown, opportunities, and money/love/health signals for this week — unlock with Premium.'));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─── /api/insights/monthly ────────────────────────────────────
-app.post('/api/insights/monthly', (req, res) => {
+app.post('/api/insights/monthly', optionalAuth, async (req, res) => {
   try {
     const { dob, client_date, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
     const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const ctx = buildChartContext(dob, targetDate);
     ctx.lang = lang;
-    res.json(generateMonthlyPrediction(ctx, targetDate));
+    const subscribed = await isSubscribed(req.uid);
+    const raw = generateMonthlyPrediction(ctx, targetDate);
+    res.json(gateResponse(raw, ['month_name', 'period_days', 'period_start', 'period_end', 'overview'], subscribed,
+      'Full week-by-week breakdown, career/finance/relationship/health signals for this month — unlock with Premium.'));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─── /api/insights/yearly ─────────────────────────────────────
-app.post('/api/insights/yearly', (req, res) => {
+app.post('/api/insights/yearly', optionalAuth, async (req, res) => {
   try {
     const { dob, client_date, lang } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
     const targetDate = client_date ? new Date(client_date).toISOString() : new Date().toISOString();
     const ctx = buildChartContext(dob, targetDate);
     ctx.lang = lang;
-    res.json(generateYearlyPrediction(ctx, targetDate));
+    const subscribed = await isSubscribed(req.uid);
+    const raw = generateYearlyPrediction(ctx, targetDate);
+    res.json(gateResponse(raw, ['year', 'title', 'overview', 'year_in_one_line', 'best_months', 'risky_months'], subscribed,
+      'Your full year ahead — month-by-month breakdown, career/finance/relationship timing, and your current chapter — unlock with Premium.'));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
