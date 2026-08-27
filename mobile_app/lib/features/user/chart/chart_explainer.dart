@@ -19,6 +19,20 @@ const Map<int, String> kPlanetMeaning = {
   9: 'Action, courage, and drive — the energy that pushes you to compete and move.',
 };
 
+/// One icon per planet — used for lightweight visual summaries (onboarding,
+/// grid highlights) where a wall of text isn't the right first impression.
+const Map<int, IconData> kPlanetIcon = {
+  1: Icons.wb_sunny_rounded,
+  2: Icons.nightlight_round,
+  3: Icons.auto_awesome_rounded,
+  4: Icons.bolt_rounded,
+  5: Icons.chat_bubble_rounded,
+  6: Icons.favorite_rounded,
+  7: Icons.spa_rounded,
+  8: Icons.hourglass_bottom_rounded,
+  9: Icons.local_fire_department_rounded,
+};
+
 enum ChartPeriodType { maha, antar, monthly, daily, hourly, basic, destiny, grid }
 
 class _PeriodContext {

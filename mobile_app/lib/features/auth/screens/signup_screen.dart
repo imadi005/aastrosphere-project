@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:aastrosphere/core/theme/app_theme.dart';
 import 'package:aastrosphere/features/shell/app_shell.dart';
+import 'package:aastrosphere/features/onboarding/welcome_summary_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -74,8 +75,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       });
 
       if (mounted) {
+        final isAstrologer = widget.role == 'Astrologer';
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const AppShell()),
+          MaterialPageRoute(builder: (_) => isAstrologer
+              ? const AppShell()
+              : WelcomeSummaryScreen(name: _nameController.text.trim(), dob: _selectedDob!)),
           (route) => false,
         );
       }
