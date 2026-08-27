@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -700,10 +699,9 @@ class PdfReportBuilder {
         ws.add(_monthTableFromRich(months, s));
         ws.add(pw.SizedBox(height: 10));
       } else {
-        // fallback: local month table
         ws.add(_st('MONTH BY MONTH'));
         ws.add(pw.SizedBox(height: 7));
-        ws.add(_monthTableLocal(s, natal, dob));
+        ws.add(_missingServerDetail());
         ws.add(pw.SizedBox(height: 10));
       }
 
@@ -740,7 +738,8 @@ class PdfReportBuilder {
         ws.add(pw.SizedBox(height: 10));
       }
     } else {
-      // No backend data — fallback to local insights
+      // A saved legacy report may not contain its original server payload.
+      // Do not fabricate a new month table with a second calculation engine.
       if (s.insights.isNotEmpty) {
         ws.add(_st('PERIOD ANALYSIS'));
         ws.add(pw.SizedBox(height: 7));
@@ -757,7 +756,7 @@ class PdfReportBuilder {
       }
       ws.add(_st('MONTH BY MONTH'));
       ws.add(pw.SizedBox(height: 7));
-      ws.add(_monthTableLocal(s, natal, dob));
+      ws.add(_missingServerDetail());
       ws.add(pw.SizedBox(height: 10));
     }
 
@@ -779,6 +778,19 @@ class PdfReportBuilder {
 
     return ws;
   }
+
+  static pw.Widget _missingServerDetail() => pw.Container(
+    padding: const pw.EdgeInsets.all(9),
+    decoration: pw.BoxDecoration(
+      color: _card,
+      border: pw.Border.all(color: _subtle, width: 0.4),
+      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+    ),
+    child: pw.Text(
+      'Month-by-month detail is not available in this saved report.',
+      style: pw.TextStyle(fontSize: 8, color: _muted),
+    ),
+  );
 
   // ── Month table from backend richData ────────────────────────────────────────
   static pw.Widget _monthTableFromRich(List<Map> months, YearSection s) {
@@ -839,52 +851,6 @@ class PdfReportBuilder {
         4: const pw.FractionColumnWidth(0.12),
         5: const pw.FractionColumnWidth(0.27),
       },
-      border: pw.TableBorder.all(color: _subtle, width: 0.3),
-      children: rows);
-  }
-
-  // ── Month table fallback ────────────────────────────────────────────────────
-  static pw.Widget _monthTableLocal(YearSection s, Set<int> natal, DateTime dob) {
-    final basic = NumerologyEngine.basicNumber(dob.day);
-    final rows = <pw.TableRow>[];
-    rows.add(pw.TableRow(
-      decoration: pw.BoxDecoration(color: _card),
-      children: ['MONTH','MONTHLY','CHART ACTIVE','NOTES'].map((h) =>
-        pw.Padding(padding: const pw.EdgeInsets.all(5),
-          child: pw.Text(h, style: pw.TextStyle(fontSize: 6.5, color: _muted,
-              fontWeight: pw.FontWeight.bold)))).toList()));
-
-    const mNames = ['January','February','March','April','May','June',
-                    'July','August','September','October','November','December'];
-    for (int m = 1; m <= 12; m++) {
-      final td = DateTime(s.year, m, 15);
-      final monthly = NumerologyEngine.currentMonthlyDasha(dob, targetDate: td);
-      final allNums = {...natal, s.mahaNum, s.antarNum, monthly.number};
-      final isRisk = (monthly.number == 4 && (s.antarNum == 9 || s.mahaNum == 9)) ||
-                     (monthly.number == 9 && (s.antarNum == 4 || s.mahaNum == 4));
-      final notes = <String>[];
-      if (allNums.contains(5) && allNums.contains(7)) notes.add('Easy Money active');
-      if (allNums.contains(3) && allNums.contains(1) && allNums.contains(9)) notes.add('3-1-9 Uplift');
-      if (isRisk) notes.add('HIGH PHYSICAL RISK');
-      if (monthly.number == 2 && (s.mahaNum == 2 || s.antarNum == 2)) notes.add('Mental health watch');
-      if (notes.isEmpty) notes.add('--');
-
-      final bg = isRisk ? _dangerBg : (m % 2 == 0 ? _card : _white);
-      rows.add(pw.TableRow(
-        decoration: pw.BoxDecoration(color: bg),
-        children: [
-          pw.Padding(padding: const pw.EdgeInsets.all(5),
-            child: pw.Text(mNames[m-1], style: pw.TextStyle(fontSize: 7.5, color: isRisk ? _danger : _body, fontWeight: pw.FontWeight.bold))),
-          pw.Padding(padding: const pw.EdgeInsets.all(5),
-            child: pw.Text('${monthly.number} ${_p(monthly.number)}', style: pw.TextStyle(fontSize: 7.5, color: isRisk ? _danger : _info, fontWeight: pw.FontWeight.bold))),
-          pw.Padding(padding: const pw.EdgeInsets.all(5),
-            child: pw.Text(allNums.toList().join(', '), style: pw.TextStyle(fontSize: 7, color: _muted))),
-          pw.Padding(padding: const pw.EdgeInsets.all(5),
-            child: pw.Text(notes.join('. '), style: pw.TextStyle(fontSize: 7.5, color: isRisk ? _danger : _body, lineSpacing: 1.4))),
-        ]));
-    }
-    return pw.Table(
-      columnWidths: {0: const pw.FractionColumnWidth(0.14), 1: const pw.FractionColumnWidth(0.13), 2: const pw.FractionColumnWidth(0.18), 3: const pw.FractionColumnWidth(0.55)},
       border: pw.TableBorder.all(color: _subtle, width: 0.3),
       children: rows);
   }

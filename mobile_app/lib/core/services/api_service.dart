@@ -366,6 +366,18 @@ class ApiService {
   static Future<Map<String, dynamic>> getYearInsight(String dob, int maha, int antar, int monthly) =>
       _post('/api/report/year-insight', {'dob': dob, 'maha_num': maha, 'antar_num': antar, 'monthly_num': monthly});
 
+  /// Full report payload: all period math, yogas and month detail are built
+  /// server-side so the report cannot drift from Timeline or Chart.
+  static Future<List<dynamic>> generateAstrologerReport(String dob, int years,
+      {String? lang}) async {
+    final r = await _post('/api/report/generate', {
+      'dob': dob,
+      'years': years,
+      if (lang != null) 'lang': lang,
+    });
+    return r['sections'] as List<dynamic>? ?? [];
+  }
+
   static Future<Map<String, dynamic>> getYearlyInsight(String dob, String targetDate) =>
       _postWithOptionalAuth('/api/insights/yearly', {'dob': dob, 'client_date': targetDate});
 

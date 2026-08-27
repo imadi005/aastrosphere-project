@@ -176,9 +176,11 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
   const d = new Date(dob);
   const basic   = basicNumber(d.getDate());
   const destiny = destinyNumber(dob);
-  const maha    = currentMahadasha(dob);
-  const antar   = currentAntardasha(dob);
-  const monthly = currentMonthlyDasha(dob);
+  // Every layer must use the requested date. Without this, future reports
+  // accidentally mix a future daily number with today's maha/antar/monthly.
+  const maha    = currentMahadasha(dob, targetDate);
+  const antar   = currentAntardasha(dob, targetDate);
+  const monthly = currentMonthlyDasha(dob, targetDate);
   const daily   = dailyDasha(dob, targetDate);
   const hours   = allHourlyDashas(dob, targetDate);
 
@@ -209,7 +211,7 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
 // ─── Detect all active yogas ─────────────────────────────────────────────────
 // natalNums  = DOB digits only   → used for absence conditions
 // annualNums = DOB + Maha + Antar → used for presence conditions
-function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny, maha = 0, antar = 0, monthly = 0, daily = 0) {
+export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny, maha = 0, antar = 0, monthly = 0, daily = 0) {
   const yogas = [];
 
   // ── RAJ YOGA (1+2) ────────────────────────────────────────────────────────

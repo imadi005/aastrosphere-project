@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:aastrosphere/core/services/web_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:path_provider/path_provider.dart';
-
-import 'package:flutter/foundation.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/api_service.dart';
@@ -61,33 +57,6 @@ class ReportEngine {
     5:'Mercury', 6:'Venus', 7:'Ketu', 8:'Saturn', 9:'Mars',
   };
 
-  static const _combos = {
-    '1_2': 'Career and emotions both demand attention. High visibility. Guard mental health.',
-    '1_4': 'Ambitious but unstable. Big opportunities, big disruptions. Watch impulsive decisions.',
-    '1_6': 'Career and finances both strong. Good for promotions and money.',
-    '1_7': 'Lucky period. Career breakthroughs possible. Some detachment from material things.',
-    '1_8': 'Hard work required. Authority challenged. Keep ego in check.',
-    '1_9': 'Powerful energy. Leadership peaks. Anger and accident risk.',
-    '2_4': 'Emotional instability. Deception risk. Guard finances and trust.',
-    '2_7': 'Deeply spiritual. Intuition sharp. Emotional sensitivity very high.',
-    '2_8': 'Depression risk. Emotional heaviness. Discipline helps navigate.',
-    '2_9': 'Emotional aggression. Arguments in relationships. Channel into creative work.',
-    '3_4': 'Wisdom tested by confusion. Good for research. Avoid shortcuts.',
-    '3_9': 'Strong action with wisdom. Good for leadership and expansion.',
-    '4_9': 'HIGH ACCIDENT RISK — most dangerous combination. Drive carefully, avoid rushing.',
-    '4_8': 'Delays, frustration, obstacles. Results come very slowly. Stay patient.',
-    '4_2': 'Emotionally unstable, prone to being deceived. Keep finances guarded.',
-    '5_4': 'Financial impulsiveness. Easy money thinking leads to losses. Budget strictly.',
-    '5_6': 'Excellent for business and relationships. Cash flow and romance both active.',
-    '5_7': 'Easy money and luck combination. Financial gains with less effort.',
-    '6_4': 'Relationship complications. Attraction without stability. Guard against deception.',
-    '7_4': 'Highly unstable spiritually and materially. Avoid major decisions.',
-    '7_8': 'Bad luck, delayed results. Financial and personal setbacks. Stay patient.',
-    '8_9': 'Relentless hard work, heavy load. Protect health — heart and BP risk.',
-    '9_4': 'HIGH ACCIDENT RISK. Impulsive actions cause physical harm. Slow down.',
-    '9_8': 'Immense determination, heavy load. Physical health must be protected.',
-  };
-
   static const _remedyMap = {
     1: 'Donate wheat/jaggery on Sundays. Wear gold. Chant Aditya Hridayam.',
     2: 'Donate milk/rice on Mondays. Wear silver. Chant Chandra mantra.',
@@ -100,130 +69,95 @@ class ReportEngine {
     9: 'Donate red lentils on Tuesdays. Wear red coral. Chant Mangal mantra.',
   };
 
-  static List<YearSection> generate(DateTime dob, int years) {
+  /// Maha/antar/monthly numbers, and everything derived from them (yogas,
+  /// warnings, dasha-experience text, and month detail), all come from one
+  /// backend report payload. This class only turns that payload into editable
+  /// sections for the report UI/PDF; it does not calculate a dasha itself.
+  static Future<List<YearSection>> generate(DateTime dob, int years) async {
+    final dobIso = dob.toIso8601String();
+    final rawSections = await ApiService.generateAstrologerReport(dobIso, years);
+    if (rawSections.length != years) {
+      throw StateError('The report service returned an incomplete reading.');
+    }
+
     final sections = <YearSection>[];
-    final today = DateTime.now();
-    final basic = NumerologyEngine.basicNumber(dob.day);
-    final destiny = NumerologyEngine.destinyNumber(dob);
-    final natalNums = NumerologyEngine.chartDigits(dob).toSet();
-
-    // Build full maha timeline
-    final mahaList = NumerologyEngine.mahadashaTimeline(dob, pastYears: 30, futureYears: years + 2);
-
     int? prevMaha;
+    for (int i = 0; i < rawSections.length; i++) {
+      final rich = Map<String, dynamic>.from(rawSections[i] as Map);
+      final maha = Map<String, dynamic>.from(rich['maha'] as Map);
+      final antar = Map<String, dynamic>.from(rich['antar'] as Map);
+      final monthly = Map<String, dynamic>.from(rich['monthly'] as Map);
+      final mahaNum = maha['number'] as int;
+      final antarNum = antar['number'] as int;
+      final monthlyNum = monthly['number'] as int;
+      final year = rich['year'] as int;
 
-    for (int i = 0; i < years; i++) {
-      final targetDate = DateTime(today.year + i, today.month, today.day);
-
-      // Find maha for this date
-      final maha = mahaList.firstWhere(
-        (m) => !targetDate.isBefore(m.start) && targetDate.isBefore(m.end),
-        orElse: () => mahaList.last,
-      );
-
-      // Antar
-      final antarYear = targetDate.month <= dob.month && targetDate.day < dob.day
-          ? targetDate.year - 1 : targetDate.year;
-      final wd = DateTime(antarYear, dob.month, dob.day).weekday % 7;
-      final wdVal = NumerologyEngine.weekdayValues[wd]!;
-      final raw = basic + dob.month + (antarYear % 100) + wdVal;
-      final antarNum = NumerologyEngine.reduceToSingle(raw);
-      final antarPlanet = _planetNames[antarNum] ?? '';
-
-      // Monthly (midpoint of this calendar year)
-      final monthly = NumerologyEngine.currentMonthlyDasha(dob,
-          targetDate: DateTime(targetDate.year, targetDate.month, targetDate.day));
-
-      final allNums = {...natalNums, maha.number, antarNum, monthly.number};
-
-      // Insights
       final insights = <String>[];
       final warnings = <String>[];
       final yogas = <String>[];
 
-      // Combo text
-      final c1 = '${maha.number}_$antarNum';
-      final c2 = '${antarNum}_${maha.number}';
-      final combo = _combos[c1] ?? _combos[c2] ?? '';
-      if (combo.isNotEmpty) {
-        if (combo.contains('HIGH ACCIDENT') || combo.contains('RISK')) {
-          warnings.add(combo);
-        } else {
-          insights.add(combo);
+      final dashaExp = rich['dasha_experience'] as Map?;
+      if (dashaExp != null) {
+        for (final key in ['what_it_feels_like', 'what_is_actually_happening', 'antar_context']) {
+          final value = dashaExp[key] as String?;
+          if (value != null && value.isNotEmpty) insights.add(value);
         }
+        final trap = dashaExp['the_trap'] as String?;
+        if (trap != null && trap.isNotEmpty) warnings.add(trap);
+      }
+      for (final item in (rich['yogas'] as List? ?? [])) {
+        final yoga = Map<String, dynamic>.from(item as Map);
+        final name = yoga['name'] as String? ?? '';
+        final description = yoga['description'] as String?;
+        final line = description != null && description.isNotEmpty ? '$name — $description' : name;
+        if (line.isEmpty) continue;
+        if (yoga['positive'] == true) yogas.add(line); else warnings.add(line);
+      }
+      for (final item in (rich['warnings'] as List? ?? [])) {
+        final warning = Map<String, dynamic>.from(item as Map);
+        final text = (warning['detail'] as String?) ?? (warning['short'] as String?);
+        if (text != null && text.isNotEmpty) warnings.add(text);
       }
 
-      // Yogas
-      if (allNums.contains(1) && allNums.contains(2) && !natalNums.contains(3) && !natalNums.contains(6)) {
-        yogas.add('Raj Yoga — authority, career advancement strongly supported.');
-      }
-      if (natalNums.contains(1) && natalNums.contains(7) && !natalNums.contains(8)) {
-        yogas.add('Continuous Luck (1-7) — things tend to work out, often unexpectedly.');
-      }
-      if (allNums.contains(5) && allNums.contains(7)) {
-        yogas.add('Easy Money (5-7) — financial gains with less effort.');
-      }
-      if (allNums.contains(3) && allNums.contains(1) && allNums.contains(9)) {
-        yogas.add('3-1-9 Uplift — very positive for growth and confidence.');
-      }
-
-      // Warnings
-      if ((maha.number == 4 && antarNum == 9) || (maha.number == 9 && antarNum == 4)) {
-        warnings.add('HIGH ACCIDENT RISK year. Drive carefully. Avoid rushing and risky activities.');
-      }
-      if (allNums.contains(9) && allNums.contains(4) && !allNums.contains(5)) {
-        warnings.add('Bandhan Yoga — feeling stuck. Avoid new loans or big commitments.');
-      }
-      if (allNums.contains(5) && allNums.contains(4) && !allNums.contains(9)) {
-        warnings.add('Financial Bandhan — debt risk. Impulsive spending causes damage.');
-      }
-      if (maha.number == 2 || antarNum == 2) {
-        warnings.add('Mental health watch — risk of low mood and insomnia.');
-      }
-      if (maha.number == 4 || antarNum == 4) {
-        if (!warnings.any((w) => w.contains('Bandhan') || w.contains('ACCIDENT'))) {
-          warnings.add('Rahu active — watch impulsive financial decisions and sudden changes.');
-        }
-      }
-      if ((maha.number == 8 || antarNum == 8) && (basic == 8 || destiny == 8)) {
-        warnings.add('Bone, joint, dental health needs attention this year.');
-      }
-
-      // Caution days — months where daily/monthly combo is risky
+      // Month numbers came from the same backend payload; this only labels
+      // report months whose already-calculated combination needs extra care.
       final cautionDays = <String>[];
       const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      for (int m = 1; m <= 12; m++) {
-        final dateM = DateTime(targetDate.year, m, 15);
-        final mon = NumerologyEngine.currentMonthlyDasha(dob, targetDate: dateM);
-        final risk = (mon.number == 4 && antarNum == 9) ||
-                     (mon.number == 9 && antarNum == 4) ||
-                     (mon.number == 4 && maha.number == 9) ||
-                     (mon.number == 9 && maha.number == 4);
-        if (risk) cautionDays.add('${months[m-1]} ${targetDate.year} — monthly ${mon.number} (${_planetNames[mon.number]}) active. Extra caution advised.');
+      for (final item in (rich['months_breakdown'] as List? ?? [])) {
+        final month = Map<String, dynamic>.from(item as Map);
+        final monNum = month['monthly_number'] as int?;
+        final monthNumber = month['month_number'] as int?;
+        if (monNum == null || monthNumber == null || monthNumber < 1 || monthNumber > 12) continue;
+        final risk = (monNum == 4 && antarNum == 9) ||
+                     (monNum == 9 && antarNum == 4) ||
+                     (monNum == 4 && mahaNum == 9) ||
+                     (monNum == 9 && mahaNum == 4);
+        if (risk) cautionDays.add('${months[monthNumber - 1]} $year — monthly $monNum (${_planetNames[monNum]}) active. Extra caution advised.');
       }
 
-      // Auto remedies based on active dashas
-      final remedyNums = {maha.number, antarNum};
+      // Remedies — static per-planet text, not a calculation, safe to keep local.
+      final remedyNums = {mahaNum, antarNum};
       final autoRemedies = remedyNums.map((n) => '• ${_planetNames[n]}: ${_remedyMap[n] ?? ""}').join('\n');
 
       sections.add(YearSection(
-        year: targetDate.year,
-        label: '${targetDate.year} – ${targetDate.year + 1}',
-        mahaNum: maha.number,
-        mahaPlanet: maha.planet,
-        mahaChanged: prevMaha != null && prevMaha != maha.number,
+        year: year,
+        label: '$year – ${year + 1}',
+        mahaNum: mahaNum,
+        mahaPlanet: maha['planet'] as String? ?? _planetNames[mahaNum] ?? '',
+        mahaChanged: prevMaha != null && prevMaha != mahaNum,
         antarNum: antarNum,
-        antarPlanet: antarPlanet,
-        monthlyNum: monthly.number,
-        monthlyPlanet: _planetNames[monthly.number] ?? '',
+        antarPlanet: antar['planet'] as String? ?? _planetNames[antarNum] ?? '',
+        monthlyNum: monthlyNum,
+        monthlyPlanet: monthly['planet'] as String? ?? _planetNames[monthlyNum] ?? '',
         insights: insights,
         warnings: warnings,
         yogas: yogas,
         cautionDays: cautionDays,
         isCurrent: i == 0,
         remedies: autoRemedies,
+        richData: rich,
       ));
-      prevMaha = maha.number;
+      prevMaha = mahaNum;
     }
     return sections;
   }
@@ -309,21 +243,11 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
   Future<void> _generate(DateTime dob) async {
     setState(() { _generating = true; _error = null; _sections = null; _remedyCtrls.clear(); });
     try {
-      final sections = await Future.microtask(() => ReportEngine.generate(dob, _years));
-      final mm = dob.month.toString().padLeft(2,'0');
-      final dd = dob.day.toString().padLeft(2,'0');
-      final dobStr = '\${dob.year}-\$mm-\$dd';
-      for (int i = 0; i < sections.length; i++) {
-        try {
-          final targetDate = '\${sections[i].year}-04-15T00:00:00Z';
-          final rich = await ApiService.getYearlyInsight(dobStr, targetDate);
-          sections[i].richData = rich;
-        } catch (_) {}
-      }
+      final sections = await ReportEngine.generate(dob, _years);
       AnalyticsService.reportGenerated(_years);
       if (mounted) setState(() { _sections = sections; _generating = false; });
     } catch (e) {
-      if (mounted) setState(() { _error = 'Generation failed: \$e'; _generating = false; });
+      if (mounted) setState(() { _error = 'Generation failed: $e'; _generating = false; });
     }
   }
 
@@ -359,6 +283,9 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
           'insights': s.insights, 'warnings': s.warnings,
           'yogas': s.yogas, 'caution_days': s.cautionDays,
           'remedies': s.remedies,
+          // Persist the server-produced year payload too. Re-exporting a
+          // saved report must never recalculate a later/different result.
+          'rich_data': s.richData,
         }).toList(),
       });
 
@@ -388,10 +315,10 @@ class _GenerateTabState extends ConsumerState<_GenerateTab> {
         years: _years,
         sections: _sections!,
       );
-        debugPrint('PDF: built at \$pdfPath');
+        debugPrint('PDF: built at $pdfPath');
       } catch (pdfErr, stack) {
         debugPrint('PDF ERROR: ' + pdfErr.toString());
-        debugPrint('\$stack');
+        debugPrint('$stack');
         if (mounted) setState(() { _saving = false; _error = 'PDF failed: ' + pdfErr.toString(); });
         return;
       }
@@ -920,6 +847,9 @@ class _HistoryCardState extends ConsumerState<_HistoryCard> {
         cautionDays: (s['caution_days'] as List? ?? []).cast<String>(),
         isCurrent: false,
         remedies: s['remedies'] as String? ?? '',
+        richData: s['rich_data'] is Map
+            ? Map<String, dynamic>.from(s['rich_data'] as Map)
+            : null,
       )).toList();
 
       // Parse DOB

@@ -30,6 +30,7 @@ import {
   getHonestWarnings,
   getDeepPeriodText,
   getPrimaryAction,
+  detectYogas,
 } from './prediction_engine.js';
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
 import { NUMBER_IN_RELATIONSHIP_I18N, localizedCompat } from './compatibility_library_i18n.js';
@@ -1348,42 +1349,94 @@ app.post('/api/predict/future-risks', (req, res) => {
 });
 
 
+function buildReportYear(dob, targetDate, lang) {
+  const ctx = buildChartContext(dob, targetDate);
+  ctx.lang = lang;
+  const yearly = generateYearlyPrediction(ctx, targetDate);
+  const warnings = getHonestWarnings(ctx.yogas, ctx.freqMap, ctx.maha, ctx.antar, lang);
+  const dashaExperience = getDashaExperience(ctx.maha, ctx.antar, lang);
+
+  return {
+    ...yearly,
+    basic: ctx.basic,
+    destiny: ctx.destiny,
+    maha: ctx.mahaDetails,
+    antar: ctx.antarDetails,
+    monthly: ctx.monthlyDetails,
+    dasha_experience: dashaExperience,
+    yogas: ctx.yogas.map(y => ({
+      id: y.id,
+      name: y.name,
+      positive: y.positive,
+      description: y.description || null,
+    })),
+    warnings: warnings.map(w => ({ short: w.short, detail: w.detail })),
+    all_nums: ctx.allNums,
+    natal_nums: ctx.natalNums,
+  };
+}
+
+// ─── /api/report/generate ─────────────────────────────────────
+// A complete astrologer report is calculated in one backend request. The
+// Flutter client receives formatted sections but never recreates dasha math,
+// yoga rules, or the month breakdown locally.
+app.post('/api/report/generate', (req, res) => {
+  try {
+    const { dob, years = 10, start_date, lang } = req.body;
+    const count = Number(years);
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+    if (!Number.isInteger(count) || count < 1 || count > 60) {
+      return res.status(400).json({ error: 'years must be a whole number from 1 to 60' });
+    }
+
+    const start = start_date ? new Date(start_date) : new Date();
+    if (Number.isNaN(start.getTime())) return res.status(400).json({ error: 'invalid start_date' });
+
+    const sections = [];
+    for (let offset = 0; offset < count; offset++) {
+      const at = new Date(start.getFullYear() + offset, start.getMonth(), start.getDate());
+      sections.push(buildReportYear(dob, at.toISOString(), lang));
+    }
+    res.json({ sections });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── /api/report/year-insight ─────────────────────────────────
-// Returns rich prediction for a specific maha+antar combination
+// Returns rich prediction for a specific maha+antar+monthly combination —
+// used by the astrologer Report generator, one call per report year. This is
+// the single source of truth for yogas/warnings/dasha-experience text so the
+// report never has its own separate copy of that logic. The bulk report route
+// above is used for new reports; this endpoint remains for legacy callers.
 app.post('/api/report/year-insight', (req, res) => {
   try {
-    const { dob, maha_num, antar_num, monthly_num } = req.body;
-    if (!dob || !maha_num) return res.status(400).json({ error: 'dob and maha_num required' });
+    const { dob, maha_num, antar_num, monthly_num, target_date, lang } = req.body;
+    if (!dob) return res.status(400).json({ error: 'dob required' });
+    if (target_date) return res.json(buildReportYear(dob, new Date(target_date).toISOString(), lang));
+    if (!maha_num) return res.status(400).json({ error: 'maha_num required without target_date' });
 
     const mahaInt = Number(maha_num);
     const antarInt = Number(antar_num || 0);
     const monthlyInt = Number(monthly_num || 0);
 
-    const freqMap = buildFrequencyMap(dob, mahaInt, antarInt, monthlyInt);
-    const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
-    const natalNums = Object.keys(natalFreq).map(Number);
-    const allNums = Object.keys(freqMap).map(Number);
-
-    // Get dasha experience text
-    const dashaExp = getDashaExperience(mahaInt, antarInt);
-
-    // Get yogas for this combination
-    const annualFreq = buildFrequencyMap(dob, mahaInt, antarInt, monthlyInt);
-    const annualNums = Object.keys(annualFreq).map(Number);
-
-    // Detect yogas manually for this period
     const basic = basicNumber(new Date(dob).getDate());
     const destiny = destinyNumber(dob);
-    const ctx = { basic, destiny, maha: mahaInt, antar: antarInt, allNums, natalNums };
 
-    // Warnings
-    const warnings = getHonestWarnings([], annualFreq, mahaInt, antarInt);
+    const annualFreq = buildFrequencyMap(dob, mahaInt, antarInt, monthlyInt);
+    const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
+    const natalNums = Object.keys(natalFreq).map(Number);
+    const allNums = Object.keys(annualFreq).map(Number);
 
-    // Maha planet description
+    // Yogas for this specific maha/antar/monthly combination — same detector
+    // every other endpoint uses (buildChartContext), just fed this period's
+    // numbers instead of today's, since a report year isn't "now".
+    const yogas = detectYogas(natalNums, allNums, natalFreq, annualFreq, basic, destiny, mahaInt, antarInt, monthlyInt, 0);
+
+    const dashaExp = getDashaExperience(mahaInt, antarInt, lang);
+    const warnings = getHonestWarnings(yogas, annualFreq, mahaInt, antarInt, lang);
     const mahaPlanetDesc = PLANET_DESC[mahaInt];
     const antarPlanetDesc = PLANET_DESC[antarInt];
-
-    // Number traits
     const mahaTraits = NUMBER_TRAITS[mahaInt];
 
     res.json({
@@ -1391,6 +1444,7 @@ app.post('/api/report/year-insight', (req, res) => {
       maha_planet: mahaPlanetDesc,
       antar_planet: antarPlanetDesc,
       maha_traits: mahaTraits,
+      yogas: yogas.map(y => ({ id: y.id, name: y.name, positive: y.positive, description: y.description || null })),
       warnings: warnings.map(w => ({ short: w.short, detail: w.detail })),
       all_nums: allNums,
       natal_nums: natalNums,
@@ -1399,8 +1453,6 @@ app.post('/api/report/year-insight', (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-
-app.listen(PORT, () => console.log(`Aastrosphere API running on port ${PORT}`));
 
 // ─── /api/astro/life-profile — All tabs data in one call ──────────────────────
 app.post('/api/astro/life-profile', async (req, res) => {
@@ -1615,3 +1667,8 @@ app.post('/api/astro/period-risks', (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// Keep the server start after every route declaration. Routes defined after
+// app.listen work in Express, but placing it here keeps the API structure
+// predictable and avoids accidentally hiding later additions.
+app.listen(PORT, () => console.log(`Aastrosphere API running on port ${PORT}`));
