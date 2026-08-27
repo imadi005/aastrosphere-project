@@ -133,7 +133,7 @@ export const DEEP_COMBINATIONS = {
   },
 
   '1_3': {
-    name: "Power backed by Wisdom",
+    name: "Power backed by Jupiter",
     what_it_creates: "Leadership that people actually respect, not just comply with. Authority that knows when to speak and when to stay silent.",
     the_conflict: "You know the right answer but have to navigate the ego of others to implement it. Being right and being heard are not the same thing.",
     real_life: "You've been in rooms where you were the most prepared and not the most listened to. You've also been the person others came to when the person everyone was listening to turned out to be wrong.",
@@ -196,7 +196,7 @@ export const DEEP_COMBINATIONS = {
   },
 
   '2_4': {
-    name: "Emotional Chaos",
+    name: "Moon Chaos",
     what_it_creates: "Deep emotional sensitivity amplified by a pull toward illusion. Negative thought patterns feel like insights. The mind is clever but pointed in difficult directions.",
     the_conflict: "The intelligence is real but frequently misapplied. The emotional sensitivity makes rational thinking harder. The two together create a cycle of clever negative thinking.",
     real_life: "You've talked yourself into believing things that weren't true — about situations and about people. Your worst fears have a way of feeling like foresight.",
@@ -205,7 +205,7 @@ export const DEEP_COMBINATIONS = {
   },
 
   '2_6': {
-    name: "Beauty and Emotion",
+    name: "Beauty and Moon",
     what_it_creates: "One of the most creatively gifted and socially magnetic combinations. Natural media and artistic talent. Deeply attractive — and deeply affected by others.",
     the_conflict: "The emotional depth and the attraction to beauty create complexity in relationships. Multiple connections, intense feelings, difficulty with boundaries.",
     real_life: "People are drawn to you in ways that create complicated situations. You've been in multiple romantic situations simultaneously — or thought about it.",
@@ -215,7 +215,7 @@ export const DEEP_COMBINATIONS = {
 
   '2_8': {
     name: "Sensitivity meets Duty",
-    what_it_creates: "Emotional weight and deep responsibility combined. One of the heavier natal combinations — but also one that builds the most genuine depth of character.",
+    what_it_creates: "Moon weight and deep responsibility combined. One of the heavier natal combinations — but also one that builds the most genuine depth of character.",
     the_conflict: "One side needs emotional comfort. The other demands emotional work. The result is a person who feels more than you show and carries more than you admit.",
     real_life: "You've had periods of genuine darkness that you moved through alone. Your low moods go lower than others see. Your resilience is higher than you get credit for.",
     without_1_or_9: "Without the ballast of 1 or 9 in the chart, inferiority complex and depression are the real risks — not weakness, but the absence of counterweight.",
@@ -676,7 +676,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
 
   '2_2': {
     name: "Double Sensitivity",
-    what_it_creates: "Emotional sensitivity at maximum intensity. Creative output is extraordinary. The social magnetism is real. So is the emotional fragility.",
+    what_it_creates: "Moon sensitivity at maximum intensity. Creative output is extraordinary. The social magnetism is real. So is the emotional fragility.",
     the_conflict: "Two moons mean the emotional tides run simultaneously in all directions. Highs are very high. Lows are very low. Stability requires active construction.",
     real_life: "You feel things more deeply than most people around you — and you know it. The creativity that comes from this depth is genuine. So is the exhaustion of feeling everything.",
     warning: "Depression is not a risk — it's a recurring visitor. The emotional depth without management becomes emotional prison.",
@@ -684,7 +684,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '2_3': {
-    name: "Emotion meets Wisdom",
+    name: "Moon meets Jupiter",
     what_it_creates: "Deep empathy backed by genuine wisdom. Natural counselor energy. People bring your problems to this combination instinctively.",
     the_conflict: "The emotional investment in others' wellbeing can become enmeshment. The wisdom knows the answer but the emotion delays delivering it.",
     real_life: "You've helped people through things you couldn't handle alone. You've also carried your problems longer than you should have.",
@@ -693,7 +693,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '2_5': {
-    name: "Emotion meets Intelligence",
+    name: "Moon meets Intelligence",
     what_it_creates: "Creative financial intelligence. The emotional radar reads people and the sharp mind monetizes the insight. Natural fit for media, writing, consulting.",
     the_conflict: "The heart and the calculator give conflicting advice, especially in financial decisions involving people. The numbers say one thing. The emotional attachment says another.",
     real_life: "You've made financial decisions that made emotional sense and financial nonsense. You've also read people better than your own spreadsheets.",
@@ -702,7 +702,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '2_7': {
-    name: "Emotion meets Intuition",
+    name: "Moon meets Intuition",
     what_it_creates: "Psychic-level sensitivity. What this combination feels about situations and people tends to be accurate in ways that are hard to explain rationally.",
     the_conflict: "The emotional need for closeness and an instinct toward detachment pull in opposite directions. Deep desire for connection alongside an inexplicable pull toward solitude.",
     real_life: "You've known things before you were confirmed. You've also created distance from people you needed because the emotional intensity felt like too much.",
@@ -711,7 +711,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '2_9': {
-    name: "Emotion meets Aggression",
+    name: "Moon meets Aggression",
     what_it_creates: "Passionate, intense, volatile. The love is fierce and the anger is equally fierce. The creative and emotional output is remarkable when channeled.",
     the_conflict: "The need for emotional safety and the need for action and confrontation create a person who simultaneously needs peace and creates conflict.",
     real_life: "Your relationships have been intense. You've loved people with everything and fought you with the same energy. Sometimes the same person in the same week.",
@@ -720,7 +720,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '3_3': {
-    name: "Double Wisdom",
+    name: "Double Jupiter",
     what_it_creates: "Deep wisdom, strong ethical foundation, genuine spiritual capacity. When directed correctly, one of the most respected combinations in any room.",
     the_conflict: "33 is also the number of moral justification — convincing yourself that bending the rules is acceptable because your intentions are good. The wisdom that should prevent this is the thing being used to rationalize it.",
     real_life: "You've been the wisest person in some rooms. You've also, quietly, compromised on something you publicly stood for. The internal dissonance from that is louder than you admit.",
@@ -729,7 +729,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '3_4': {
-    name: "Wisdom meets Disruption",
+    name: "Jupiter meets Disruption",
     what_it_creates: "Unconventional brilliance. Research ability is genuinely exceptional. The wisdom of 3 and the investigative nature of 4 make this combination naturally suited to finding what others miss.",
     the_conflict: "The planning that wisdom facilitates and the chaos a restless instinct introduces are in constant tension. The grand plan is always being disrupted by the unexpected variable.",
     real_life: "You've had ideas that were genuinely ahead of your time. You've also made plans that looked solid on paper and fell apart in execution for reasons that seemed random.",
@@ -738,7 +738,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '3_5': {
-    name: "Wisdom meets Business",
+    name: "Jupiter meets Business",
     what_it_creates: "The most credible business combination. Knowledge that translates into income. Advisory, consulting, teaching — anywhere expertise is monetized.",
     the_conflict: "An idealism about how business should be conducted and a pragmatism about how it actually works create ongoing internal debate.",
     real_life: "You've walked away from money because it didn't feel right. You've also made money in ways that felt completely aligned. The distinction is clear to you even when it isn't to others.",
@@ -747,7 +747,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '3_7': {
-    name: "Wisdom meets Luck",
+    name: "Jupiter meets Luck",
     what_it_creates: "The philosophical wanderer. Deeply attracted to meaning, knowledge, and spiritual truth. Lucky in the pursuits that align with genuine purpose.",
     the_conflict: "An attachment to tradition and an instinct to detach from everything create a person who values wisdom but keeps questioning whether any of it is real.",
     real_life: "You've sought teachers, books, systems of understanding. You've also been in periods where everything you thought was true seemed questionable.",
@@ -756,7 +756,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '3_8': {
-    name: "Wisdom meets Karma",
+    name: "Jupiter meets Karma",
     what_it_creates: "Serious, disciplined, and ethical. Builds things that last. The combination of deep values and steady patience creates achievements that are genuinely earned.",
     the_conflict: "The instinct toward patience and the wisdom of good judgment agree on almost everything — except timing. The wisdom says the opportunity is now. The patience says wait.",
     real_life: "You've achieved things through sustained effort that others gave up on. You've also missed windows because the preparation never felt quite complete.",
@@ -765,7 +765,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '3_9': {
-    name: "Wisdom meets Fire",
+    name: "Jupiter meets Fire",
     what_it_creates: "Bold, principled, and willing to fight for what is right. Politics, law, and activism are the natural territories.",
     the_conflict: "The instinct to counsel and the instinct to confront don't always agree on the right approach. Sometimes the wisdom is right. Sometimes the fight is necessary. Knowing which is which is the lifelong project.",
     real_life: "You've stood up for something when it would have been easier not to. You've also picked fights over principles when pragmatism would have served better.",
@@ -838,7 +838,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '5_8': {
-    name: "Disciplined Intelligence",
+    name: "Saturn Intelligence",
     what_it_creates: "Methodical wealth building. Financial decisions made with patience and precision. The slowest but most reliable path to genuine accumulation.",
     the_conflict: "One instinct wants to move fast. The other insists on due diligence. The combination creates the right decisions but sometimes makes you too slowly.",
     real_life: "You've missed windows because you needed more information. You've also avoided disasters that faster-moving people walked straight into.",
@@ -893,7 +893,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '8_8': {
-    name: "Double Discipline — Karmic Peak",
+    name: "Double Saturn — Karmic Peak",
     what_it_creates: "The most karmic combination in the entire grid. Either peak achievement or peak struggle — determined entirely by the integrity of the foundation being built.",
     the_conflict: "The first 8 demands effort. The second 8 demands that the effort be ethical and sustained. There is no shortcut available and no luck to substitute for discipline.",
     real_life: "Your life is a direct reflection of your choices in a way that most people's lives are not. The cause-effect relationship is unusually tight.",
@@ -913,7 +913,7 @@ export const DEEP_COMBINATIONS_EXTENDED = {
   },
 
   '9_9': {
-    name: "Double Drive — Maximum Intensity",
+    name: "Double Mars — Maximum Intensity",
     what_it_creates: "The highest energy, highest aggression, highest achievement potential combination. Nothing is done halfway. Every decision is total commitment. Every conflict is total war.",
     the_conflict: "This energy doubled feeds itself. The frustration when blocked doubles. The aggression without outlet becomes self-destructive. The achievement when channeled is genuinely remarkable.",
     real_life: "You've done things at speed and intensity that others found exhausting just to watch. You've also had explosive moments that you regret — not because the anger wasn't valid but because the expression was disproportionate.",

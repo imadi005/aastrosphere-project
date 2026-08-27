@@ -304,7 +304,8 @@ PERSONA & TONE:
 - Use respectful "aap" / "aapka" / "aapko" ALWAYS when speaking Hindi/Hinglish. NEVER use "tu", "tera", "tujhe", or casual buddy-terms like "bhai", "yaar", "dost". You are a professional consulting a client, not a friend chatting.
 - Tone: warm, wise, direct, and measured — the calm authority of a respected advisor in a private consultation. Not casual banter, not slangy.
 - Short responses. No long paragraphs. No bullet lists unless listing specific dates.
-- RELIGION-NEUTRAL LANGUAGE — this is a strict rule, in every language, every response, no exceptions: NEVER say the words Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu (as planets/periods), dasha, mahadasha, antardasha, maha, antar, yoga, Vedic, Ank Jyotish, or Jyotish. The data given to you below uses this vocabulary internally so you can reason correctly — but you must always translate it into plain, universal language before it reaches the user. Say "this period" / "is period mein" instead of naming the planet or dasha. If asked what system or method this is, describe it as "numbers and timing patterns" or "numerology" — never invoke Vedic/religious framing.
+- PLANET NAMES: use them freely — Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu are all fine to say. Match the language of the name to the language of your response: in English/Hinglish responses use the English names (Sun, Moon, Mars, ...); in Devanagari Hindi responses use the Hindi names (सूर्य, चंद्र, मंगल, बुध, बृहस्पति, शुक्र, शनि, राहु, केतु). Never mix scripts within one name.
+- DASHA LANGUAGE — this part is unchanged, keep as-is: NEVER say dasha, mahadasha, antardasha, maha, antar, yoga, Vedic, Ank Jyotish, or Jyotish. Say "this period" / "is period mein" instead of naming the dasha layer. If asked what system or method this is, describe it as "numbers and timing patterns" or "numerology" — never invoke Vedic/religious framing.
 - Never say "as per your chart" or "according to numerology" — just say it directly.
 - If other person's DOB is not known but needed for accuracy, ask naturally in 1 line at the end.
 - Always give at least one specific date or time window when answering timing questions.
@@ -391,11 +392,16 @@ RESPONSE RULES:
 9. NEVER ask for information already given in conversation history. Check history before asking anything.`;
 }
 
-// ─── Hard safety net: strip any Vedic/planet jargon that slips through ────────
-// Prompt instructions alone aren't 100% reliable — the model sees raw planet/
-// dasha vocabulary in the chart data and knowledge chunks above, and can echo
-// it even when told not to. This runs on every response as a final guarantee
+// ─── Hard safety net: strip any dasha/Vedic-branding jargon that slips through ─
+// Prompt instructions alone aren't 100% reliable — the model sees raw dasha
+// vocabulary in the chart data and knowledge chunks above, and can echo it
+// even when told not to. This runs on every response as a final guarantee
 // the user never sees it, independent of model compliance.
+//
+// Planet names (Sun, Moon, Mars, Rahu, Ketu, ...) are intentionally NOT in
+// this list — they're allowed and expected in responses now, in English or
+// Hindi depending on the response language. Only dasha-layer terminology and
+// Vedic/Jyotish branding are still stripped here.
 const JARGON_REPLACEMENTS = [
   [/\bmaha\s*dasha\b/gi, 'long-term period'],
   [/\bantar\s*dasha\b/gi, 'current period'],
@@ -407,15 +413,6 @@ const JARGON_REPLACEMENTS = [
   [/\bank jyotish\b/gi, 'numerology'],
   [/\bjyotish\b/gi, 'numerology'],
   [/\bvedic\b/gi, ''],
-  [/\bketu\b/gi, 'Insight'],
-  [/\brahu\b/gi, 'Change'],
-  [/\bsaturn\b/gi, 'Discipline'],
-  [/\bjupiter\b/gi, 'Wisdom'],
-  [/\bmercury\b/gi, 'Intellect'],
-  [/\bvenus\b/gi, 'Harmony'],
-  [/\bmars\b/gi, 'Drive'],
-  [/\bsun\b/gi, 'Confidence'],
-  [/\bmoon\b/gi, 'Emotion'],
 ];
 
 export function neutralizeAnswer(text) {

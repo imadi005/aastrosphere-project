@@ -10,11 +10,10 @@ import '../../../core/services/api_service.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
-// Religion-neutral labels for the 9 numerology energies — used everywhere
-// this chart is shown to the user, in place of the underlying planet names.
+// Planet names for the 9 numerology energies — always shown in English here.
 const Map<int, String> kNeutralEnergyLabel = {
-  1: 'Confidence', 2: 'Emotion', 3: 'Wisdom', 4: 'Change', 5: 'Intellect',
-  6: 'Harmony', 7: 'Insight', 8: 'Discipline', 9: 'Drive',
+  1: 'Sun', 2: 'Moon', 3: 'Jupiter', 4: 'Rahu', 5: 'Mercury',
+  6: 'Venus', 7: 'Ketu', 8: 'Saturn', 9: 'Mars',
 };
 
 class ChartScreen extends ConsumerStatefulWidget {
