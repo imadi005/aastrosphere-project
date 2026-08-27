@@ -1454,7 +1454,5 @@ app.post('/api/report/year-insight', (req, res) => {
   }
 });
 
-// Keep the server start after every route declaration. Routes defined after
-// app.listen work in Express, but placing it here keeps the API structure
-// predictable and avoids accidentally hiding later additions.
 app.listen(PORT, () => console.log(`Aastrosphere API running on port ${PORT}`));
+
