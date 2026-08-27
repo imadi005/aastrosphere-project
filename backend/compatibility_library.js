@@ -4,6 +4,8 @@
 // f_f = mutual friends | f_e = one-sided | e_e = mutual enemies | n_n = neutral
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { TODAY_HEADLINE_I18N, TODAY_DETAIL_I18N, TODAY_DO_I18N, TODAY_WATCH_I18N } from './compatibility_today_i18n.js';
+
 export const PLANET_NAMES_COMPAT = {
   1:'Sun', 2:'Moon', 3:'Jupiter', 4:'Rahu', 5:'Mercury',
   6:'Venus', 7:'Ketu', 8:'Saturn', 9:'Mars',
@@ -694,7 +696,7 @@ export const PAIR_DYNAMICS = {
 };
 
 // ─── Today compatibility engine ───────────────────────────────────────────────
-export function getTodayCompatibility(daily1, daily2, basic1, basic2, periods1 = [], periods2 = [], yogas1 = [], yogas2 = []) {
+export function getTodayCompatibility(daily1, daily2, basic1, basic2, periods1 = [], periods2 = [], yogas1 = [], yogas2 = [], lang = null) {
   const sameNum = daily1 === daily2;
 
   // Score logic — book-accurate planetary relationships for daily numbers
@@ -733,10 +735,10 @@ export function getTodayCompatibility(daily1, daily2, basic1, basic2, periods1 =
 
   const dayLabel = sameNum ? `${NEUTRAL_LABELS_COMPAT[daily1]} × ${NEUTRAL_LABELS_COMPAT[daily2]}` : `${NEUTRAL_LABELS_COMPAT[daily1]} meets ${NEUTRAL_LABELS_COMPAT[daily2]}`;
 
-  const headline = _getDayHeadline(daily1, daily2, sameNum);
-  const detail = _getDayDetail(daily1, daily2, sameNum, dr1, dr2);
-  const doTogether = _getDayDo(daily1, daily2, sameNum);
-  const watchTogether = _getDayWatch(daily1, daily2, sameNum);
+  const headline = _getDayHeadline(daily1, daily2, sameNum, lang);
+  const detail = _getDayDetail(daily1, daily2, sameNum, dr1, dr2, lang);
+  const doTogether = _getDayDo(daily1, daily2, sameNum, lang);
+  const watchTogether = _getDayWatch(daily1, daily2, sameNum, lang);
 
   if (yogas1.includes('easy_money') || yogas2.includes('easy_money')) {
     score = Math.min(96, score + 6);
@@ -754,8 +756,10 @@ export function getTodayCompatibility(daily1, daily2, basic1, basic2, periods1 =
   };
 }
 
-function _getDayHeadline(d1, d2, same) {
+function _getDayHeadline(d1, d2, same, lang) {
+  const T = (lang && TODAY_HEADLINE_I18N[lang]) || null;
   if (same) {
+    if (T?.[`${d1}_${d1}`]) return T[`${d1}_${d1}`];
     const amplified = {
       1:"Double Confidence day — authority and confidence amplified. Everything initiated today carries double weight.",
       2:"Double Emotion day — emotional depth and creative sensitivity at maximum. What's felt today is felt completely.",
@@ -808,11 +812,14 @@ function _getDayHeadline(d1, d2, same) {
     '8_9':"Discipline meets Drive — discipline and intensity. Maximum sustained output is available.",
   };
   const key = [Math.min(d1,d2),Math.max(d1,d2)].join('_');
+  if (T?.[key]) return T[key];
   return map[key] || `${NEUTRAL_LABELS_COMPAT[d1]} meets ${NEUTRAL_LABELS_COMPAT[d2]} today.`;
 }
 
-function _getDayDetail(d1, d2, same, dr1, dr2) {
+function _getDayDetail(d1, d2, same, dr1, dr2, lang) {
+  const T = (lang && TODAY_DETAIL_I18N[lang]) || null;
   if (same) {
+    if (T?.[`${d1}_${d1}`]) return T[`${d1}_${d1}`];
     const details = {
       1:"Both running high-confidence energy today — everything initiated together carries real weight. The confidence is warranted. The risk is that the ego is also doubled. Choose the one thing worth directing this toward.",
       2:"Both in deep-feeling mode — the emotional attunement between you today is at its peak. Whatever is created or expressed carries unusual depth. The shadow is that if one is off, the other will follow.",
@@ -865,10 +872,12 @@ function _getDayDetail(d1, d2, same, dr1, dr2) {
     '8_9':"Maximum sustained output. The combination of 8's discipline and 9's intensity produces more today than either produces alone.",
   };
   const key = [Math.min(d1,d2),Math.max(d1,d2)].join('_');
+  if (T?.[key]) return T[key];
   return map[key] || "Your energies are running in interesting ways today. Pay attention to what emerges.";
 }
 
-function _getDayDo(d1, d2, same) {
+function _getDayDo(d1, d2, same, lang) {
+  const T = (lang && TODAY_DO_I18N[lang]) || null;
   const map = {
     '1_1':["Make the joint bold decision that's been waiting","Be visible together today — authority doubled"],
     '1_2':["Have the conversation requiring both confidence and sensitivity","Make the ask — you're more persuasive as a unit today"],
@@ -917,10 +926,12 @@ function _getDayDo(d1, d2, same) {
     '9_9':["Direct the energy at an external challenge — together","The bold competitive move belongs today"],
   };
   const key = same ? `${d1}_${d2}` : [Math.min(d1,d2),Math.max(d1,d2)].join('_');
+  if (T?.[key]) return T[key];
   return map[key] || ["Spend intentional time together — the energy is worth honoring"];
 }
 
-function _getDayWatch(d1, d2, same) {
+function _getDayWatch(d1, d2, same, lang) {
+  const T = (lang && TODAY_WATCH_I18N[lang]) || null;
   const map = {
     '1_1':["Whose idea it is will matter more than it should today — address it directly","Power struggle risk is elevated — choose the one thing worth directing this toward"],
     '1_2':["Check in — 1's drive can miss 2's emotional undercurrent","2 may feel unseen in 1's momentum today — one acknowledgment changes it"],
@@ -969,6 +980,7 @@ function _getDayWatch(d1, d2, same) {
     '9_9':["If the energy turns inward today, it escalates fast — redirect before the first word"],
   };
   const key = same ? `${d1}_${d2}` : [Math.min(d1,d2),Math.max(d1,d2)].join('_');
+  if (T?.[key]) return T[key];
   return map[key] || ["Check in with each other before the day runs away from you"];
 }
 

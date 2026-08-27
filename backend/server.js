@@ -476,7 +476,8 @@ app.post('/api/compatibility', (req, res) => {
     // Today's compatibility — include maha+antar+monthly for more variation
     const todayCompat = getTodayCompatibility(daily1, daily2, b1, b2,
       [maha1.number, antar1.number, monthly1.number],
-      [maha2.number, antar2.number, monthly2.number]
+      [maha2.number, antar2.number, monthly2.number],
+      [], [], lang
     );
 
     // What each brings
