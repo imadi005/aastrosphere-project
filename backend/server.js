@@ -1027,7 +1027,13 @@ Active yogas: ${otherChart.yogas || 'none detected'}
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 1024,
-        system: systemPrompt,
+        // Cache the system prompt (chart + timeline + rules, ~2.5-3k tokens) —
+        // identical across every message a user sends within a conversation
+        // (same day, same chart). Repeat turns read it at ~10% of input cost
+        // instead of paying full price every time.
+        system: [
+          { type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } },
+        ],
         messages: anthropicMessages,
       }),
     });
@@ -1039,6 +1045,18 @@ Active yogas: ${otherChart.yogas || 'none detected'}
 
     const data = await response.json();
     const answer = neutralizeAnswer(data.content?.[0]?.text || '');
+
+    // Cache verification — cache_read_input_tokens > 0 confirms hits are
+    // actually happening in prod (cache_creation_input_tokens is the cost
+    // of the first write; input_tokens is whatever wasn't cached).
+    if (data.usage) {
+      console.log('[ask] usage:', JSON.stringify({
+        input: data.usage.input_tokens,
+        cache_write: data.usage.cache_creation_input_tokens || 0,
+        cache_read: data.usage.cache_read_input_tokens || 0,
+        output: data.usage.output_tokens,
+      }));
+    }
 
     res.json({
       answer,
