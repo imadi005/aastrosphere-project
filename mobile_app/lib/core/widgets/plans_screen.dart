@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../services/purchase_service.dart';
 
 /// The single paywall surface for the whole app. Every purchase prompt —
 /// PremiumLockCard's "Unlock with Premium" button, Ask's out-of-credits
@@ -42,11 +43,18 @@ class _PlansScreenState extends State<PlansScreen> {
   String? _error;
   String _selectedSubPlanId = 'sub_annual';
   bool _purchasing = false;
+  final PurchaseService _purchaseService = PurchaseService();
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _purchaseService.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -123,6 +131,13 @@ class _PlansScreenState extends State<PlansScreen> {
                         'Subscribing unlocks Chart, Insights, and Circle too. Packs and single questions are for Ask only.',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.dmSans(fontSize: 11, color: secondary),
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: TextButton(
+                          onPressed: _purchasing ? null : _handleRestore,
+                          child: Text('Restore Purchases', style: GoogleFonts.dmSans(fontSize: 12, color: secondary)),
+                        ),
                       ),
                     ],
                   ),
@@ -293,20 +308,67 @@ class _PlansScreenState extends State<PlansScreen> {
   }
 
   Future<void> _handlePurchase({required String kind, required String id}) async {
-    // Play Billing / App Store purchase flow isn't wired up yet -- this is
-    // the one remaining piece (needs products created in Play Console /
-    // App Store Connect first, then receipt verification calling
-    // grantCredits()/activateSubscription() in authMiddleware.js).
-    //
-    // Once wired, the success path here should look like:
-    //   setState(() => _purchasing = true);
-    //   final ok = await BillingService.purchase(kind: kind, productId: id);
-    //   if (!mounted) return;
-    //   setState(() => _purchasing = false);
-    //   if (ok && mounted) Navigator.of(context).pop(); // returns to origin screen
-    //   else showError(...);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Payments are coming soon — check back shortly!')),
-    );
+    if (_purchasing) return;
+    setState(() => _purchasing = true);
+
+    void showMessage(String text) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+    }
+
+    try {
+      final available = await _purchaseService.isAvailable();
+      if (!available) {
+        showMessage('The store isn\'t available right now. Please try again later.');
+        return;
+      }
+
+      final response = await _purchaseService.queryProducts({id});
+      if (response.error != null || response.productDetails.isEmpty) {
+        // Most likely cause during development: this product id hasn't been
+        // created (or isn't yet live) in Play Console / App Store Connect.
+        showMessage('This plan isn\'t available yet — please check back shortly.');
+        return;
+      }
+
+      final outcome = await _purchaseService.buy(response.productDetails.first);
+      if (!mounted) return;
+
+      switch (outcome) {
+        case PurchaseOutcome.success:
+          showMessage('✨ Unlocked! Enjoy.');
+          Navigator.of(context).pop(); // returns to whatever screen prompted this
+          return; // popped — don't touch state below
+        case PurchaseOutcome.cancelled:
+          break; // user backed out of the store sheet — nothing to say
+        case PurchaseOutcome.pending:
+          showMessage('Your purchase is being processed — this can take a moment.');
+          break;
+        case PurchaseOutcome.failed:
+          showMessage('The purchase couldn\'t be completed. Please try again.');
+          break;
+      }
+    } catch (e) {
+      showMessage('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _purchasing = false);
+    }
+  }
+
+  Future<void> _handleRestore() async {
+    try {
+      await _purchaseService.restorePurchases();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Checking for past purchases…')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not restore purchases. Please try again.')),
+        );
+      }
+    }
   }
 }

@@ -39,6 +39,7 @@ import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFr
 import { buildScanContext } from './event_scanner.js';
 import { buildDayCharacteristics } from './day_characteristics.js';
 import { requireAuth, requireCredits, FREE_TRIAL_CREDITS } from './authMiddleware.js';
+import { verifyAndGrant } from './purchaseVerify.js';
 import { QUESTION_PACKS, SUBSCRIPTION_PLANS } from './pricing.js';
 import { optionalAuth, isSubscribed, gate, locked, gateResponse } from './premiumGate.js';
 import { getDb } from './firebaseAdmin.js';
@@ -344,6 +345,32 @@ app.get('/api/pricing', (req, res) => {
     question_packs: QUESTION_PACKS,
     subscription_plans: SUBSCRIPTION_PLANS,
   });
+});
+
+// ─── /api/purchase/verify — validates a completed IAP and grants it ────────
+// Called by the client right after the store confirms a purchase. Verifies
+// server-side against Google Play / App Store (never trusts the client's say-
+// so that a purchase succeeded) before granting credits or activating a
+// subscription. Idempotent — safe to call more than once for the same
+// purchase (e.g. a retried request after a flaky connection).
+app.post('/api/purchase/verify', requireAuth, async (req, res) => {
+  try {
+    const { platform, productId, purchaseToken, receiptData } = req.body;
+    if (!platform || !productId) {
+      return res.status(400).json({ error: 'platform and productId are required' });
+    }
+    if (platform === 'android' && !purchaseToken) {
+      return res.status(400).json({ error: 'purchaseToken is required for platform=android' });
+    }
+    if (platform === 'ios' && !receiptData) {
+      return res.status(400).json({ error: 'receiptData is required for platform=ios' });
+    }
+
+    const result = await verifyAndGrant({ uid: req.uid, platform, productId, purchaseToken, receiptData });
+    res.json({ success: true, product: result.product, already_processed: result.alreadyProcessed });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
 });
 
 app.post('/api/dashas', (req, res) => {

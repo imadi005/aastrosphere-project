@@ -185,6 +185,23 @@ class ApiService {
   /// Live paywall pricing — free_trial_credits, question_packs, subscription_plans.
   static Future<Map<String, dynamic>> getPricing() => _get('/api/pricing');
 
+  /// Verifies a just-completed store purchase server-side and grants it
+  /// (credits for a pack, activation for a subscription). Never trust a
+  /// purchase as real until this call returns success — see
+  /// backend/purchaseVerify.js for why.
+  static Future<Map<String, dynamic>> verifyPurchase({
+    required String platform,
+    required String productId,
+    String? purchaseToken,
+    String? receiptData,
+  }) =>
+      _authedPost('/api/purchase/verify', {
+        'platform': platform,
+        'productId': productId,
+        if (purchaseToken != null) 'purchaseToken': purchaseToken,
+        if (receiptData != null) 'receiptData': receiptData,
+      });
+
   // ─── TODAY — always sends client's local date+hour ───────────────────
   static Future<Map<String, dynamic>> getToday(String dob, {String? lang}) =>
       _post('/api/today', {
