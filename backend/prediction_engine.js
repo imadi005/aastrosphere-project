@@ -23,7 +23,7 @@ import {
 } from './daily_prediction_library.js';
 import { DAY_CHARACTER, WEEK_CHARACTER, MONTH_CHARACTER } from './breakdown_library.js';
 import { DAY_CHARACTER_I18N, WEEK_CHARACTER_I18N, MONTH_CHARACTER_I18N, localizedChar } from './breakdown_library_i18n.js';
-import { DEEP_NUMBER_PROFILES_I18N, DEEP_DASHA_EXPERIENCE_I18N, HONEST_WARNINGS_I18N, localizedDeep } from './deep_library_i18n.js';
+import { DEEP_NUMBER_PROFILES_I18N, DEEP_DASHA_EXPERIENCE_I18N, HONEST_WARNINGS_I18N, PERSONAL_PATTERNS_I18N, localizedDeep } from './deep_library_i18n.js';
 import { getDayDefinition } from './day_definition_library.js';
 import { getDayScore } from './day_score_library.js';
 import { getPriorityAction } from './priority_action_library.js';
@@ -44,10 +44,12 @@ export function getDeepCombination(a, b) {
   return DEEP_COMBINATIONS[key] || DEEP_COMBINATIONS_EXTENDED[key] || null;
 }
 
-export function getPersonalPattern(basic, destiny) {
+export function getPersonalPattern(basic, destiny, lang = null) {
   const key = `${basic}_${destiny}`;
   const rev = `${destiny}_${basic}`;
-  return PERSONAL_PATTERNS[key] || PERSONAL_PATTERNS[rev] || null;
+  const rawKey = PERSONAL_PATTERNS[key] ? key : PERSONAL_PATTERNS[rev] ? rev : null;
+  if (!rawKey) return null;
+  return localizedDeep(PERSONAL_PATTERNS, PERSONAL_PATTERNS_I18N, rawKey, lang);
 }
 
 export function getDashaExperience(mahaNum, antarNum = null, lang = null) {
@@ -892,8 +894,8 @@ export function generateYearlyPrediction(ctx, targetDate = new Date().toISOStrin
   const deepText = getDeepPeriodText(maha, antar, 'yearly');
   const comboText = DASHA_COMBO_PREDICTIONS[`${maha}_${antar}`] || '';
   const allModifiers = modifiers.map(m => CHART_MODIFIERS[m]).filter(Boolean);
-  const personalPattern = getPersonalPattern(basic, destiny);
-  const dashaExp = getDashaExperience(maha);
+  const personalPattern = getPersonalPattern(basic, destiny, ctx.lang);
+  const dashaExp = getDashaExperience(maha, null, ctx.lang);
   const currentMonth = d.getMonth();
 
   // Build 12-month breakdown

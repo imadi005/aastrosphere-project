@@ -776,7 +776,7 @@ app.post('/api/insights/deep', (req, res) => {
     const basicProfile = getDeepNumberProfile(basic, destiny, maha.number, natalNums, lang);
     const destinyProfile = getDeepNumberProfile(destiny, basic, maha.number, natalNums, lang);
     const combo = getDeepCombination(basic, destiny);
-    const pattern = getPersonalPattern(basic, destiny);
+    const pattern = getPersonalPattern(basic, destiny, lang);
     const dashaExp = getDashaExperience(maha.number, antar.number, lang);
     const warnings = getHonestWarnings(yogas, annualFreq, maha.number, antar.number, lang);
 
