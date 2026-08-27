@@ -22,6 +22,7 @@ const _goodBg  = PdfColor(0.92, 0.98, 0.93);
 const _goodBd  = PdfColor(0.15, 0.55, 0.25);
 const _info    = PdfColor(0.12, 0.28, 0.60);
 const _infoBg  = PdfColor(0.92, 0.95, 0.99);
+const _cyan    = PdfColor(0.02, 0.55, 0.65);
 const _card    = PdfColor(0.97, 0.97, 0.97);
 const _white   = PdfColors.white;
 
@@ -45,6 +46,16 @@ String _trim(String? t, int maxChars) {
   if (s.length <= maxChars) return s;
   final cut = s.lastIndexOf(' ', maxChars);
   return cut > 0 ? '${s.substring(0, cut)}...' : '${s.substring(0, maxChars)}...';
+}
+
+// ── Short date-range label, e.g. "1 Jan – 31 Jan" ────────────────────────────
+const _shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+String _dateRange(String? startIso, String? endIso) {
+  if (startIso == null || endIso == null) return '';
+  final start = DateTime.tryParse(startIso);
+  final end = DateTime.tryParse(endIso);
+  if (start == null || end == null) return '';
+  return '${start.day} ${_shortMonths[start.month - 1]} – ${end.day} ${_shortMonths[end.month - 1]}';
 }
 
 const _gridPos = {3:[0,0],1:[0,1],9:[0,2],6:[1,0],7:[1,1],5:[1,2],2:[2,0],8:[2,1],4:[2,2]};
@@ -444,7 +455,8 @@ class PdfReportBuilder {
     // ── Chart + Antardasha ──────────────────────────────────────────────────
     ws.add(pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
       pw.Column(children: [
-        _grid(s.mahaNum, s.antarNum, s.monthlyNum, natal: natal, size: 40.0),
+        _grid(s.mahaNum, s.antarNum, s.monthlyNum, natal: natal, size: 40.0,
+            gridData: s.richData?['grid'] as List<dynamic>?),
         pw.SizedBox(height: 5),
         pw.Wrap(spacing: 5, runSpacing: 3, children: [
           _dot(_gold, 'M${s.mahaNum}'),
@@ -797,13 +809,17 @@ class PdfReportBuilder {
     final rows = <pw.TableRow>[];
     rows.add(pw.TableRow(
       decoration: pw.BoxDecoration(color: _card),
-      children: ['MONTH','MONTHLY','FINANCE','HEALTH','RISKY DAYS','NOTES'].map((h) =>
+      children: ['DATES','MONTHLY','FINANCE','HEALTH','RISKY DAYS','NOTES'].map((h) =>
         pw.Padding(padding: const pw.EdgeInsets.all(5),
           child: pw.Text(h, style: pw.TextStyle(fontSize: 6.5, color: _muted,
               fontWeight: pw.FontWeight.bold, letterSpacing: 0.3)))).toList()));
 
     for (final m in months) {
       final name = m['month_name'] as String? ?? '';
+      // Legacy saved reports (before month_start/month_end existed) fall back
+      // to the month name so old history entries still render.
+      final range = _dateRange(m['month_start'] as String?, m['month_end'] as String?);
+      final dateLabel = range.isNotEmpty ? range : name;
       final mNum = m['monthly_number'] as int? ?? 0;
       final label = _s(m['label'] as String?);
       final fin   = _trim(m['finance'] as String?, 60);
@@ -826,7 +842,7 @@ class PdfReportBuilder {
         children: [
           pw.Padding(padding: const pw.EdgeInsets.all(5),
             child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-              pw.Text(name, style: pw.TextStyle(fontSize: 7.5, color: nc, fontWeight: pw.FontWeight.bold)),
+              pw.Text(dateLabel, style: pw.TextStyle(fontSize: 7.5, color: nc, fontWeight: pw.FontWeight.bold)),
               if (luckyDayStr.isNotEmpty) pw.Text('Lucky: $luckyDayStr', style: pw.TextStyle(fontSize: 6, color: _good)),
             ])),
           pw.Padding(padding: const pw.EdgeInsets.all(5),
@@ -844,20 +860,37 @@ class PdfReportBuilder {
 
     return pw.Table(
       columnWidths: {
-        0: const pw.FractionColumnWidth(0.13),
+        0: const pw.FractionColumnWidth(0.17),
         1: const pw.FractionColumnWidth(0.10),
-        2: const pw.FractionColumnWidth(0.19),
-        3: const pw.FractionColumnWidth(0.19),
-        4: const pw.FractionColumnWidth(0.12),
-        5: const pw.FractionColumnWidth(0.27),
+        2: const pw.FractionColumnWidth(0.18),
+        3: const pw.FractionColumnWidth(0.18),
+        4: const pw.FractionColumnWidth(0.11),
+        5: const pw.FractionColumnWidth(0.26),
       },
       border: pw.TableBorder.all(color: _subtle, width: 0.3),
       children: rows);
   }
 
   // ── Grid ──────────────────────────────────────────────────────────────────────
+  static PdfColor _highlightColor(String h) => switch (h) {
+    'maha' => _gold,
+    'antar' => _info,
+    'monthly' => _good,
+    'daily' => _cyan,
+    'hourly' => _warn,
+    _ => _body,
+  };
+
+  /// [gridData] is the backend's per-cell occurrence list (same shape
+  /// /api/chart returns) — when present, each cell shows every digit that
+  /// actually occurs there (so a number appearing 3 times in the natal chart
+  /// plus the active maha/antar/monthly shows as e.g. "666", not just "6"),
+  /// matching the live Chart screen exactly instead of a single simplified
+  /// digit. Falls back to the old single-digit-per-cell rendering when no
+  /// grid payload is available (the natal-overview page, or a report saved
+  /// before this field existed).
   static pw.Widget _grid(int? maha, int? antar, int? monthly,
-      {required Set<int> natal, required double size}) =>
+      {required Set<int> natal, required double size, List<dynamic>? gridData}) =>
     pw.Container(
       decoration: pw.BoxDecoration(
           border: pw.Border.all(color: _subtle, width: 0.5),
@@ -867,6 +900,38 @@ class PdfReportBuilder {
           final num = _gridPos.entries.firstWhere(
               (e) => e.value[0]==row && e.value[1]==col,
               orElse: () => const MapEntry(0,[0,0])).key;
+
+          final cellItems = gridData != null
+              ? ((gridData[row] as List)[col] as List)
+                  .map((e) => Map<String, dynamic>.from(e as Map))
+                  .toList()
+              : null;
+
+          if (cellItems != null) {
+            final bg = cellItems.any((i) => i['highlight'] == 'maha') ? _goldBg
+                : cellItems.any((i) => i['highlight'] == 'antar') ? _infoBg
+                : cellItems.any((i) => i['highlight'] == 'monthly') ? _goodBg
+                : _white;
+            return pw.Container(width: size, height: size, color: bg,
+              child: pw.Stack(children: [
+                if (col < 2) pw.Positioned(right: 0, top: 0, bottom: 0,
+                    child: pw.Container(width: 0.3, color: _subtle)),
+                if (row < 2) pw.Positioned(left: 0, right: 0, bottom: 0,
+                    child: pw.Container(height: 0.3, color: _subtle)),
+                pw.Center(child: pw.Column(mainAxisAlignment: pw.MainAxisAlignment.center, children: [
+                  cellItems.isEmpty
+                      ? pw.Text('-', style: pw.TextStyle(fontSize: size * 0.22, color: _muted))
+                      : pw.Wrap(
+                          alignment: pw.WrapAlignment.center,
+                          children: cellItems.map((item) => pw.Text('${item['value']}',
+                              style: pw.TextStyle(fontSize: size * 0.24,
+                                  color: _highlightColor(item['highlight'] as String? ?? ''),
+                                  fontWeight: pw.FontWeight.bold))).toList()),
+                  pw.Text(_gridAbbr[row][col], style: pw.TextStyle(fontSize: size*0.13, color: _muted)),
+                ])),
+              ]));
+          }
+
           final isMaha    = maha != null && num == maha;
           final isAntar   = antar != null && num == antar;
           final isMonthly = monthly != null && num == monthly;

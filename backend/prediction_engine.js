@@ -933,6 +933,8 @@ export function generateYearlyPrediction(ctx, targetDate = new Date().toISOStrin
     months_breakdown.push({
       month_name: MONTH_NAMES[m],
       month_number: m + 1,
+      month_start: monthStart,
+      month_end: new Date(year, m + 1, 0).toISOString(),
       monthly_number: monthNum,
       is_current: isCurrentMonth,
       label: char?.label || '',

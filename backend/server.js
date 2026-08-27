@@ -1355,6 +1355,12 @@ function buildReportYear(dob, targetDate, lang) {
   const yearly = generateYearlyPrediction(ctx, targetDate);
   const warnings = getHonestWarnings(ctx.yogas, ctx.freqMap, ctx.maha, ctx.antar, lang);
   const dashaExperience = getDashaExperience(ctx.maha, ctx.antar, lang);
+  // Same grid builder /api/chart uses — a report year is a specific date, not
+  // "now", so there's no meaningful current hour to highlight (hourlyOverride
+  // omitted); everything else (natal frequency + maha/antar/monthly/daily
+  // highlights) matches exactly what the live Chart screen would show for
+  // this date, so the PDF's grid can't drift from what the app displays.
+  const grid = buildGrid(dob, ctx.maha, ctx.antar, ctx.monthly, ctx.daily);
 
   return {
     ...yearly,
@@ -1363,6 +1369,7 @@ function buildReportYear(dob, targetDate, lang) {
     maha: ctx.mahaDetails,
     antar: ctx.antarDetails,
     monthly: ctx.monthlyDetails,
+    grid,
     dasha_experience: dashaExperience,
     yogas: ctx.yogas.map(y => ({
       id: y.id,
