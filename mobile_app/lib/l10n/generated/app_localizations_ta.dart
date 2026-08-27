@@ -315,6 +315,21 @@ class AppLocalizationsTa extends AppLocalizations {
   String get typingLabel => 'தட்டச்சு செய்கிறது...';
 
   @override
+  String get replyAction => 'Reply';
+
+  @override
+  String get copyAction => 'Copy';
+
+  @override
+  String get replyingToYou => 'Replying to your message';
+
+  @override
+  String get replyingToAssistant => 'Replying to the answer';
+
+  @override
+  String get cancelReply => 'Cancel reply';
+
+  @override
   String get watchOut => 'கவனமாக இருங்கள்';
 
   @override

@@ -6,7 +6,15 @@
 //     credits: number,              // question credits remaining (consumable packs)
 //     subscriptionActive: boolean,  // true if on an active unlimited-ask plan
 //     subscriptionExpiresAt: Timestamp | null,
+//     monthlyAskCount: number,      // asks this calendar month, subscription users only
+//     monthlyAskMonth: string,      // "YYYY-MM" the count above belongs to
+//     flaggedForReview: boolean,    // heavy-usage outlier — never blocks, just for us to look at
 //   }
+//
+// "Unlimited" subscriptions are never hard-capped — a subscriber is never
+// blocked or throttled by this file. Usage is only counted and, past a very
+// generous threshold, flagged for manual review (e.g. sharing one login
+// across many people). See SUBSCRIPTION_FLAG_THRESHOLD below.
 //
 // New users get FREE_TRIAL_CREDITS on their first authenticated call (created
 // lazily inside the transaction — no separate "register" endpoint needed).
@@ -21,6 +29,18 @@
 import { getAuth, getDb, FieldValue } from './firebaseAdmin.js';
 
 export const FREE_TRIAL_CREDITS = 3;
+
+// Planning target is ~60 asks/month per subscriber (see pricing discussion).
+// This threshold is deliberately ~2x that — it exists only to catch genuine
+// outliers (shared logins, scripted abuse), not to limit normal heavy users.
+// Crossing it never blocks a request; it only sets flaggedForReview so it
+// shows up for a human to look at.
+export const SUBSCRIPTION_FLAG_THRESHOLD = 120;
+
+function currentYearMonth() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
 
 // Test/dev accounts that bypass credits entirely — never rate-limited, never
 // charged. Set via Vercel env var TEST_ACCOUNT_UIDS = "uid1,uid2,..." — never
@@ -89,6 +109,17 @@ export async function requireCredits(req, res, next) {
       const hasActiveSub = data.subscriptionActive === true && expiresAt > now;
 
       if (hasActiveSub) {
+        // Count usage for this calendar month; never blocks. Only used to
+        // flag outliers for manual review — see SUBSCRIPTION_FLAG_THRESHOLD.
+        const thisMonth = currentYearMonth();
+        const sameMonth = data.monthlyAskMonth === thisMonth;
+        const newCount = (sameMonth ? (data.monthlyAskCount ?? 0) : 0) + 1;
+        const update = { monthlyAskCount: newCount, monthlyAskMonth: thisMonth };
+        if (newCount >= SUBSCRIPTION_FLAG_THRESHOLD && !data.flaggedForReview) {
+          update.flaggedForReview = true;
+          update.flaggedAt = FieldValue.serverTimestamp();
+        }
+        tx.set(ref, update, { merge: true });
         return { allowed: true, creditsRemaining: data.credits ?? 0, viaSubscription: true };
       }
 

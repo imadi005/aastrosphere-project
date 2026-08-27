@@ -690,6 +690,36 @@ abstract class AppLocalizations {
   /// **'Typing...'**
   String get typingLabel;
 
+  /// No description provided for @replyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get replyAction;
+
+  /// No description provided for @copyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copyAction;
+
+  /// No description provided for @replyingToYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to your message'**
+  String get replyingToYou;
+
+  /// No description provided for @replyingToAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to the answer'**
+  String get replyingToAssistant;
+
+  /// No description provided for @cancelReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel reply'**
+  String get cancelReply;
+
   /// No description provided for @watchOut.
   ///
   /// In en, this message translates to:

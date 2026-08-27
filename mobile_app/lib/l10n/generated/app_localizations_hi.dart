@@ -313,6 +313,21 @@ class AppLocalizationsHi extends AppLocalizations {
   String get typingLabel => 'टाइप हो रहा है...';
 
   @override
+  String get replyAction => 'जवाब दें';
+
+  @override
+  String get copyAction => 'कॉपी करें';
+
+  @override
+  String get replyingToYou => 'आपके संदेश का जवाब';
+
+  @override
+  String get replyingToAssistant => 'उत्तर का जवाब';
+
+  @override
+  String get cancelReply => 'जवाब रद्द करें';
+
+  @override
   String get watchOut => 'सावधान रहें';
 
   @override

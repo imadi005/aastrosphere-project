@@ -314,6 +314,21 @@ class AppLocalizationsTe extends AppLocalizations {
   String get typingLabel => 'టైప్ చేస్తోంది...';
 
   @override
+  String get replyAction => 'Reply';
+
+  @override
+  String get copyAction => 'Copy';
+
+  @override
+  String get replyingToYou => 'Replying to your message';
+
+  @override
+  String get replyingToAssistant => 'Replying to the answer';
+
+  @override
+  String get cancelReply => 'Cancel reply';
+
+  @override
   String get watchOut => 'జాగ్రత్తగా ఉండండి';
 
   @override

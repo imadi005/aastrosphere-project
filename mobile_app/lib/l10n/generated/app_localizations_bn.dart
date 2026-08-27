@@ -313,6 +313,21 @@ class AppLocalizationsBn extends AppLocalizations {
   String get typingLabel => 'টাইপ করা হচ্ছে...';
 
   @override
+  String get replyAction => 'Reply';
+
+  @override
+  String get copyAction => 'Copy';
+
+  @override
+  String get replyingToYou => 'Replying to your message';
+
+  @override
+  String get replyingToAssistant => 'Replying to the answer';
+
+  @override
+  String get cancelReply => 'Cancel reply';
+
+  @override
   String get watchOut => 'সতর্ক থাকুন';
 
   @override

@@ -11,12 +11,32 @@ import '../../core/services/api_service.dart';
 import '../../l10n/generated/app_localizations.dart';
 
 class ChatMessage {
+  final String id;
   final String role;
+  /// What's shown in the bubble — always the user's own typed text, never
+  /// includes the quoted-reply context (that's rendered separately via
+  /// [replySnippet] so the UI stays clean, WhatsApp-style).
   final String content;
+  /// What's actually sent to the API for this turn. Equal to [content]
+  /// unless this message is a reply, in which case it also carries the
+  /// quoted excerpt — so the model has that context even if the original
+  /// message later falls outside the server's memory window.
+  final String apiContent;
+  final String? replySnippet;
+  final bool? replyIsUser;
   final DateTime timestamp;
-  
-  ChatMessage({required this.role, required this.content, DateTime? timestamp})
-      : timestamp = timestamp ?? DateTime.now();
+
+  ChatMessage({
+    String? id,
+    required this.role,
+    required this.content,
+    String? apiContent,
+    this.replySnippet,
+    this.replyIsUser,
+    DateTime? timestamp,
+  })  : id = id ?? '${DateTime.now().microsecondsSinceEpoch}',
+        apiContent = apiContent ?? content,
+        timestamp = timestamp ?? DateTime.now();
 }
 
 class AskScreen extends StatefulWidget {
@@ -38,6 +58,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   String? _uid;
   bool _isTyping = false;
   bool _welcomeMessageAdded = false;
+  ChatMessage? _replyTarget;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
@@ -115,6 +136,9 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
           return ChatMessage(
             role: m['role'] as String,
             content: m['content'] as String,
+            apiContent: m['apiContent'] as String?,
+            replySnippet: m['replySnippet'] as String?,
+            replyIsUser: m['replyIsUser'] as bool?,
             timestamp: ts != null ? DateTime.fromMillisecondsSinceEpoch(ts) : null,
           );
         }).toList();
@@ -143,7 +167,14 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
       final toSave = _messages
           .skip(1)
           .take(50)
-          .map((m) => {'role': m.role, 'content': m.content, 'ts': m.timestamp.millisecondsSinceEpoch})
+          .map((m) => {
+                'role': m.role,
+                'content': m.content,
+                'apiContent': m.apiContent,
+                if (m.replySnippet != null) 'replySnippet': m.replySnippet,
+                if (m.replyIsUser != null) 'replyIsUser': m.replyIsUser,
+                'ts': m.timestamp.millisecondsSinceEpoch,
+              })
           .toList();
       
       await FirebaseFirestore.instance
@@ -158,15 +189,32 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   Future<void> _send() async {
     final text = _ctrl.text.trim();
     if (text.isEmpty || _loading || _userDob == null) return;
-    
+
     if (!kIsWeb) HapticFeedback.lightImpact();
-    
+
+    final replyTarget = _replyTarget;
+    final replySnippet = replyTarget != null ? _truncateForQuote(replyTarget.content) : null;
+    // The quote gets baked into apiContent (what the model sees) but never
+    // into content (what's shown in the bubble) — so even if the original
+    // message this replies to later scrolls out of the server's memory
+    // window, this turn still carries that context explicitly.
+    final apiContent = replyTarget != null
+        ? '[Replying to ${replyTarget.role == 'user' ? "the user's earlier message" : "your earlier answer"}: "$replySnippet"]\n\n$text'
+        : text;
+
     setState(() {
-      _messages.add(ChatMessage(role: 'user', content: text));
+      _messages.add(ChatMessage(
+        role: 'user',
+        content: text,
+        apiContent: apiContent,
+        replySnippet: replySnippet,
+        replyIsUser: replyTarget?.role == 'user',
+      ));
+      _replyTarget = null;
       _loading = true;
       _isTyping = false;
     });
-    
+
     _ctrl.clear();
     _scrollToBottom();
     _focusNode.unfocus();
@@ -178,7 +226,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
           ? allHistory.sublist(allHistory.length - 20)
           : allHistory;
       final apiMessages = recentMessages
-          .map((m) => {'role': m.role, 'content': m.content, 'ts': m.timestamp.millisecondsSinceEpoch})
+          .map((m) => {'role': m.role, 'content': m.apiContent, 'ts': m.timestamp.millisecondsSinceEpoch})
           .toList();
 
       final result = await ApiService.ask(
@@ -256,7 +304,56 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
       }
     });
   }
-  
+
+  String _truncateForQuote(String text) {
+    final singleLine = text.replaceAll('\n', ' ').trim();
+    return singleLine.length > 120 ? '${singleLine.substring(0, 120)}…' : singleLine;
+  }
+
+  void _startReply(ChatMessage message) {
+    if (!kIsWeb) HapticFeedback.selectionClick();
+    setState(() => _replyTarget = message);
+    _focusNode.requestFocus();
+  }
+
+  void _cancelReply() {
+    setState(() => _replyTarget = null);
+  }
+
+  void _showMessageActions(BuildContext context, ChatMessage message, bool isDark) {
+    final t = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.bgCardDark : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.reply_rounded),
+              title: Text(t.replyAction),
+              onTap: () {
+                Navigator.pop(ctx);
+                _startReply(message);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.copy_rounded),
+              title: Text(t.copyAction),
+              onTap: () {
+                Navigator.pop(ctx);
+                Clipboard.setData(ClipboardData(text: message.content));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _clearChat(BuildContext context) {
     if (!kIsWeb) HapticFeedback.selectionClick();
     setState(() {
@@ -431,6 +528,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   }
   
   Widget _buildMessageBubble(ChatMessage message, bool isUser, bool isDark, Color gold, Color border) {
+    final t = AppLocalizations.of(context)!;
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: FractionallySizedBox(
@@ -439,10 +537,12 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            Container(
+            GestureDetector(
+              onLongPress: () => _showMessageActions(context, message, isDark),
+              child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                gradient: isUser 
+                gradient: isUser
                     ? LinearGradient(
                         colors: [gold.withOpacity(0.12), gold.withOpacity(0.08)],
                         begin: Alignment.topLeft,
@@ -461,7 +561,43 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
                   width: 0.5,
                 ),
               ),
-              child: MarkdownBody(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (message.replySnippet != null)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: gold.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border(left: BorderSide(color: gold.withOpacity(0.6), width: 3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            message.replyIsUser == true ? t.replyingToYou : t.replyingToAssistant,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: gold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            message.replySnippet!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12,
+                              color: secondaryTextColor(isDark),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  MarkdownBody(
                 data: message.content,
                 styleSheet: MarkdownStyleSheet(
                   p: GoogleFonts.dmSans(
@@ -513,6 +649,9 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
                   ),
                 ),
               ),
+                ],
+              ),
+              ),
             ),
             const SizedBox(height: 4),
             Padding(
@@ -531,6 +670,51 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
     );
   }
   
+  Widget _buildReplyPreview(bool isDark, Color gold, Color secondary) {
+    final target = _replyTarget;
+    if (target == null) return const SizedBox.shrink();
+    final t = AppLocalizations.of(context)!;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: gold.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border(left: BorderSide(color: gold.withOpacity(0.6), width: 3)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  target.role == 'user' ? t.replyingToYou : t.replyingToAssistant,
+                  style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, color: gold),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _truncateForQuote(target.content),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.dmSans(fontSize: 12, color: secondary),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close_rounded, size: 18, color: secondary),
+            onPressed: _cancelReply,
+            tooltip: t.cancelReply,
+            splashRadius: 18,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInputArea(bool isDark, Color gold, Color secondary, Color border) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -545,7 +729,11 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildReplyPreview(isDark, gold, secondary),
+          Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
@@ -629,9 +817,11 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+        ],
+      ),
     );
   }
-  
+
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);
