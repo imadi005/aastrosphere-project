@@ -95,6 +95,44 @@ class ApiService {
     }
   }
 
+  /// Like _post, but attaches the Firebase ID token when the user is signed
+  /// in — never required, never throws for a missing/anonymous user. Use
+  /// this for endpoints that are gated server-side (optionalAuth) so a
+  /// subscribed user actually gets their unlocked content instead of always
+  /// looking logged-out to the paywall.
+  static Future<Map<String, dynamic>> _postWithOptionalAuth(
+      String endpoint, Map<String, dynamic> body) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final headers = {'Content-Type': 'application/json'};
+    if (user != null) {
+      try {
+        headers['Authorization'] = 'Bearer ${await user.getIdToken()}';
+      } catch (_) {
+        // Token fetch failed — fall through and send the request unauthed
+        // rather than blocking the whole screen over it.
+      }
+    }
+    try {
+      final response = await http
+          .post(Uri.parse('$_base$endpoint'), headers: headers, body: jsonEncode(body))
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+      throw ServerErrorException('The server returned an error (${response.statusCode}). Please try again in a moment.');
+    } on SocketException catch (e) {
+      debugPrint('ApiService: genuine network failure — $e');
+      throw Exception('No internet connection. Check your network and try again.');
+    } on TimeoutException catch (e) {
+      debugPrint('ApiService: request timed out — $e');
+      throw ServerErrorException('The server took too long to respond. Please try again.');
+    } catch (e) {
+      debugPrint('ApiService: unexpected error in _postWithOptionalAuth — $e');
+      throw ServerErrorException('Something went wrong on our end. Please try again.');
+    }
+  }
+
   static Future<Map<String, dynamic>> _post(
       String endpoint, Map<String, dynamic> body) async {
     try {
@@ -122,6 +160,31 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>> _get(String endpoint) async {
+    try {
+      final response = await http
+          .get(Uri.parse('$_base$endpoint'))
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+      throw ServerErrorException('The server returned an error (${response.statusCode}). Please try again in a moment.');
+    } on SocketException catch (e) {
+      debugPrint('ApiService: genuine network failure — $e');
+      throw Exception('No internet connection. Check your network and try again.');
+    } on TimeoutException catch (e) {
+      debugPrint('ApiService: request timed out — $e');
+      throw ServerErrorException('The server took too long to respond. Please try again.');
+    } catch (e) {
+      debugPrint('ApiService: unexpected error in _get — $e');
+      throw ServerErrorException('Something went wrong on our end. Please try again.');
+    }
+  }
+
+  /// Live paywall pricing — free_trial_credits, question_packs, subscription_plans.
+  static Future<Map<String, dynamic>> getPricing() => _get('/api/pricing');
+
   // ─── TODAY — always sends client's local date+hour ───────────────────
   static Future<Map<String, dynamic>> getToday(String dob, {String? lang}) =>
       _post('/api/today', {
@@ -133,21 +196,21 @@ class ApiService {
 
   // ─── INSIGHTS — always send client date ──────────────────────────────
   static Future<Map<String, dynamic>> getWeeklyInsights(String dob, [String? lang]) =>
-      _post('/api/insights/weekly', {
+      _postWithOptionalAuth('/api/insights/weekly', {
         'dob': dob,
         'client_date': clientDate,
         if (lang != null) 'lang': lang,
       });
 
   static Future<Map<String, dynamic>> getMonthlyInsights(String dob, [String? lang]) =>
-      _post('/api/insights/monthly', {
+      _postWithOptionalAuth('/api/insights/monthly', {
         'dob': dob,
         'client_date': clientDate,
         if (lang != null) 'lang': lang,
       });
 
   static Future<Map<String, dynamic>> getYearlyInsights(String dob, [String? lang]) =>
-      _post('/api/insights/yearly', {
+      _postWithOptionalAuth('/api/insights/yearly', {
         'dob': dob,
         'client_date': clientDate,
         if (lang != null) 'lang': lang,
@@ -197,7 +260,7 @@ class ApiService {
   // ─── CHART ────────────────────────────────────────────────────────────
   static Future<Map<String, dynamic>> getChart(String dob,
           [int? clientHour, String? lang]) =>
-      _post('/api/chart', {
+      _postWithOptionalAuth('/api/chart', {
         'dob': dob,
         'client_date': clientDate,
         'client_hour': clientHour ?? _clientHour,
@@ -206,7 +269,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getChartForDate(
           String dob, String date, int? hour, [String? lang]) =>
-      _post('/api/chart/date', {
+      _postWithOptionalAuth('/api/chart/date', {
         'dob': dob,
         'date': date,
         if (hour != null) 'hour': hour,
@@ -218,7 +281,7 @@ class ApiService {
       _post('/api/insights/life', {'dob': dob});
 
   static Future<Map<String, dynamic>> getDeepInsights(String dob, [String? lang]) =>
-      _post('/api/insights/deep', {
+      _postWithOptionalAuth('/api/insights/deep', {
         'dob': dob,
         if (lang != null) 'lang': lang,
       });
@@ -232,7 +295,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getCompatibility(
       String dob1, String dob2, {String? clientDate, int? clientHour, String? relation, String? lang}) =>
-      _post('/api/compatibility', {
+      _postWithOptionalAuth('/api/compatibility', {
         'dob1': dob1, 'dob2': dob2,
         'client_date': clientDate ?? ApiService.clientDate,
         'client_hour': clientHour ?? _clientHour,
@@ -287,7 +350,7 @@ class ApiService {
       _post('/api/report/year-insight', {'dob': dob, 'maha_num': maha, 'antar_num': antar, 'monthly_num': monthly});
 
   static Future<Map<String, dynamic>> getYearlyInsight(String dob, String targetDate) =>
-      _post('/api/insights/yearly', {'dob': dob, 'client_date': targetDate});
+      _postWithOptionalAuth('/api/insights/yearly', {'dob': dob, 'client_date': targetDate});
 
   static Future<Map<String, dynamic>> prashna(int number) =>
       _post('/api/predict/prashna', {'number': number});

@@ -28,14 +28,14 @@
 
 import { getAuth, getDb, FieldValue } from './firebaseAdmin.js';
 
-export const FREE_TRIAL_CREDITS = 3;
+export const FREE_TRIAL_CREDITS = 2;
 
-// Planning target is ~60 asks/month per subscriber (see pricing discussion).
-// This threshold is deliberately ~2x that — it exists only to catch genuine
-// outliers (shared logins, scripted abuse), not to limit normal heavy users.
-// Crossing it never blocks a request; it only sets flaggedForReview so it
-// shows up for a human to look at.
-export const SUBSCRIPTION_FLAG_THRESHOLD = 120;
+// Planning target is ~150 asks/month per subscriber on the ₹499 premium tier
+// (see pricing discussion). This threshold is deliberately ~2x that — it
+// exists only to catch genuine outliers (shared logins, scripted abuse), not
+// to limit normal heavy users. Crossing it never blocks a request; it only
+// sets flaggedForReview so it shows up for a human to look at.
+export const SUBSCRIPTION_FLAG_THRESHOLD = 300;
 
 function currentYearMonth() {
   const now = new Date();

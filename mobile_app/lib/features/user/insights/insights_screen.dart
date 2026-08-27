@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../core/widgets/premium_lock_card.dart';
 import '../../../core/providers/today_provider.dart';
 import '../me/me_screen.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -142,6 +143,11 @@ class _WeeklyTab extends ConsumerWidget {
               _OverviewCard(text: data['overview'] as String? ?? '', gold: gold, isDark: isDark, label: 'THIS WEEK'),
               const SizedBox(height: 14),
 
+              if (data['locked'] == true) ...[
+                PremiumLockCard(preview: data['locked_preview'] as String? ?? ''),
+                const SizedBox(height: 14),
+              ],
+
               // Best / heavy day signals
               if ((data['best_days'] as List? ?? []).isNotEmpty || (data['heavy_days'] as List? ?? []).isNotEmpty)
                 _DaySummaryRow(
@@ -214,6 +220,11 @@ class _MonthlyTab extends ConsumerWidget {
                 label: (data['month_name'] as String? ?? 'THIS MONTH').toUpperCase(),
               ),
               const SizedBox(height: 14),
+
+              if (data['locked'] == true) ...[
+                PremiumLockCard(preview: data['locked_preview'] as String? ?? ''),
+                const SizedBox(height: 14),
+              ],
 
               // Phase timeline
               SectionLabel(AppLocalizations.of(context)!.monthArc),
@@ -326,6 +337,11 @@ class _YearlyTab extends ConsumerWidget {
                   isDark: isDark, gold: gold,
                 ),
               const SizedBox(height: 14),
+
+              if (data['locked'] == true) ...[
+                PremiumLockCard(preview: data['locked_preview'] as String? ?? ''),
+                const SizedBox(height: 14),
+              ],
 
               // Current chapter
               if (data['current_chapter'] != null)

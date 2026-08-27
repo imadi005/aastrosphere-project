@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../core/widgets/premium_lock_card.dart';
 import '../../../core/providers/today_provider.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../../core/services/api_service.dart';
@@ -210,7 +211,15 @@ class _ChartView extends StatelessWidget {
     final lucky = data['lucky'] as Map<String, dynamic>? ?? {};
     final targetDate = data['target_date'] as String?;
     final targetHour = data['target_hour'] as int?;
-    final dayAnalysis = (data['day_analysis'] as List? ?? []).cast<Map<String, dynamic>>();
+    // day_analysis is now { items, locked_count, locked_preview } — see
+    // backend/premiumGate.js. locked_count > 0 means there's more behind
+    // the paywall beyond the free findings already in `items`.
+    final dayAnalysisRaw = data['day_analysis'] as Map<String, dynamic>? ?? {};
+    final dayAnalysis = (dayAnalysisRaw['items'] as List? ?? []).cast<Map<String, dynamic>>();
+    final dayAnalysisLockedCount = dayAnalysisRaw['locked_count'] as int? ?? 0;
+    final dayAnalysisLockedPreview = dayAnalysisLockedCount > 0
+        ? dayAnalysisRaw['locked_preview'] as String?
+        : null;
     final dayScore = data['day_score'] as int? ?? 50;
 
     final secondary = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
@@ -343,7 +352,7 @@ class _ChartView extends StatelessWidget {
           const SizedBox(height: 16),
 
           // ── Day Analysis ──────────────────────────────────────────
-          if (dayAnalysis.isNotEmpty) ...[
+          if (dayAnalysis.isNotEmpty || dayAnalysisLockedPreview != null) ...[
             const SizedBox(height: 4),
             SectionLabel(AppLocalizations.of(context)!.dayAnalysis),
             const SizedBox(height: 8),
@@ -353,6 +362,13 @@ class _ChartView extends StatelessWidget {
               isDark: isDark,
               gold: gold,
             ),
+            if (dayAnalysisLockedPreview != null) ...[
+              const SizedBox(height: 8),
+              PremiumLockCard(
+                title: '$dayAnalysisLockedCount more finding${dayAnalysisLockedCount > 1 ? 's' : ''}',
+                preview: dayAnalysisLockedPreview,
+              ),
+            ],
             const SizedBox(height: 16),
           ],
 

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../core/widgets/premium_lock_card.dart';
 import '../../../core/services/api_service.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
@@ -239,14 +240,24 @@ class _FriendCardState extends State<_FriendCard> {
               ]),
             ),
 
-            // Tab content
+            // Tab content — Overall/Dynamics are entirely premium content
+            // when compat['locked'] is true (see /api/compatibility gating);
+            // Today handles its own partial lock internally since score/
+            // energy/label stay free even without a subscription.
             Padding(
               padding: const EdgeInsets.all(16),
               child: _activeTab == 0
                   ? _TodayTab(today: today!, isDark: isDark, gold: gold)
-                  : _activeTab == 1
-                      ? _OverallTab(compat: _compat!, isDark: isDark, gold: gold)
-                      : _DynamicsTab(compat: _compat!, isDark: isDark, gold: gold),
+                  : (_compat!['locked'] == true)
+                      ? PremiumLockCard(
+                          title: _activeTab == 1
+                              ? AppLocalizations.of(context)!.overallTab
+                              : AppLocalizations.of(context)!.dynamicsTab,
+                          preview: _compat!['locked_preview'] as String? ?? '',
+                        )
+                      : _activeTab == 1
+                          ? _OverallTab(compat: _compat!, isDark: isDark, gold: gold)
+                          : _DynamicsTab(compat: _compat!, isDark: isDark, gold: gold),
             ),
 
             // Delete button
@@ -324,6 +335,8 @@ class _TodayTab extends StatelessWidget {
     final watchList = (today['watch_together'] as List? ?? []).cast<String>();
     final daily1 = today['daily1'] as int?;
     final daily2 = today['daily2'] as int?;
+    final locked = today['locked'] == true;
+    final lockedPreview = today['locked_preview'] as String?;
 
     Color scoreColor;
     if (todayScore >= 75) scoreColor = successColor;
@@ -331,7 +344,7 @@ class _TodayTab extends StatelessWidget {
     else scoreColor = dangerColor;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      // Score row — visual
+      // Score row — visual (always free)
       Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
         Text('$todayScore%', style: GoogleFonts.cormorantGaramond(
             fontSize: 48, color: scoreColor, height: 1, fontWeight: FontWeight.w300)),
@@ -339,14 +352,19 @@ class _TodayTab extends StatelessWidget {
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(dayLabel, style: GoogleFonts.dmSans(
               fontSize: 12, fontWeight: FontWeight.w600, color: scoreColor)),
-          const SizedBox(height: 3),
-          Text(headline, style: GoogleFonts.dmSans(
-              fontSize: 11, color: primary, height: 1.4),
-              maxLines: 2, overflow: TextOverflow.ellipsis),
+          if (!locked) ...[
+            const SizedBox(height: 3),
+            Text(headline, style: GoogleFonts.dmSans(
+                fontSize: 11, color: primary, height: 1.4),
+                maxLines: 2, overflow: TextOverflow.ellipsis),
+          ],
         ])),
       ]),
       const SizedBox(height: 10),
 
+      if (locked) ...[
+        PremiumLockCard(preview: lockedPreview ?? ''),
+      ] else ...[
       // Detail — collapsible
       Text(detail, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.6)),
 
@@ -380,6 +398,7 @@ class _TodayTab extends StatelessWidget {
             Expanded(child: Text(item, style: GoogleFonts.dmSans(fontSize: 12, color: secondary, height: 1.4))),
           ]),
         )),
+      ],
       ],
     ]);
   }

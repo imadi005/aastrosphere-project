@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shared_widgets.dart';
+import '../../../core/widgets/premium_lock_card.dart';
 import '../../ask/ask_screen.dart';
 import '../../../core/providers/today_provider.dart';
 import '../../../core/providers/locale_provider.dart';
@@ -134,6 +135,11 @@ class MeContent extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+        ],
+
+        if (data['locked'] == true) ...[
+          PremiumLockCard(preview: data['locked_preview'] as String? ?? ''),
           const SizedBox(height: 16),
         ],
 

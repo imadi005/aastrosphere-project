@@ -37,12 +37,22 @@ export async function optionalAuth(req, res, next) {
   next();
 }
 
-/** Reads the same subscriptionActive/subscriptionExpiresAt fields the Ask credits system uses. */
+/**
+ * Reads the same subscriptionActive/subscriptionExpiresAt fields the Ask
+ * credits system uses. Astrologer accounts (a separate `astrologers`
+ * collection, not `users`) always see full content — they're the service
+ * provider consulting their own client's chart, not the customer being
+ * upsold, so the paywall doesn't apply to them at all.
+ */
 export async function isSubscribed(uid) {
   if (!uid) return false;
   if (TEST_UIDS.includes(uid)) return true;
   try {
-    const snap = await getDb().collection('users').doc(uid).get();
+    const db = getDb();
+    const astroSnap = await db.collection('astrologers').doc(uid).get();
+    if (astroSnap.exists) return true;
+
+    const snap = await db.collection('users').doc(uid).get();
     if (!snap.exists) return false;
     const data = snap.data();
     const expiresAt = data.subscriptionExpiresAt?.toMillis?.() ?? 0;

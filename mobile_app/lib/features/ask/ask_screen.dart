@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/paywall_sheet.dart';
 import '../../core/services/api_service.dart';
 import '../../l10n/generated/app_localizations.dart';
 
@@ -250,10 +251,13 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
         setState(() {
           _messages.add(ChatMessage(
             role: 'assistant',
-            content: '✨ **${e.message}**\n\nHead to your profile to top up or subscribe.',
+            content: '✨ **${e.message}**',
           ));
           _loading = false;
         });
+        // Show the paywall right at the moment of friction — this is the
+        // highest-intent moment in the whole app to offer it.
+        PaywallSheet.show(context);
       }
     } on NotAuthenticatedException catch (e) {
       if (mounted) {
