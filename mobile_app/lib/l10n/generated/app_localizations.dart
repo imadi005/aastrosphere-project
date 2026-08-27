@@ -1121,6 +1121,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In my birth chart grid, {planet} appears {count} time(s). What does that mean for me?'**
   String askQuestionGrid(String planet, String count);
+
+  /// No description provided for @noProfileLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No profile'**
+  String get noProfileLabel;
+
+  /// No description provided for @addHourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add time?'**
+  String get addHourTitle;
+
+  /// No description provided for @addHourBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a specific hour to see the hourly chart as well.'**
+  String get addHourBody;
+
+  /// No description provided for @addHourSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get addHourSkip;
+
+  /// No description provided for @addHourConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Hour'**
+  String get addHourConfirm;
+
+  /// No description provided for @anyDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Any Date'**
+  String get anyDateLabel;
+
+  /// No description provided for @couldNotLoadChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load chart'**
+  String get couldNotLoadChart;
+
+  /// No description provided for @highLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGH'**
+  String get highLabel;
+
+  /// No description provided for @todaysCharacterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY\'S CHARACTER'**
+  String get todaysCharacterLabel;
+
+  /// No description provided for @watchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch'**
+  String get watchLabel;
+
+  /// No description provided for @couldNotLoadProfileInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load profile insights'**
+  String get couldNotLoadProfileInsights;
+
+  /// No description provided for @whoYouAreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Who You Are'**
+  String get whoYouAreLabel;
+
+  /// No description provided for @tensionInsideYouLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'The tension inside you'**
+  String get tensionInsideYouLabel;
+
+  /// No description provided for @yourShadowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shadow'**
+  String get yourShadowLabel;
+
+  /// No description provided for @whatTripsYouUpLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'What trips you up'**
+  String get whatTripsYouUpLabel;
+
+  /// No description provided for @yourPatternsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Patterns'**
+  String get yourPatternsLabel;
+
+  /// No description provided for @moneyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Money'**
+  String get moneyLabel;
+
+  /// No description provided for @loveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Love'**
+  String get loveLabel;
+
+  /// No description provided for @workLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get workLabel;
+
+  /// No description provided for @currentChapterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Chapter'**
+  String get currentChapterLabel;
+
+  /// No description provided for @theGiftLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'The gift'**
+  String get theGiftLabel;
+
+  /// No description provided for @theTrapLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'The trap'**
+  String get theTrapLabel;
+
+  /// No description provided for @whatToDoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'What to do'**
+  String get whatToDoLabel;
+
+  /// No description provided for @healthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get healthLabel;
+
+  /// No description provided for @activeInYourChartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active in Your Chart'**
+  String get activeInYourChartLabel;
+
+  /// No description provided for @whatYourChartSaysLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'What Your Chart Says'**
+  String get whatYourChartSaysLabel;
+
+  /// No description provided for @beHonestWithYourselfLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Be Honest With Yourself'**
+  String get beHonestWithYourselfLabel;
+
+  /// No description provided for @languageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageLabel;
+
+  /// No description provided for @signOutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOutLabel;
+
+  /// No description provided for @askAnythingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Type in Hindi, English, or Hinglish — ask anything'**
+  String get askAnythingSubtitle;
+
+  /// No description provided for @thisWeekLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'THIS WEEK'**
+  String get thisWeekLabel;
+
+  /// No description provided for @relationshipsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Relationships'**
+  String get relationshipsLabel;
+
+  /// No description provided for @careerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Career'**
+  String get careerLabel;
+
+  /// No description provided for @opportunitiesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OPPORTUNITIES'**
+  String get opportunitiesLabel;
+
+  /// No description provided for @watchOutsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'WATCH-OUTS'**
+  String get watchOutsLabel;
+
+  /// No description provided for @premiumLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get premiumLabel;
+
+  /// No description provided for @unlockWithPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with Premium'**
+  String get unlockWithPremium;
+
+  /// No description provided for @doThisLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Do this'**
+  String get doThisLabel;
+
+  /// No description provided for @watchForLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch for'**
+  String get watchForLabel;
+
+  /// No description provided for @practiceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice'**
+  String get practiceLabel;
+
+  /// No description provided for @timingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Timing'**
+  String get timingLabel;
+
+  /// No description provided for @activeStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activeStatusLabel;
 }
 
 class _AppLocalizationsDelegate

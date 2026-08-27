@@ -265,7 +265,7 @@ class AppLocalizationsMr extends AppLocalizations {
   String get energyToday => 'आजची ऊर्जा';
 
   @override
-  String get bestLabel => 'सर्वोत्तम';
+  String get bestLabel => 'उत्तम';
 
   @override
   String get cautionLabel => 'सावधानता';
@@ -560,4 +560,133 @@ class AppLocalizationsMr extends AppLocalizations {
   String askQuestionGrid(String planet, String count) {
     return 'माझ्या जन्म चार्ट ग्रिडमध्ये, $planet $count वेळा येतो. याचा माझ्यासाठी काय अर्थ आहे?';
   }
+
+  @override
+  String get noProfileLabel => 'प्रोफाइल नाही';
+
+  @override
+  String get addHourTitle => 'वेळ जोडायची आहे का?';
+
+  @override
+  String get addHourBody =>
+      'तासाभिमुख चार्ट देखील पाहण्यासाठी एक विशिष्ट तास जोडा.';
+
+  @override
+  String get addHourSkip => 'वगळा';
+
+  @override
+  String get addHourConfirm => 'तास जोडा';
+
+  @override
+  String get anyDateLabel => 'कोणतीही तारीख';
+
+  @override
+  String get couldNotLoadChart => 'चार्ट लोड होऊ शकला नाही';
+
+  @override
+  String get highLabel => 'उच्च';
+
+  @override
+  String get todaysCharacterLabel => 'आजचे स्वरूप';
+
+  @override
+  String get watchLabel => 'सावध रहा';
+
+  @override
+  String get couldNotLoadProfileInsights =>
+      'प्रोफाइल इनसाइट्स लोड होऊ शकले नाहीत';
+
+  @override
+  String get whoYouAreLabel => 'तुम्ही कोण आहात';
+
+  @override
+  String get tensionInsideYouLabel => 'तुमच्या आतील तणाव';
+
+  @override
+  String get yourShadowLabel => 'तुमची सावली';
+
+  @override
+  String get whatTripsYouUpLabel => 'तुम्हाला काय गोंधळात टाकते';
+
+  @override
+  String get yourPatternsLabel => 'तुमचे नमुने';
+
+  @override
+  String get moneyLabel => 'पैसा';
+
+  @override
+  String get loveLabel => 'प्रेम';
+
+  @override
+  String get workLabel => 'काम';
+
+  @override
+  String get currentChapterLabel => 'सध्याचा अध्याय';
+
+  @override
+  String get theGiftLabel => 'भेट';
+
+  @override
+  String get theTrapLabel => 'सापळा';
+
+  @override
+  String get whatToDoLabel => 'काय करावे';
+
+  @override
+  String get healthLabel => 'आरोग्य';
+
+  @override
+  String get activeInYourChartLabel => 'तुमच्या चार्टमध्ये सक्रिय';
+
+  @override
+  String get whatYourChartSaysLabel => 'तुमचा चार्ट काय सांगतो';
+
+  @override
+  String get beHonestWithYourselfLabel => 'स्वतःशी प्रामाणिक रहा';
+
+  @override
+  String get languageLabel => 'भाषा';
+
+  @override
+  String get signOutLabel => 'साइन आउट';
+
+  @override
+  String get askAnythingSubtitle =>
+      'मराठी, हिंदी, किंवा इंग्रजीत लिहा — काहीही विचारा';
+
+  @override
+  String get thisWeekLabel => 'या आठवड्यात';
+
+  @override
+  String get relationshipsLabel => 'नाती';
+
+  @override
+  String get careerLabel => 'करिअर';
+
+  @override
+  String get opportunitiesLabel => 'संधी';
+
+  @override
+  String get watchOutsLabel => 'सावधानता';
+
+  @override
+  String get premiumLabel => 'प्रीमियम';
+
+  @override
+  String get unlockWithPremium => 'प्रीमियमसह अनलॉक करा';
+
+  @override
+  String get doThisLabel => 'हे करा';
+
+  @override
+  String get watchForLabel => 'याकडे लक्ष द्या';
+
+  @override
+  String get practiceLabel => 'सराव करा';
+
+  @override
+  String get timingLabel => 'वेळ';
+
+  @override
+  String get activeStatusLabel => 'सक्रिय';
 }

@@ -140,7 +140,7 @@ class _WeeklyTab extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Overview
-              _OverviewCard(text: data['overview'] as String? ?? '', gold: gold, isDark: isDark, label: 'THIS WEEK'),
+              _OverviewCard(text: data['overview'] as String? ?? '', gold: gold, isDark: isDark, label: AppLocalizations.of(context)!.thisWeekLabel),
               const SizedBox(height: 14),
 
               if (data['locked'] == true) ...[
@@ -170,11 +170,11 @@ class _WeeklyTab extends ConsumerWidget {
               const SizedBox(height: 8),
               _SignalList(items: [
                 if ((data['money_this_week'] as String? ?? '').isNotEmpty)
-                  _SignalItem(icon: Icons.account_balance_wallet_outlined, label: 'Money', text: data['money_this_week'] as String, color: const Color(0xFFF59E0B)),
+                  _SignalItem(icon: Icons.account_balance_wallet_outlined, label: AppLocalizations.of(context)!.moneyLabel, text: data['money_this_week'] as String, color: const Color(0xFFF59E0B)),
                 if ((data['love_this_week'] as String? ?? '').isNotEmpty)
-                  _SignalItem(icon: Icons.favorite_border, label: 'Love', text: data['love_this_week'] as String, color: Colors.pinkAccent),
+                  _SignalItem(icon: Icons.favorite_border, label: AppLocalizations.of(context)!.loveLabel, text: data['love_this_week'] as String, color: Colors.pinkAccent),
                 if ((data['health_this_week'] as String? ?? '').isNotEmpty)
-                  _SignalItem(icon: Icons.monitor_heart_outlined, label: 'Health', text: data['health_this_week'] as String, color: Colors.teal),
+                  _SignalItem(icon: Icons.monitor_heart_outlined, label: AppLocalizations.of(context)!.healthLabel, text: data['health_this_week'] as String, color: Colors.teal),
               ], isDark: isDark),
 
 
@@ -254,34 +254,34 @@ class _MonthlyTab extends ConsumerWidget {
               const SizedBox(height: 8),
               _ExpandableDomain(
                 icon: Icons.account_balance_wallet_outlined,
-                title: 'Money',
+                title: AppLocalizations.of(context)!.moneyLabel,
                 signal: (data['finance'] as Map?)?['signal'] as String? ?? '',
                 extra: (data['finance'] as Map?)?['action'] as String?,
-                extraLabel: 'Do this',
+                extraLabel: AppLocalizations.of(context)!.doThisLabel,
                 color: const Color(0xFFF59E0B), isDark: isDark,
               ),
               _ExpandableDomain(
                 icon: Icons.favorite_border,
-                title: 'Relationships',
+                title: AppLocalizations.of(context)!.relationshipsLabel,
                 signal: (data['relationships'] as Map?)?['signal'] as String? ?? '',
                 extra: (data['relationships'] as Map?)?['what_to_watch'] as String?,
-                extraLabel: 'Watch for',
+                extraLabel: AppLocalizations.of(context)!.watchForLabel,
                 color: Colors.pinkAccent, isDark: isDark,
               ),
               _ExpandableDomain(
                 icon: Icons.monitor_heart_outlined,
-                title: 'Health',
+                title: AppLocalizations.of(context)!.healthLabel,
                 signal: (data['health'] as Map?)?['watch'] as String? ?? '',
                 extra: (data['health'] as Map?)?['advice'] as String?,
-                extraLabel: 'Practice',
+                extraLabel: AppLocalizations.of(context)!.practiceLabel,
                 color: Colors.teal, isDark: isDark,
               ),
               _ExpandableDomain(
                 icon: Icons.trending_up_outlined,
-                title: 'Career',
+                title: AppLocalizations.of(context)!.careerLabel,
                 signal: (data['career'] as Map?)?['signal'] as String? ?? '',
                 extra: (data['career'] as Map?)?['best_week'] as String?,
-                extraLabel: 'Timing',
+                extraLabel: AppLocalizations.of(context)!.timingLabel,
                 color: Colors.blueAccent, isDark: isDark,
               ),
 
@@ -355,25 +355,25 @@ class _YearlyTab extends ConsumerWidget {
               SectionLabel(AppLocalizations.of(context)!.yourYear),
               const SizedBox(height: 8),
               _YearlyDomainCard(
-                icon: Icons.account_balance_wallet_outlined, title: 'Money',
+                icon: Icons.account_balance_wallet_outlined, title: AppLocalizations.of(context)!.moneyLabel,
                 yearSignal: (data['finance'] as Map?)?['year_signal'] as String? ?? '',
                 yourPattern: (data['finance'] as Map?)?['your_pattern'] as String?,
                 color: const Color(0xFFF59E0B), isDark: isDark,
               ),
               _YearlyDomainCard(
-                icon: Icons.favorite_border, title: 'Relationships',
+                icon: Icons.favorite_border, title: AppLocalizations.of(context)!.relationshipsLabel,
                 yearSignal: (data['relationships'] as Map?)?['year_signal'] as String? ?? '',
                 yourPattern: (data['relationships'] as Map?)?['your_pattern'] as String?,
                 color: Colors.pinkAccent, isDark: isDark,
               ),
               _YearlyDomainCard(
-                icon: Icons.monitor_heart_outlined, title: 'Health',
+                icon: Icons.monitor_heart_outlined, title: AppLocalizations.of(context)!.healthLabel,
                 yearSignal: (data['health'] as Map?)?['watch'] as String? ?? '',
                 yourPattern: (data['health'] as Map?)?['your_pattern'] as String?,
                 color: Colors.teal, isDark: isDark,
               ),
               _YearlyDomainCard(
-                icon: Icons.trending_up_outlined, title: 'Career',
+                icon: Icons.trending_up_outlined, title: AppLocalizations.of(context)!.careerLabel,
                 yearSignal: (data['career'] as Map?)?['year_signal'] as String? ?? '',
                 yourPattern: (data['career'] as Map?)?['your_pattern'] as String?,
                 color: Colors.blueAccent, isDark: isDark,
@@ -666,9 +666,9 @@ class _OppWatchRow extends StatelessWidget {
     final successColor = isDark ? AppColors.successDark : AppColors.success;
     final dangerColor = isDark ? AppColors.dangerDark : AppColors.danger;
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      if (opps.isNotEmpty) Expanded(child: _BulletBox(title: 'OPPORTUNITIES', items: opps, color: successColor, isDark: isDark)),
+      if (opps.isNotEmpty) Expanded(child: _BulletBox(title: AppLocalizations.of(context)!.opportunitiesLabel, items: opps, color: successColor, isDark: isDark)),
       if (opps.isNotEmpty && watchOuts.isNotEmpty) const SizedBox(width: 10),
-      if (watchOuts.isNotEmpty) Expanded(child: _BulletBox(title: 'WATCH-OUTS', items: watchOuts, color: dangerColor, isDark: isDark)),
+      if (watchOuts.isNotEmpty) Expanded(child: _BulletBox(title: AppLocalizations.of(context)!.watchOutsLabel, items: watchOuts, color: dangerColor, isDark: isDark)),
     ]);
   }
 }
@@ -864,11 +864,11 @@ class _CurrentChapterCard extends StatelessWidget {
           const SizedBox(height: 10),
           Divider(color: border, height: 1, thickness: 0.5),
           const SizedBox(height: 8),
-          _ChapterRow(dot: successColor, label: 'The gift', text: chapter['the_gift'] as String, secondary: secondary),
+          _ChapterRow(dot: successColor, label: AppLocalizations.of(context)!.theGiftLabel, text: chapter['the_gift'] as String, secondary: secondary),
         ],
         if (chapter['the_trap'] != null) ...[
           const SizedBox(height: 6),
-          _ChapterRow(dot: dangerColor, label: 'The trap', text: chapter['the_trap'] as String, secondary: secondary),
+          _ChapterRow(dot: dangerColor, label: AppLocalizations.of(context)!.theTrapLabel, text: chapter['the_trap'] as String, secondary: secondary),
         ],
       ]),
     );

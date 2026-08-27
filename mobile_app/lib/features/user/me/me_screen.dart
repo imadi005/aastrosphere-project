@@ -10,6 +10,7 @@ import '../../../core/providers/today_provider.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../../core/widgets/language_picker.dart';
 import '../../auth/providers/user_provider.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class MeScreen extends ConsumerWidget {
   const MeScreen({super.key});
@@ -23,9 +24,9 @@ class MeScreen extends ConsumerWidget {
 
     return userAsync.when(
       loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),
-      error: (_, __) => const Center(child: Text('Error')),
+      error: (_, __) => Center(child: Text(AppLocalizations.of(context)!.errorLabel)),
       data: (user) {
-        if (user == null) return const Center(child: Text('No profile'));
+        if (user == null) return Center(child: Text(AppLocalizations.of(context)!.noProfileLabel));
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
           child: deepAsync.when(
@@ -37,7 +38,7 @@ class MeScreen extends ConsumerWidget {
             error: (_, __) => Column(children: [
               ProfileHeader(user: user, isDark: isDark, gold: gold),
               const SizedBox(height: 24),
-              Text('Could not load profile insights',
+              Text(AppLocalizations.of(context)!.couldNotLoadProfileInsights,
                   style: GoogleFonts.dmSans(fontSize: 13,
                       color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
             ]),
@@ -96,7 +97,7 @@ class MeContent extends StatelessWidget {
 
         // ── Who You Are ─────────────────────────────────────────
         if (coreNature != null) ...[
-          SectionLabel('Who You Are'),
+          SectionLabel(AppLocalizations.of(context)!.whoYouAreLabel),
           const SizedBox(height: 8),
           AstroCard(
             padding: const EdgeInsets.all(16),
@@ -110,7 +111,7 @@ class MeContent extends StatelessWidget {
                   Divider(color: border, height: 1, thickness: 0.5),
                   const SizedBox(height: 12),
                   // Label on its own line, text below — fixes the alignment issue
-                  Text('The tension inside you', style: GoogleFonts.dmSans(
+                  Text(AppLocalizations.of(context)!.tensionInsideYouLabel, style: GoogleFonts.dmSans(
                       fontSize: 11, fontWeight: FontWeight.w600, color: gold)),
                   const SizedBox(height: 4),
                   Text(coreNature['internal_conflict'] as String,
@@ -118,7 +119,7 @@ class MeContent extends StatelessWidget {
                 ],
                 if (coreNature['shadow'] != null) ...[
                   const SizedBox(height: 12),
-                  Text('Your shadow', style: GoogleFonts.dmSans(
+                  Text(AppLocalizations.of(context)!.yourShadowLabel, style: GoogleFonts.dmSans(
                       fontSize: 11, fontWeight: FontWeight.w600, color: dangerColor)),
                   const SizedBox(height: 4),
                   Text(coreNature['shadow'] as String,
@@ -126,7 +127,7 @@ class MeContent extends StatelessWidget {
                 ],
                 if (coreNature['what_trips_you'] != null) ...[
                   const SizedBox(height: 12),
-                  Text('What trips you up', style: GoogleFonts.dmSans(
+                  Text(AppLocalizations.of(context)!.whatTripsYouUpLabel, style: GoogleFonts.dmSans(
                       fontSize: 11, fontWeight: FontWeight.w600, color: dangerColor.withOpacity(0.7))),
                   const SizedBox(height: 4),
                   Text(coreNature['what_trips_you'] as String,
@@ -145,21 +146,21 @@ class MeContent extends StatelessWidget {
 
         // ── Your Patterns ────────────────────────────────────────
         if (patterns != null) ...[
-          SectionLabel('Your Patterns'),
+          SectionLabel(AppLocalizations.of(context)!.yourPatternsLabel),
           const SizedBox(height: 8),
           AstroCard(
             padding: const EdgeInsets.all(14),
             child: Column(
               children: [
-                _PatternRow(icon: Icons.account_balance_wallet_outlined, label: 'Money',
+                _PatternRow(icon: Icons.account_balance_wallet_outlined, label: AppLocalizations.of(context)!.moneyLabel,
                     text: patterns['money'] as String? ?? '',
                     color: const Color(0xFFF59E0B), isDark: isDark, border: border),
                 Divider(color: border, height: 20, thickness: 0.5),
-                _PatternRow(icon: Icons.favorite_border, label: 'Love',
+                _PatternRow(icon: Icons.favorite_border, label: AppLocalizations.of(context)!.loveLabel,
                     text: patterns['love'] as String? ?? '',
                     color: Colors.pinkAccent, isDark: isDark, border: border),
                 Divider(color: border, height: 20, thickness: 0.5),
-                _PatternRow(icon: Icons.work_outline, label: 'Work',
+                _PatternRow(icon: Icons.work_outline, label: AppLocalizations.of(context)!.workLabel,
                     text: patterns['work'] as String? ?? '',
                     color: Colors.blueAccent, isDark: isDark, border: border),
                 if (patterns['recurring_lesson'] != null) ...[
@@ -180,7 +181,7 @@ class MeContent extends StatelessWidget {
 
         // ── Current Chapter ──────────────────────────────────────
         if (chapter != null) ...[
-          SectionLabel('Current Chapter'),
+          SectionLabel(AppLocalizations.of(context)!.currentChapterLabel),
           const SizedBox(height: 8),
           AstroCard(
             padding: const EdgeInsets.all(16),
@@ -200,7 +201,7 @@ class MeContent extends StatelessWidget {
                   const SizedBox(height: 12),
                   Divider(color: border, height: 1, thickness: 0.5),
                   const SizedBox(height: 10),
-                  Text('The gift', style: GoogleFonts.dmSans(
+                  Text(AppLocalizations.of(context)!.theGiftLabel, style: GoogleFonts.dmSans(
                       fontSize: 11, fontWeight: FontWeight.w600, color: successColor)),
                   const SizedBox(height: 4),
                   Text(chapter['the_gift'] as String,
@@ -208,7 +209,7 @@ class MeContent extends StatelessWidget {
                 ],
                 if (chapter['the_trap'] != null) ...[
                   const SizedBox(height: 10),
-                  Text('The trap', style: GoogleFonts.dmSans(
+                  Text(AppLocalizations.of(context)!.theTrapLabel, style: GoogleFonts.dmSans(
                       fontSize: 11, fontWeight: FontWeight.w600, color: dangerColor)),
                   const SizedBox(height: 4),
                   Text(chapter['the_trap'] as String,
@@ -216,7 +217,7 @@ class MeContent extends StatelessWidget {
                 ],
                 if (chapter['advice'] != null) ...[
                   const SizedBox(height: 10),
-                  Text('What to do', style: GoogleFonts.dmSans(
+                  Text(AppLocalizations.of(context)!.whatToDoLabel, style: GoogleFonts.dmSans(
                       fontSize: 11, fontWeight: FontWeight.w600, color: gold)),
                   const SizedBox(height: 4),
                   Text(chapter['advice'] as String,
@@ -230,7 +231,7 @@ class MeContent extends StatelessWidget {
 
         // ── Health ───────────────────────────────────────────────
         if (lifeDir?['health_real'] != null) ...[
-          SectionLabel('Health'),
+          SectionLabel(AppLocalizations.of(context)!.healthLabel),
           const SizedBox(height: 8),
           AstroCard(
             padding: const EdgeInsets.all(14),
@@ -248,7 +249,7 @@ class MeContent extends StatelessWidget {
 
         // ── Active Yogas ─────────────────────────────────────────
         if (structuralYogas.isNotEmpty || cautionYogas.isNotEmpty) ...[
-          SectionLabel('Active in Your Chart'),
+          SectionLabel(AppLocalizations.of(context)!.activeInYourChartLabel),
           const SizedBox(height: 8),
           AstroCard(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -267,7 +268,7 @@ class MeContent extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(child: Text(y['name'] as String? ?? '',
                             style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w500, color: primary))),
-                        Text(isPos ? 'Active ✓' : 'Watch ⚠', style: GoogleFonts.dmSans(fontSize: 10, color: color)),
+                        Text(isPos ? '${AppLocalizations.of(context)!.activeStatusLabel} ✓' : '${AppLocalizations.of(context)!.watchLabel} ⚠', style: GoogleFonts.dmSans(fontSize: 10, color: color)),
                       ]),
                     ],
                   );
@@ -280,7 +281,7 @@ class MeContent extends StatelessWidget {
 
         // ── What Your Chart Says ─────────────────────────────────
         if (natalCombos.isNotEmpty) ...[
-          SectionLabel('What Your Chart Says'),
+          SectionLabel(AppLocalizations.of(context)!.whatYourChartSaysLabel),
           const SizedBox(height: 8),
           ...natalCombos.take(3).map((c) {
             final combo = c as Map<String, dynamic>;
@@ -308,7 +309,7 @@ class MeContent extends StatelessWidget {
 
         // ── Honest Warnings ──────────────────────────────────────
         if (warnings.isNotEmpty) ...[
-          SectionLabel('Be Honest With Yourself'),
+          SectionLabel(AppLocalizations.of(context)!.beHonestWithYourselfLabel),
           const SizedBox(height: 8),
           AstroCard(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -422,7 +423,7 @@ class _LanguageRow extends ConsumerWidget {
             Icon(Icons.language, size: 16, color: gold),
             const SizedBox(width: 10),
             Expanded(
-              child: Text('Language', style: GoogleFonts.dmSans(fontSize: 13,
+              child: Text(AppLocalizations.of(context)!.languageLabel, style: GoogleFonts.dmSans(fontSize: 13,
                   color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
             ),
             Text(lang.nativeName, style: GoogleFonts.dmSans(fontSize: 13, color: secondary)),
@@ -445,7 +446,7 @@ class _SignOutButton extends StatelessWidget {
     return Center(child: GestureDetector(
       onTap: () => FirebaseAuth.instance.signOut(),
       child: Padding(padding: const EdgeInsets.all(16),
-          child: Text('Sign out', style: GoogleFonts.dmSans(fontSize: 13, color: secondary))),
+          child: Text(AppLocalizations.of(context)!.signOutLabel, style: GoogleFonts.dmSans(fontSize: 13, color: secondary))),
     ));
   }
 }
@@ -485,11 +486,11 @@ class _AskAnythingCard extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Ask Anything',
+            Text(AppLocalizations.of(context)!.askAnything,
                 style: GoogleFonts.cormorantGaramond(
                     fontSize: 17, fontWeight: FontWeight.w600, color: primary)),
             const SizedBox(height: 3),
-            Text('Hindi, English, Hinglish — koi bhi sawaal',
+            Text(AppLocalizations.of(context)!.askAnythingSubtitle,
                 style: GoogleFonts.dmSans(fontSize: 11, color: secondary)),
           ])),
           Icon(Icons.chevron_right, size: 18, color: gold.withOpacity(0.6)),

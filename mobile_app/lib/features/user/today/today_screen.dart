@@ -658,7 +658,7 @@ class _DayCharacterCard extends StatelessWidget {
     return AstroCard(
       padding: const EdgeInsets.all(18),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text("TODAY'S CHARACTER", style: GoogleFonts.dmSans(
+        Text(AppLocalizations.of(context)!.todaysCharacterLabel, style: GoogleFonts.dmSans(
             fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1.2, color: gold)),
         const SizedBox(height: 14),
 
@@ -1610,9 +1610,9 @@ class _HourStrip extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Row(children: [
-          _LegendDot(color: successColor, label: 'Best'),
+          _LegendDot(color: successColor, label: AppLocalizations.of(context)!.bestLabel),
           const SizedBox(width: 14),
-          _LegendDot(color: warningColor, label: 'Watch'),
+          _LegendDot(color: warningColor, label: AppLocalizations.of(context)!.watchLabel),
           const SizedBox(width: 14),
           Text(AppLocalizations.of(context)!.tapAnyHourDetail,
               style: GoogleFonts.dmSans(fontSize: 10,

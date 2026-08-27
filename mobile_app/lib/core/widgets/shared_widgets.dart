@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../numerology/numerology_engine.dart';
 import '../theme/app_theme.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 // ─── Astro Card ───────────────────────────────────────────────────────────────
 class AstroCard extends StatelessWidget {
@@ -259,21 +260,21 @@ class _GridLegend extends StatelessWidget {
         _LegendItem(
           color: isDark ? AppColors.goldLight : AppColors.gold,
           bg: isDark ? const Color(0xFF1F1A06) : const Color(0xFFFEF8E7),
-          label: 'Maha',
+          label: AppLocalizations.of(context)!.longTermPhase,
           isDark: isDark,
         ),
         const SizedBox(width: 12),
         _LegendItem(
           color: isDark ? AppColors.successDark : AppColors.success,
           bg: isDark ? const Color(0xFF0D1A0F) : const Color(0xFFEDF7F0),
-          label: 'Antar',
+          label: AppLocalizations.of(context)!.currentPhase,
           isDark: isDark,
         ),
         const SizedBox(width: 12),
         _LegendItem(
           color: const Color(0xFF6366F1),
           bg: isDark ? const Color(0xFF0F0F1F) : const Color(0xFFEEEEFD),
-          label: 'Monthly',
+          label: AppLocalizations.of(context)!.monthlyLabel,
           isDark: isDark,
         ),
       ],
@@ -344,14 +345,14 @@ class RoleToggle extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _Pill(
-              label: 'User',
+              label: AppLocalizations.of(context)!.userRole,
               active: !isAstrologer,
               activeBg: activeBg,
               activeColor: goldColor,
               inactiveColor: mutedColor,
             ),
             _Pill(
-              label: 'Astrologer',
+              label: AppLocalizations.of(context)!.astrologerRole,
               active: isAstrologer,
               activeBg: activeBg,
               activeColor: goldColor,

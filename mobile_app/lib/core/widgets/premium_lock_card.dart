@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'plans_screen.dart';
 
 /// Renders whatever a gated API response's `locked`/`locked_preview` (or a
@@ -46,7 +47,7 @@ class PremiumLockCard extends StatelessWidget {
               Icon(Icons.lock_rounded, size: 16, color: gold),
               const SizedBox(width: 8),
               Text(
-                title ?? 'Premium',
+                title ?? AppLocalizations.of(context)!.premiumLabel,
                 style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: gold),
               ),
             ],
@@ -72,7 +73,7 @@ class PremiumLockCard extends StatelessWidget {
                 side: BorderSide(color: border, width: 0),
               ),
               child: Text(
-                'Unlock with Premium',
+                AppLocalizations.of(context)!.unlockWithPremium,
                 style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700),
               ),
             ),

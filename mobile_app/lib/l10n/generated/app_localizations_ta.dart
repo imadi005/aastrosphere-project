@@ -565,4 +565,133 @@ class AppLocalizationsTa extends AppLocalizations {
   String askQuestionGrid(String planet, String count) {
     return 'எனது பிறப்பு விளக்கப்பட கட்டத்தில், $planet $count முறை தோன்றுகிறது. இது எனக்கு என்ன அர்த்தம்?';
   }
+
+  @override
+  String get noProfileLabel => 'சுயவிவரம் இல்லை';
+
+  @override
+  String get addHourTitle => 'நேரம் சேர்க்கவா?';
+
+  @override
+  String get addHourBody =>
+      'மணிநேர விளக்கப்படத்தையும் காண ஒரு குறிப்பிட்ட மணிநேரத்தைச் சேர்க்கவும்.';
+
+  @override
+  String get addHourSkip => 'தவிர்';
+
+  @override
+  String get addHourConfirm => 'மணிநேரம் சேர்';
+
+  @override
+  String get anyDateLabel => 'எந்த தேதியும்';
+
+  @override
+  String get couldNotLoadChart => 'விளக்கப்படத்தை ஏற்ற முடியவில்லை';
+
+  @override
+  String get highLabel => 'அதிகம்';
+
+  @override
+  String get todaysCharacterLabel => 'இன்றைய குணம்';
+
+  @override
+  String get watchLabel => 'கவனம்';
+
+  @override
+  String get couldNotLoadProfileInsights =>
+      'சுயவிவர நுண்ணறிவுகளை ஏற்ற முடியவில்லை';
+
+  @override
+  String get whoYouAreLabel => 'நீங்கள் யார்';
+
+  @override
+  String get tensionInsideYouLabel => 'உங்களுக்குள் இருக்கும் பதற்றம்';
+
+  @override
+  String get yourShadowLabel => 'உங்கள் நிழல்';
+
+  @override
+  String get whatTripsYouUpLabel => 'உங்களை என்ன தடுமாற வைக்கிறது';
+
+  @override
+  String get yourPatternsLabel => 'உங்கள் மாதிரிகள்';
+
+  @override
+  String get moneyLabel => 'பணம்';
+
+  @override
+  String get loveLabel => 'காதல்';
+
+  @override
+  String get workLabel => 'வேலை';
+
+  @override
+  String get currentChapterLabel => 'தற்போதைய அத்தியாயம்';
+
+  @override
+  String get theGiftLabel => 'பரிசு';
+
+  @override
+  String get theTrapLabel => 'பொறி';
+
+  @override
+  String get whatToDoLabel => 'என்ன செய்வது';
+
+  @override
+  String get healthLabel => 'ஆரோக்கியம்';
+
+  @override
+  String get activeInYourChartLabel => 'உங்கள் விளக்கப்படத்தில் செயலில்';
+
+  @override
+  String get whatYourChartSaysLabel => 'உங்கள் விளக்கப்படம் என்ன சொல்கிறது';
+
+  @override
+  String get beHonestWithYourselfLabel => 'உங்களிடம் நேர்மையாக இருங்கள்';
+
+  @override
+  String get languageLabel => 'மொழி';
+
+  @override
+  String get signOutLabel => 'வெளியேறு';
+
+  @override
+  String get askAnythingSubtitle =>
+      'தமிழ், இந்தி, அல்லது ஆங்கிலத்தில் எழுதுங்கள் — எதுவும் கேளுங்கள்';
+
+  @override
+  String get thisWeekLabel => 'இந்த வாரம்';
+
+  @override
+  String get relationshipsLabel => 'உறவுகள்';
+
+  @override
+  String get careerLabel => 'தொழில்';
+
+  @override
+  String get opportunitiesLabel => 'வாய்ப்புகள்';
+
+  @override
+  String get watchOutsLabel => 'எச்சரிக்கைகள்';
+
+  @override
+  String get premiumLabel => 'பிரீமியம்';
+
+  @override
+  String get unlockWithPremium => 'பிரீமியத்துடன் திறக்கவும்';
+
+  @override
+  String get doThisLabel => 'இதைச் செய்யுங்கள்';
+
+  @override
+  String get watchForLabel => 'இதைக் கவனியுங்கள்';
+
+  @override
+  String get practiceLabel => 'பயிற்சி செய்யுங்கள்';
+
+  @override
+  String get timingLabel => 'நேரம்';
+
+  @override
+  String get activeStatusLabel => 'செயலில்';
 }

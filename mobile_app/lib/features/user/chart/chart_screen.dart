@@ -39,9 +39,9 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
 
     return userAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
-      error: (_, __) => const Center(child: Text('Error')),
+      error: (_, __) => Center(child: Text(AppLocalizations.of(context)!.errorLabel)),
       data: (user) {
-        if (user == null) return const Center(child: Text('No profile'));
+        if (user == null) return Center(child: Text(AppLocalizations.of(context)!.noProfileLabel));
         return chartAsync.when(
           loading: () => Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: gold)),
           error: (e, _) => _ErrorView(onRetry: () => ref.refresh(chartDataProvider)),
@@ -110,18 +110,18 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
         final dIsDark = Theme.of(dCtx).brightness == Brightness.dark;
         return AlertDialog(
           backgroundColor: dIsDark ? AppColors.bgCardDark : AppColors.bgCardLight,
-          title: Text('Add time?',
+          title: Text(AppLocalizations.of(dCtx)!.addHourTitle,
               style: GoogleFonts.dmSans(fontSize: 14,
                   color: dIsDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
-          content: Text('Add a specific hour to see the hourly chart as well.',
+          content: Text(AppLocalizations.of(dCtx)!.addHourBody,
               style: GoogleFonts.dmSans(fontSize: 12,
                   color: dIsDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
           actions: [
             TextButton(onPressed: () => Navigator.pop(dCtx, false),
-                child: Text('Skip', style: GoogleFonts.dmSans(
+                child: Text(AppLocalizations.of(dCtx)!.addHourSkip, style: GoogleFonts.dmSans(
                     color: dIsDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight))),
             TextButton(onPressed: () => Navigator.pop(dCtx, true),
-                child: Text('Add Hour', style: GoogleFonts.dmSans(color: gold))),
+                child: Text(AppLocalizations.of(dCtx)!.addHourConfirm, style: GoogleFonts.dmSans(color: gold))),
           ],
         );
       },
@@ -268,7 +268,7 @@ class _ChartView extends StatelessWidget {
                     : Row(mainAxisSize: MainAxisSize.min, children: [
                         Icon(Icons.calendar_month_outlined, size: 14, color: gold),
                         const SizedBox(width: 5),
-                        Text('Any Date', style: GoogleFonts.dmSans(
+                        Text(AppLocalizations.of(context)!.anyDateLabel, style: GoogleFonts.dmSans(
                             fontSize: 11, fontWeight: FontWeight.w500, color: gold)),
                       ]),
               ),
@@ -709,10 +709,11 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Text('Could not load chart'),
+      Text(t.couldNotLoadChart),
       const SizedBox(height: 12),
-      GestureDetector(onTap: onRetry, child: const Text('Retry')),
+      GestureDetector(onTap: onRetry, child: Text(t.retryLabel)),
     ]));
   }
 }
@@ -825,7 +826,7 @@ class _DayAnalysisSection extends StatelessWidget {
                         color: accent.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text('HIGH', style: GoogleFonts.dmSans(
+                      child: Text(AppLocalizations.of(context)!.highLabel, style: GoogleFonts.dmSans(
                           fontSize: 8, fontWeight: FontWeight.w700, color: accent)),
                     ),
                   ],

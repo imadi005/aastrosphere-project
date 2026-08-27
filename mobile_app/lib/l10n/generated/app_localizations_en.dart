@@ -559,4 +559,132 @@ class AppLocalizationsEn extends AppLocalizations {
   String askQuestionGrid(String planet, String count) {
     return 'In my birth chart grid, $planet appears $count time(s). What does that mean for me?';
   }
+
+  @override
+  String get noProfileLabel => 'No profile';
+
+  @override
+  String get addHourTitle => 'Add time?';
+
+  @override
+  String get addHourBody =>
+      'Add a specific hour to see the hourly chart as well.';
+
+  @override
+  String get addHourSkip => 'Skip';
+
+  @override
+  String get addHourConfirm => 'Add Hour';
+
+  @override
+  String get anyDateLabel => 'Any Date';
+
+  @override
+  String get couldNotLoadChart => 'Could not load chart';
+
+  @override
+  String get highLabel => 'HIGH';
+
+  @override
+  String get todaysCharacterLabel => 'TODAY\'S CHARACTER';
+
+  @override
+  String get watchLabel => 'Watch';
+
+  @override
+  String get couldNotLoadProfileInsights => 'Could not load profile insights';
+
+  @override
+  String get whoYouAreLabel => 'Who You Are';
+
+  @override
+  String get tensionInsideYouLabel => 'The tension inside you';
+
+  @override
+  String get yourShadowLabel => 'Your shadow';
+
+  @override
+  String get whatTripsYouUpLabel => 'What trips you up';
+
+  @override
+  String get yourPatternsLabel => 'Your Patterns';
+
+  @override
+  String get moneyLabel => 'Money';
+
+  @override
+  String get loveLabel => 'Love';
+
+  @override
+  String get workLabel => 'Work';
+
+  @override
+  String get currentChapterLabel => 'Current Chapter';
+
+  @override
+  String get theGiftLabel => 'The gift';
+
+  @override
+  String get theTrapLabel => 'The trap';
+
+  @override
+  String get whatToDoLabel => 'What to do';
+
+  @override
+  String get healthLabel => 'Health';
+
+  @override
+  String get activeInYourChartLabel => 'Active in Your Chart';
+
+  @override
+  String get whatYourChartSaysLabel => 'What Your Chart Says';
+
+  @override
+  String get beHonestWithYourselfLabel => 'Be Honest With Yourself';
+
+  @override
+  String get languageLabel => 'Language';
+
+  @override
+  String get signOutLabel => 'Sign out';
+
+  @override
+  String get askAnythingSubtitle =>
+      'Type in Hindi, English, or Hinglish — ask anything';
+
+  @override
+  String get thisWeekLabel => 'THIS WEEK';
+
+  @override
+  String get relationshipsLabel => 'Relationships';
+
+  @override
+  String get careerLabel => 'Career';
+
+  @override
+  String get opportunitiesLabel => 'OPPORTUNITIES';
+
+  @override
+  String get watchOutsLabel => 'WATCH-OUTS';
+
+  @override
+  String get premiumLabel => 'Premium';
+
+  @override
+  String get unlockWithPremium => 'Unlock with Premium';
+
+  @override
+  String get doThisLabel => 'Do this';
+
+  @override
+  String get watchForLabel => 'Watch for';
+
+  @override
+  String get practiceLabel => 'Practice';
+
+  @override
+  String get timingLabel => 'Timing';
+
+  @override
+  String get activeStatusLabel => 'Active';
 }
