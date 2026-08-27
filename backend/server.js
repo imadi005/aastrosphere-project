@@ -32,6 +32,7 @@ import {
   getPrimaryAction,
 } from './prediction_engine.js';
 import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './compatibility_library.js';
+import { NUMBER_IN_RELATIONSHIP_I18N, localizedCompat } from './compatibility_library_i18n.js';
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
 import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis, buildFullChartForChat, smartParseDob, neutralizeAnswer } from './ask_engine.js';
 import { buildScanContext } from './event_scanner.js';
@@ -374,7 +375,7 @@ app.post('/api/hourly', (req, res) => {
 
 app.post('/api/compatibility', (req, res) => {
   try {
-    const { dob1, dob2, client_date, client_hour } = req.body;
+    const { dob1, dob2, client_date, client_hour, lang } = req.body;
     if (!dob1 || !dob2) return res.status(400).json({ error: 'dob1 and dob2 required' });
 
 
@@ -478,8 +479,8 @@ app.post('/api/compatibility', (req, res) => {
     );
 
     // What each brings
-    const p1brings = NUMBER_IN_RELATIONSHIP[b1] || {};
-    const p2brings = NUMBER_IN_RELATIONSHIP[b2] || {};
+    const p1brings = localizedCompat(NUMBER_IN_RELATIONSHIP, NUMBER_IN_RELATIONSHIP_I18N, b1, lang) || {};
+    const p2brings = localizedCompat(NUMBER_IN_RELATIONSHIP, NUMBER_IN_RELATIONSHIP_I18N, b2, lang) || {};
 
     res.json({
       score: baseScore,

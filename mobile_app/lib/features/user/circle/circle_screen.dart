@@ -144,12 +144,14 @@ class _FriendCardState extends State<_FriendCard> {
       final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
       final myDob = (userDoc.data()?['dob'] as Timestamp?)?.toDate();
       if (myDob == null) return;
+      final lang = mounted ? Localizations.localeOf(context).languageCode : null;
       final result = await ApiService.getCompatibility(
         myDob.toIso8601String(),
         widget.friend.dob.toIso8601String(),
         clientDate: ApiService.clientDate,
         clientHour: ApiService.clientHour,
         relation: widget.friend.relation,
+        lang: lang,
       );
       if (mounted) setState(() { _compat = result; _loading = false; });
     } catch (_) {
