@@ -50,7 +50,9 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    Timer(const Duration(milliseconds: 300), () => _ctrl.forward());
+    Timer(const Duration(milliseconds: 300), () {
+      if (mounted) _ctrl.forward();
+    });
 
     _ctrl.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
