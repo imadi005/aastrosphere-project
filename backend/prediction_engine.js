@@ -17,6 +17,7 @@ import {
 import { classifyHourDeep } from './hour_library.js';
 import { analyzeColumnYogas } from './column_yogas.js';
 import { DAILY_QUOTES } from './quotes_library.js';
+import { DAILY_QUOTES_I18N } from './quotes_library_i18n.js';
 import {
   getPersonalizedGuidance, assessFullDayRating,
   DAILY_LAYER, MAHA_CONTEXT, ANTAR_CONTEXT, MONTHLY_CONTEXT,
@@ -464,7 +465,11 @@ export function generateDailyPrediction(ctx) {
   const rating = assessFullDayRating(basic, destiny, maha, antar, monthly, daily, yogas, freqMap);
 
   // ── Quote — vary by basic + daily + date so no weekly repeat ───────────
-  const quotes = DAILY_QUOTES[daily] || DAILY_QUOTES[5]; // fallback to 5 if undefined
+  // ctx.lang: same optional ISO code used by buildUserDailyContent below —
+  // falls back to English for any language without a translated quote table.
+  const quotesTable = (ctx.lang && ctx.lang !== 'en' && DAILY_QUOTES_I18N[ctx.lang])
+      ? DAILY_QUOTES_I18N[ctx.lang] : DAILY_QUOTES;
+  const quotes = quotesTable[daily] || quotesTable[5] || DAILY_QUOTES[5]; // fallback to 5 if undefined
   // Use ctx._targetDate if available, otherwise today
   const _tDate = ctx._targetDate || ctx.targetDate || new Date().toISOString();
   const _tDateObj = new Date(_tDate);
