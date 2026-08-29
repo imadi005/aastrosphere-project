@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Aastrosphere — Vedic Numerology, Computed</title>
+<meta name="description" content="Aastrosphere reads your exact birth chart using Ank Jyotish — India's own numerology system — by Ank Jyotish &amp; Palmist Pankajj Kumar Mishra. Daily guidance, real answers, no guesswork.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2314132B'/%3E%3Ccircle cx='30' cy='30' r='13' fill='%23E8CC6E'/%3E%3Cellipse cx='30' cy='30' rx='24' ry='7' fill='none' stroke='%23D4AF37' stroke-width='3' transform='rotate(-18 30 30)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ivory:#F7F3EA; --ivory2:#FFFDF7; --ink:#201D33; --ink-soft:#5A5670;
+  --navy:#14132B; --navy2:#1E1C3D; --navy3:#2A2751;
+  --gold:#B98A2E; --gold-bright:#D4AF37; --gold-lt:#E8CC6E;
+  --muted:#8B87A8; --green:#4E8F6B; --coral:#C96F55; --line:#E3DCC9;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--ink);line-height:1.6;overflow-x:hidden}
+.serif{font-family:'Cormorant Garamond',serif}
+.mono{font-family:'DM Mono',monospace}
+
+#prog{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-lt));width:0%;z-index:99;transition:width .1s linear}
+
+.topbar{position:fixed;top:0;left:0;right:0;z-index:98;display:flex;justify-content:space-between;align-items:center;
+  padding:14px 20px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  background:rgba(247,243,234,.82);border-bottom:1px solid rgba(0,0,0,.05);transition:background .4s,color .4s}
+.topbar.dark{background:rgba(20,19,43,.82);border-bottom-color:rgba(255,255,255,.06)}
+.topbar .brand{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--gold);letter-spacing:.5px}
+.topbar .cta{border:1px solid var(--gold);background:transparent;color:var(--gold);padding:9px 18px;border-radius:100px;
+  font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s}
+.topbar .cta:hover{background:var(--gold);color:var(--ivory2)}
+.topbar.dark .cta{border-color:var(--gold-lt);color:var(--gold-lt)}
+.topbar.dark .cta:hover{background:var(--gold-lt);color:var(--navy)}
+
+section{padding:88px 22px;position:relative}
+.dark{background:var(--navy);color:var(--ivory)}
+.wrap{max-width:960px;margin:0 auto}
+
+.eyebrow{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:14px}
+.dark .eyebrow{color:var(--gold-lt)}
+h1,h2{font-family:'Cormorant Garamond',serif;font-weight:600;line-height:1.12}
+h2{font-size:clamp(30px,6.4vw,46px);margin-bottom:14px}
+.lead{font-size:clamp(15px,4vw,18px);color:var(--ink-soft);max-width:560px}
+.dark .lead{color:var(--muted)}
+
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  .rv{opacity:1;transform:none;transition:none}
+  html{scroll-behavior:auto}
+}
+
+/* ══ HERO ══ */
+.hero{min-height:96svh;display:flex;flex-direction:column;justify-content:center;padding-top:110px;padding-bottom:60px;
+  background:radial-gradient(1200px 600px at 50% -10%, #EFE7D2 0%, var(--ivory) 55%)}
+.hero h1{font-size:clamp(48px,12vw,92px);letter-spacing:1px}
+.hero .sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(18px,4.8vw,25px);color:var(--gold);margin:10px 0 22px}
+.hero .desc{max-width:540px;color:var(--ink-soft);font-size:16px}
+
+.hgrid{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(3,64px);gap:8px;margin:36px 0 32px}
+.hcell{background:var(--ivory2);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--ink);position:relative;overflow:hidden}
+.hcell span{opacity:0;transform:scale(.6);transition:opacity .5s,transform .5s}
+.hcell.on span{opacity:1;transform:none}
+.hcell.gold{color:var(--gold);border-color:var(--gold-lt)}
+.hcell .lbl{position:absolute;bottom:4px;font-family:'DM Sans',sans-serif;font-size:7.5px;letter-spacing:.5px;color:var(--muted);opacity:0;transition:opacity .5s .2s}
+.hcell.on .lbl{opacity:1}
+
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:34px}
+.chip{padding:9px 16px;border-radius:100px;border:1px solid var(--line);background:var(--ivory2);font-size:12.5px;font-weight:500;color:var(--ink)}
+.chip b{color:var(--gold);font-weight:700}
+
+.herobtns{display:flex;flex-wrap:wrap;gap:14px}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:15px 26px;border-radius:100px;font-weight:700;font-size:14.5px;
+  text-decoration:none;cursor:pointer;border:0;transition:transform .2s,box-shadow .2s;font-family:'DM Sans',sans-serif}
+.btn-gold{background:linear-gradient(120deg,var(--gold),var(--gold-bright));color:var(--navy);box-shadow:0 14px 30px -14px rgba(185,138,46,.6)}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 18px 36px -14px rgba(185,138,46,.7)}
+.btn-ghost{background:transparent;border:1.5px solid var(--ink);color:var(--ink)}
+.btn-ghost:hover{background:var(--ink);color:var(--ivory)}
+.dark .btn-ghost{border-color:var(--ivory);color:var(--ivory)}
+.dark .btn-ghost:hover{background:var(--ivory);color:var(--navy)}
+.btn .soon{font-size:10px;letter-spacing:1px;text-transform:uppercase;opacity:.75;font-weight:700}
+
+.scrollcue{margin-top:44px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.scrollcue::after{content:'';width:1px;height:34px;background:linear-gradient(var(--gold),transparent);display:block}
+
+/* ══ USP / claim ══ */
+.usp{background:var(--ivory2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.usp-claim{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,7vw,52px);font-weight:700;line-height:1.15;margin-bottom:8px}
+.usp-claim .u{text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:3px;text-underline-offset:6px}
+.usp-sub{font-size:15.5px;color:var(--ink-soft);max-width:600px;margin-bottom:34px}
+
+.explainer{background:var(--ivory);border:1px dashed var(--gold);border-radius:14px;padding:18px 20px;margin:22px 0 8px}
+.explainer .eh{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
+.explainer .erow{display:flex;gap:12px;margin-bottom:10px}
+.explainer .erow:last-child{margin-bottom:0}
+.explainer .etag{flex-shrink:0;width:80px;font-weight:700;font-size:12.5px;color:var(--ink)}
+.explainer .etxt{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+
+/* ══ FEATURES ══ */
+.feat-grid{display:grid;gap:16px;margin-top:32px}
+@media(min-width:680px){.feat-grid{grid-template-columns:1fr 1fr}}
+.feat-card{background:var(--ivory2);border:1px solid var(--line);border-radius:20px;padding:26px;position:relative;overflow:hidden}
+.feat-card .fi{font-size:30px;margin-bottom:14px;display:block}
+.feat-card .ft{font-weight:700;font-size:18px;margin-bottom:8px;font-family:'Cormorant Garamond',serif}
+.feat-card .fd{font-size:13.5px;color:var(--ink-soft);line-height:1.6}
+.feat-card.flag{background:linear-gradient(120deg,#B98A2E,#D4AF37);color:var(--navy)}
+.feat-card.flag .fd{color:#3d3413}
+
+/* ══ ENGINE (signature) ══ */
+.sim{background:var(--navy2);border:1px solid rgba(212,175,55,.2);border-radius:22px;padding:22px;margin-top:30px;overflow:hidden}
+.sim .qrow{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+.qbtn{border:1px solid rgba(212,175,55,.4);background:transparent;color:var(--gold-lt);padding:11px 16px;border-radius:100px;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .25s;text-align:left}
+.qbtn:hover,.qbtn:focus-visible{background:rgba(212,175,55,.12)}
+.qbtn.sel{background:var(--gold-bright);color:var(--navy);border-color:var(--gold-bright);font-weight:700}
+.steps{margin-top:20px;display:flex;flex-direction:column;gap:12px}
+.step{border-left:2px solid rgba(212,175,55,.25);padding:12px 0 12px 18px;opacity:.28;transition:opacity .5s;position:relative}
+.step::before{content:'';position:absolute;left:-6px;top:18px;width:10px;height:10px;border-radius:50%;background:var(--navy3);border:2px solid rgba(212,175,55,.4);transition:background .4s}
+.step.live{opacity:1}
+.step.live::before{background:var(--gold-bright);border-color:var(--gold-bright)}
+.step .sl{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:7px}
+.step .scap{font-size:12.5px;color:var(--muted);margin-bottom:10px;line-height:1.45;max-width:480px}
+.kchips{display:flex;flex-wrap:wrap;gap:8px}
+.kchip{padding:6px 12px;border-radius:100px;background:var(--navy3);color:var(--ivory);font-size:12px;
+  opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+.kchip.show{opacity:1;transform:none}
+.kchip.g{background:rgba(212,175,55,.18);color:var(--gold-lt)}
+.churn{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted)}
+.churn b{color:var(--gold-lt);font-weight:500}
+.answer{background:var(--navy3);border-radius:14px;padding:16px;font-size:14px;line-height:1.65;color:var(--ivory);min-height:96px;white-space:pre-line}
+.answer .hl{color:var(--gold-lt);font-weight:700}
+.cursor{display:inline-block;width:7px;height:15px;background:var(--gold-lt);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.replay{margin-top:16px;border:0;background:transparent;color:var(--muted);font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif}
+.replay:hover{color:var(--gold-lt)}
+.privline{margin-top:18px;font-size:11.5px;color:var(--muted);font-style:italic}
+
+/* ══ NUMBERS ══ */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:30px 0}
+@media(min-width:680px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--ink);border-radius:16px;padding:22px 16px;text-align:center}
+.stat .sv{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,7vw,40px);font-weight:700;color:var(--gold-lt);line-height:1}
+.stat .sl{font-size:10.5px;color:var(--muted);margin-top:8px;letter-spacing:.5px}
+
+/* ══ EXPERT ══ */
+.expert{background:var(--navy)}
+.expert-card{display:flex;flex-direction:column;gap:22px;background:var(--navy2);border:1px solid rgba(212,175,55,.22);border-radius:22px;padding:30px;margin-top:30px}
+@media(min-width:680px){.expert-card{flex-direction:row;align-items:center}}
+.expert-badge{flex-shrink:0;width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-bright));
+  display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:700;color:var(--navy)}
+.expert-name{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,5vw,28px);font-weight:700;color:var(--ivory);margin-bottom:4px}
+.expert-title{font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-lt);font-weight:700;margin-bottom:12px}
+.expert-bio{font-size:14px;color:var(--muted);line-height:1.65;max-width:600px}
+.expert-bio b{color:var(--ivory)}
+
+/* ══ LANGUAGES ══ */
+.langgrid{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;justify-content:center}
+.langchip{padding:14px 22px;border-radius:16px;background:var(--ivory2);border:1px solid var(--line);text-align:center;min-width:110px}
+.langchip .ln{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:var(--ink)}
+.langchip .le{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+
+/* ══ PRICING ══ */
+.pgrid{display:grid;gap:16px;margin-top:32px}
+@media(min-width:680px){.pgrid{grid-template-columns:1fr 1fr 1fr}}
+.pcard{background:var(--ivory2);border:1px solid var(--line);border-radius:20px;padding:24px;text-align:center;color:var(--ink)}
+.pcard.pop{border-color:var(--gold);box-shadow:0 18px 40px -22px rgba(185,138,46,.5)}
+.pcard .ptag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
+.pcard .pn{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700}
+.pcard .pp{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;margin:10px 0 4px;color:var(--ink)}
+.pcard .pd{font-size:12px;color:var(--ink-soft)}
+.subrow{display:flex;flex-wrap:wrap;gap:14px;margin-top:20px;justify-content:center}
+.subchip{background:var(--ink);color:var(--ivory);border-radius:14px;padding:16px 22px;text-align:center;flex:1;min-width:180px}
+.subchip .sn{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-lt);font-weight:700;margin-bottom:6px}
+.subchip .sp{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700}
+.subchip .ss{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ══ FINALE ══ */
+.finale{border-radius:20px;background:linear-gradient(120deg,#B98A2E,#D4AF37);color:var(--navy);padding:34px}
+.finale .ft{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.finale .fb{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:clamp(22px,5.6vw,32px);line-height:1.25;margin-bottom:22px}
+
+footer{background:var(--navy);color:var(--muted);padding:44px 22px 60px;text-align:center;font-size:12px}
+footer .fbrand{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin-bottom:6px}
+footer .flinks{margin-top:16px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+footer .flinks a{color:var(--muted);text-decoration:none;font-size:11.5px;letter-spacing:.5px}
+footer .flinks a:hover{color:var(--gold-lt)}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<div class="topbar" id="topbar">
+  <span class="brand">A&nbsp;&nbsp;Aastrosphere</span>
+  <a class="cta" href="#get">Get the app</a>
+</div>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow rv">Vedic Numerology · Ank Jyotish</div>
+    <h1 class="rv">Aastrosphere</h1>
+    <div class="sub rv">Astrology that finally agrees with itself.</div>
+    <p class="desc rv">Every reading in Aastrosphere is computed from your actual birth chart using Ank Jyotish — India's own numerology system, by <b>Ank Jyotish &amp; Palmist Pankajj Kumar Mishra</b>. The same question always gets the same answer. No guesswork, no contradictions, no "it depends who you ask."</p>
+
+    <div class="hgrid rv" id="hgrid">
+      <div class="hcell"><span>3</span><i class="lbl">Jupiter</i></div>
+      <div class="hcell"><span>1</span><i class="lbl">Sun</i></div>
+      <div class="hcell gold"><span>9</span><i class="lbl">Mars</i></div>
+      <div class="hcell"><span>—</span></div>
+      <div class="hcell gold"><span>7</span><i class="lbl">Ketu</i></div>
+      <div class="hcell"><span>5</span><i class="lbl">Mercury</i></div>
+      <div class="hcell"><span>2</span><i class="lbl">Moon</i></div>
+      <div class="hcell gold"><span>8</span><i class="lbl">Saturn</i></div>
+      <div class="hcell"><span>4</span><i class="lbl">Rahu</i></div>
+    </div>
+
+    <div class="chips rv">
+      <span class="chip"><b>5</b> chart layers, computed live</span>
+      <span class="chip"><b>7</b> languages</span>
+      <span class="chip">Built by a practicing numerologist</span>
+    </div>
+
+    <div class="herobtns rv" id="get">
+      <a class="btn btn-gold" href="#" id="playBtn">▶ Get it on Google Play <span class="soon">Launching soon</span></a>
+      <a class="btn btn-ghost" href="#engine">See it work</a>
+    </div>
+    <div class="scrollcue rv">Scroll</div>
+  </div>
+</section>
+
+<!-- ══════════ CLAIM / USP ══════════ -->
+<section class="usp">
+  <div class="wrap">
+    <div class="eyebrow rv">What makes it different</div>
+    <div class="usp-claim rv">Straightforward. <span class="u">Accurate</span>. Consistent.</div>
+    <p class="usp-sub rv">Vedic numerology is India's oldest predictive science — and one of its most precise. Aastrosphere is the first app to deliver it as a real, computed, personal reading, instead of a generic horoscope copy-pasted for everyone born that day.</p>
+
+    <div class="explainer rv">
+      <div class="eh">Two systems — quick explainer</div>
+      <div class="erow"><div class="etag">Western</div><div class="etxt">The simpler system most global apps use (Co-Star, CHANI). Based on your name and birth date added together. Popular in the US/Europe.</div></div>
+      <div class="erow"><div class="etag">Vedic</div><div class="etxt">India's own, older system — also called Ank Jyotish. Reads deeper life-cycles from your birth date. This is what most Indian households actually consult, and it's what Aastrosphere is built entirely on.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FEATURES ══════════ -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow rv">What you get</div>
+    <h2 class="rv">Your day, decoded. Your questions, answered.</h2>
+    <p class="lead rv">One app, five ways to actually use your chart — not just look at it.</p>
+
+    <div class="feat-grid">
+      <div class="feat-card rv">
+        <span class="fi">📅</span>
+        <div class="ft">Today</div>
+        <div class="fd">A fresh, personal reading every morning — calculated from your exact birth date, in words you'll actually understand. Not a generic horoscope.</div>
+      </div>
+      <div class="feat-card rv">
+        <span class="fi">💬</span>
+        <div class="ft">Ask Anything</div>
+        <div class="fd">"Should I take this job?" "Is this the right time to invest?" Ask in Hindi, English, or Hinglish — get a real answer grounded in your actual chart.</div>
+      </div>
+      <div class="feat-card rv">
+        <span class="fi">🔢</span>
+        <div class="ft">Your Chart, Explained</div>
+        <div class="fd">See your full numerology chart and tap any number to understand exactly what it means for you right now. No numerology background needed.</div>
+      </div>
+      <div class="feat-card rv">
+        <span class="fi">📈</span>
+        <div class="ft">Insights</div>
+        <div class="fd">Zoom out from today to see what's coming — weekly patterns, monthly themes, and yearly turning points, so you can actually plan around them.</div>
+      </div>
+      <div class="feat-card rv">
+        <span class="fi">👥</span>
+        <div class="ft">Circle</div>
+        <div class="fd">Add your partner, family, or friends and see how your numbers actually work together — what naturally clicks, what needs more effort.</div>
+      </div>
+      <div class="feat-card flag rv">
+        <span class="fi">⚡</span>
+        <div class="ft">Premium · Live Caution Windows</div>
+        <div class="fd">Hour-specific physical, money, and relationship alerts — with a notification before each window opens. Nobody else does this.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ ENGINE (signature demo) ══════════ -->
+<section class="dark" id="engine">
+  <div class="wrap">
+    <div class="eyebrow rv">Under the hood</div>
+    <h2 class="rv">Every answer is computed fresh — never reused.</h2>
+    <p class="lead rv">Most astrology apps show the same generic text to everyone. Here's the actual pipeline Aastrosphere runs for every single question — watch it happen below, or tap a question to run it again.</p>
+
+    <div class="sim rv">
+      <div class="qrow">
+        <button class="qbtn" data-q="0">“Best time in the next 2–3 months for a big financial decision?”</button>
+        <button class="qbtn" data-q="1">“Why does this year feel so heavy?”</button>
+      </div>
+
+      <div class="steps">
+        <div class="step" id="st1">
+          <div class="sl">1 · Read the question</div>
+          <div class="scap">Picks out what's actually being asked — timing, money, mood, career.</div>
+          <div class="kchips" id="kw"></div>
+        </div>
+        <div class="step" id="st2">
+          <div class="sl">2 · Pull your chart — five live layers</div>
+          <div class="scap">Recomputes your chart at this exact moment: life-chapter, sub-phase, month, day, and hour.</div>
+          <div class="kchips" id="layers"></div>
+        </div>
+        <div class="step" id="st3">
+          <div class="sl">3 · Filter the knowledge base</div>
+          <div class="scap">Scans hundreds of Vedic combinations and narrows to the handful that actually apply right now.</div>
+          <div class="churn" id="churn">—</div>
+        </div>
+        <div class="step" id="st4">
+          <div class="sl">4 · Compose the answer</div>
+          <div class="scap">Writes a specific, dated answer from what was just computed — not a template.</div>
+          <div class="answer" id="ans">Watch the steps above — this runs automatically in a moment.</div>
+        </div>
+      </div>
+      <button class="replay" id="replay" hidden>↻ Run again</button>
+      <div class="privline">Every answer is composed fresh from your own chart — never a canned horoscope.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ NUMBERS ══════════ -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow rv">In numbers</div>
+    <h2 class="rv">Built for depth, not just for show.</h2>
+    <div class="stats">
+      <div class="stat rv"><div class="sv">5</div><div class="sl">CHART LAYERS COMPUTED PER ANSWER</div></div>
+      <div class="stat rv"><div class="sv">46</div><div class="sl">RISK WINDOWS FLAGGED ACROSS A LIFETIME CHART</div></div>
+      <div class="stat rv"><div class="sv">7</div><div class="sl">LANGUAGES, FULLY TRANSLATED</div></div>
+      <div class="stat rv"><div class="sv">24/7</div><div class="sl">COMPUTED — NO WAITING FOR AN ASTROLOGER TO BE FREE</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ EXPERT ══════════ -->
+<section class="dark expert">
+  <div class="wrap">
+    <div class="eyebrow rv">Built on real expertise</div>
+    <h2 class="rv">Not generic astrology content.</h2>
+    <p class="lead rv">Every rule, every combination, every warning inside Aastrosphere comes from decades of real practice — not scraped off the internet.</p>
+
+    <div class="expert-card rv">
+      <div class="expert-badge">PKM</div>
+      <div>
+        <div class="expert-name">Pankajj Kumar Mishra</div>
+        <div class="expert-title">Ank Jyotish &amp; Palmist</div>
+        <div class="expert-bio">Aastrosphere is built entirely on the Ank Jyotish system of <b>Ank Jyotish &amp; Palmist Pankajj Kumar Mishra</b>, a practicing numerologist and palmist. Every dasha rule, every yoga, every warning in the app traces back to his own working method — computed and delivered instantly, at a scale no single astrologer could offer alone.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ LANGUAGES ══════════ -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow rv">Speak your language</div>
+    <h2 class="rv">Ask in Hindi. Get answered in Hindi.</h2>
+    <p class="lead rv">The app matches you — not the other way around.</p>
+    <div class="langgrid">
+      <div class="langchip rv"><div class="ln">English</div><div class="le">EN</div></div>
+      <div class="langchip rv"><div class="ln">हिन्दी</div><div class="le">HI</div></div>
+      <div class="langchip rv"><div class="ln">বাংলা</div><div class="le">BN</div></div>
+      <div class="langchip rv"><div class="ln">ગુજરાતી</div><div class="le">GU</div></div>
+      <div class="langchip rv"><div class="ln">मराठी</div><div class="le">MR</div></div>
+      <div class="langchip rv"><div class="ln">தமிழ்</div><div class="le">TA</div></div>
+      <div class="langchip rv"><div class="ln">తెలుగు</div><div class="le">TE</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PRICING ══════════ -->
+<section class="dark">
+  <div class="wrap">
+    <div class="eyebrow rv">Simple, honest pricing</div>
+    <h2 class="rv">Free to start. Pay only for what you ask.</h2>
+    <p class="lead rv">Daily guidance, your chart, and monthly insights are free, always. Ask Anything runs on small question packs — no forced subscription just to ask something.</p>
+
+    <div class="pgrid">
+      <div class="pcard rv">
+        <div class="ptag">Small</div>
+        <div class="pn">10 Questions</div>
+        <div class="pp">₹49</div>
+        <div class="pd">Try it out</div>
+      </div>
+      <div class="pcard pop rv">
+        <div class="ptag">Most popular</div>
+        <div class="pn">30 Questions</div>
+        <div class="pp">₹99</div>
+        <div class="pd">Best value for regular use</div>
+      </div>
+      <div class="pcard rv">
+        <div class="ptag">Value</div>
+        <div class="pn">75 Questions</div>
+        <div class="pp">₹199</div>
+        <div class="pd">For the heavy askers</div>
+      </div>
+    </div>
+
+    <div class="subrow rv">
+      <div class="subchip">
+        <div class="sn">Premium · Monthly</div>
+        <div class="sp">₹499</div>
+        <div class="ss">Unlimited chat + caution windows</div>
+      </div>
+      <div class="subchip">
+        <div class="sn">Premium · Annual</div>
+        <div class="sp">₹3,999</div>
+        <div class="ss">Save 33% vs. monthly</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FINAL CTA ══════════ -->
+<section>
+  <div class="wrap">
+    <div class="finale rv">
+      <div class="ft">Aastrosphere — by Ank Jyotish &amp; Palmist Pankajj Kumar Mishra</div>
+      <div class="fb">Know what today actually means for you. Download free — your first questions are on us.</div>
+      <a class="btn btn-gold" style="background:var(--navy);color:var(--gold-lt);box-shadow:0 14px 30px -14px rgba(20,19,43,.5)" href="#get">▶ Get the app</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fbrand">Aastrosphere</div>
+  <div>Ank Jyotish &amp; Palmist · Pankajj Kumar Mishra</div>
+  <div class="flinks">
+    <a href="/privacy/">Privacy Policy</a>
+    <a href="mailto:aditya94727@gmail.com">Contact</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var prog = document.getElementById('prog'), topbar = document.getElementById('topbar');
+  var darks = [].slice.call(document.querySelectorAll('section.dark'));
+  function onScroll(){
+    var h = document.documentElement;
+    var p = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    prog.style.width = (p*100).toFixed(2) + '%';
+    var y = h.scrollTop + 30, isDark = false;
+    for (var i=0;i<darks.length;i++){
+      var r = darks[i];
+      if (y >= r.offsetTop && y < r.offsetTop + r.offsetHeight){ isDark = true; break; }
+    }
+    topbar.classList.toggle('dark', isDark);
+  }
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+
+  var hg = document.getElementById('hgrid');
+  var hio = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      hio.unobserve(hg);
+      var cells = hg.querySelectorAll('.hcell');
+      cells.forEach(function(c,i){ setTimeout(function(){ c.classList.add('on'); }, reduced?0:120*i); });
+    });
+  },{threshold:.3});
+  hio.observe(hg);
+
+  /* ══ Ask simulator ══ */
+  var DATA = [
+    {
+      kw: ['timing','money','decision','2–3 months'],
+      layers: ['Maha 8 · years','Antar 7 · months','Monthly 2','Daily 4','Hourly 9'],
+      churn: [212, 9, 3],
+      ans: 'Right now: hold — this month favours planning, not signing.\n<span class="hl">Mid-Sept</span>: your strongest window opens — clear head, sharp numbers.\n<span class="hl">Late Oct</span>: best of the quarter. If a contract or offer is on the table, that is when to move.'
+    },
+    {
+      kw: ['feeling','heavy','this year','why'],
+      layers: ['Maha 8 · years','Antar 7 · months','Monthly 2','Daily 4','Hourly 9'],
+      churn: [212, 14, 4],
+      ans: 'You are in a slow-building chapter — effort is real but results stay quiet for a while.\nThe weight peaks early in the year and eases from the middle onward.\n<span class="hl">What you build now compounds</span> — this phase rewards patience over speed.'
+    }
+  ];
+  var running = false;
+  var kwEl=document.getElementById('kw'), lyEl=document.getElementById('layers'),
+      chEl=document.getElementById('churn'), anEl=document.getElementById('ans'),
+      rp=document.getElementById('replay');
+  var steps=[1,2,3,4].map(function(n){return document.getElementById('st'+n)});
+  var lastQ = 0;
+
+  function resetSim(){
+    steps.forEach(function(s){s.classList.remove('live')});
+    kwEl.innerHTML=''; lyEl.innerHTML=''; chEl.textContent='—';
+    anEl.innerHTML='Pick a question above to run the engine.';
+    rp.hidden = true;
+  }
+  function chips(el, arr, gold, done){
+    el.innerHTML='';
+    arr.forEach(function(t,i){
+      var c=document.createElement('span');
+      c.className='kchip'+(gold?' g':'');
+      c.textContent=t; el.appendChild(c);
+      setTimeout(function(){c.classList.add('show'); if(i===arr.length-1&&done) setTimeout(done, reduced?0:350);}, reduced?0:i*170);
+    });
+    if(!arr.length&&done) done();
+  }
+  function typeAnswer(html, done){
+    if (reduced){ anEl.innerHTML = html; if(done)done(); return; }
+    var plain = html.replace(/<[^>]+>/g,'');
+    var i=0; anEl.innerHTML='<span class="cursor"></span>';
+    var iv=setInterval(function(){
+      i+=2;
+      anEl.innerHTML = plain.slice(0,i).replace(/\n/g,'<br>') + '<span class="cursor"></span>';
+      if(i>=plain.length){ clearInterval(iv); anEl.innerHTML = html.replace(/\n/g,'<br>'); if(done)done(); }
+    }, 16);
+  }
+  function run(q){
+    if (running) return; running=true; lastQ=q;
+    resetSim();
+    var d=DATA[q];
+    document.querySelectorAll('.qbtn').forEach(function(b){b.classList.toggle('sel', +b.dataset.q===q)});
+    steps[0].classList.add('live');
+    chips(kwEl, d.kw, false, function(){
+      steps[1].classList.add('live');
+      chips(lyEl, d.layers, true, function(){
+        steps[2].classList.add('live');
+        if (reduced){
+          chEl.innerHTML = d.churn[0]+' rules scanned → <b>'+d.churn[1]+' matched</b> → <b>'+d.churn[2]+' kept</b>';
+          steps[3].classList.add('live');
+          typeAnswer(d.ans, function(){ rp.hidden=false; running=false; });
+          return;
+        }
+        var n=0, target=d.churn[0];
+        var iv=setInterval(function(){
+          n+=Math.ceil(target/26);
+          if(n>=target){ n=target; clearInterval(iv);
+            setTimeout(function(){
+              chEl.innerHTML = target+' rules scanned → <b>'+d.churn[1]+' matched</b> → <b>'+d.churn[2]+' kept</b>';
+              steps[3].classList.add('live');
+              typeAnswer(d.ans, function(){ rp.hidden=false; running=false; });
+            }, 380);
+          }
+          chEl.textContent = n + ' rules scanned…';
+        }, 34);
+      });
+    });
+  }
+  document.querySelectorAll('.qbtn').forEach(function(b){
+    b.addEventListener('click', function(){ if(!running) run(+b.dataset.q); });
+  });
+  rp.addEventListener('click', function(){ if(!running) run(lastQ); });
+
+  var simEl = document.querySelector('.sim');
+  var simAutoIo = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return; simAutoIo.unobserve(simEl);
+      setTimeout(function(){ if(!running) run(0); }, 500);
+    });
+  },{threshold:.5});
+  simAutoIo.observe(simEl);
+})();
+</script>
+</body>
+</html>
