@@ -48,11 +48,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyDz0dWTI9qS3dj2it9UYW_rabVTzqrWt-M',
-    authDomain: 'aastrosphere-mobile.firebaseapp.com',
-    projectId: 'aastrosphere-mobile',
-    storageBucket: 'aastrosphere-mobile.firebasestorage.app',
-    messagingSenderId: '554790488195',
     appId: '1:554790488195:web:d229029aec144923b2b3b6',
+    messagingSenderId: '554790488195',
+    projectId: 'aastrosphere-mobile',
+    authDomain: 'aastrosphere-mobile.firebaseapp.com',
+    storageBucket: 'aastrosphere-mobile.firebasestorage.app',
     measurementId: 'G-DDX2MEZX4W',
   );
 
@@ -63,13 +63,12 @@ class DefaultFirebaseOptions {
     projectId: 'aastrosphere-mobile',
     storageBucket: 'aastrosphere-mobile.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAJXZ5lAA0Iu7bNWFcgl660M8KjDrQ_K7A',
-    appId: '1:554790488195:ios:b94ed31390d47cb5b2b3b6',
+    appId: '1:554790488195:ios:5e2f1a35ae46f2c7b2b3b6',
     messagingSenderId: '554790488195',
     projectId: 'aastrosphere-mobile',
     storageBucket: 'aastrosphere-mobile.firebasestorage.app',
-    iosBundleId: 'com.example.mobileApp',
+    iosBundleId: 'com.aastrosphere.app',
   );
 }
