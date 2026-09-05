@@ -600,6 +600,11 @@ export const HONEST_WARNINGS = {
     detail: "Job changes, residential moves, and relationship shifts clustering in a short period is characteristic of multiple 7 energy. Substance use as a coping mechanism is a real risk during this period.",
     probability: "High probability of at least one significant life change in the next 6 months.",
   },
+  multiple_7_relationship: {
+    short: "Three or more 7s in the chart put real strain on close relationships — physical distance or a harder split is a real pattern here.",
+    detail: "With Ketu appearing three or more times, separation from loved ones — divorce, death, or simply working and living in different cities — is a recurring theme. If the relationship does stay physically together, there's a real chance it still lacks health: either through actual health problems in the relationship, or through a lack of happiness around children. On the upside, this same energy channels very well into sport — people with multiple 7s tend to be genuinely strong athletes and can excel at a high level in sports.",
+    probability: "Elevated probability of either physical separation from a partner or a genuinely unhealthy shared life if they stay together.",
+  },
   multiple_9_active: {
     short: "The frustration is at dangerous levels. The outlet it needs has not been found yet.",
     detail: "Legal issues arising from anger-driven decisions and physical accidents from recklessness are elevated risks. The aggression needs channeling — sport, competition, physical work — or it becomes self-destructive.",

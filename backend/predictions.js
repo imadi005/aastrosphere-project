@@ -9,7 +9,7 @@ import {
   buildFrequencyMap, PLANET_NAMES
 } from './numerology.js';
 import { analyzeColumnYogas } from './column_yogas.js';
-import { dashaNumberPolarity } from './dasha_polarity.js';
+import { dashaNumberPolarity, currentPositiveDashaGate } from './dasha_polarity.js';
 
 // ─── Planet descriptions ──────────────────────────────────────
 export const PLANET_DESC = {
@@ -413,16 +413,23 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
         (basic === 2 && destiny === 1) ||
         (basic === 2 && destiny === 2);
       const isWeak = destiny === 4 || destiny === 8 || onePolarity.negative;
+      const posGateRaj = currentPositiveDashaGate({ maha: mahaNum, antar: antarNum, natalFreq, fullFreq: freqMap, basic, destiny });
       detected.push({
         yoga: isStrong ? 'Strong Raj Yoga' : (isWeak ? 'Weak Raj Yoga' : 'Raj Yoga'),
         description: YOGAS.raj_yoga.benefits.join(', '),
+        active: posGateRaj.active, intensity: posGateRaj.intensity,
       });
     }
   }
 
+  // Shared positive-dasha gate for the simple positive combos below — per
+  // the source rule, positive yogas only truly activate while the currently
+  // running dasha is itself positive.
+  const posGate = currentPositiveDashaGate({ maha: mahaNum, antar: antarNum, natalFreq, fullFreq: freqMap, basic, destiny });
+
   // Easy Money
   if (nums.includes(5) && nums.includes(7)) {
-    detected.push({ yoga: 'Easy Money (5-7)', description: YOGAS.easy_money.benefits.join(', ') });
+    detected.push({ yoga: 'Easy Money (5-7)', description: YOGAS.easy_money.benefits.join(', '), active: posGate.active, intensity: posGate.intensity });
   }
 
   // NOTE: Bandhan Yoga (9-4 no 5) and Financial Bandhan (5-4 no 9) are now
@@ -431,19 +438,35 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
 
   // Spiritual Yoga
   if (nums.includes(3) && nums.includes(7) && nums.includes(9)) {
-    detected.push({ yoga: 'Spiritual Yoga (3-7-9)', description: 'Deep spiritual inclination and pursuit.' });
+    detected.push({
+      yoga: 'Spiritual Yoga (3-7-9)',
+      description: 'Jupiter, Ketu and Mars together — spiritual, god-loving, and a real believer in fate. ' +
+        'Spiritual pursuits get given as much value and time as work does, not treated as separate from it.',
+      active: posGate.active, intensity: posGate.intensity,
+    });
   }
 
-  // 3-1-9 Head Strong
-  if (nums.includes(3) && nums.includes(1) && nums.includes(9)) {
-    detected.push({ yoga: '3-1-9 Uplifting', description: 'Strong decisions, potential for high achievement.' });
+  // Feminine Creative (6-2-8) — Venus + Moon + Saturn, a "female numbers" combination
+  if (nums.includes(6) && nums.includes(2) && nums.includes(8)) {
+    detected.push({
+      yoga: 'Feminine Creative (6-2-8)',
+      description: 'Venus, Moon and Saturn together — a "female numbers" combination, giving real feminine ' +
+        'qualities regardless of the person\'s own gender: generally soft-spoken with motherly behavior, and ' +
+        'more emotional in nature. Highly artistic and creative, with a real pull toward media-related work — ' +
+        'very successful when the profession itself involves media or communication. Saturn\'s presence ' +
+        'disciplines the creative energy, giving it a positive direction that produces genuinely focused, ' +
+        'excellent creative work rather than scattered talent.',
+      active: posGate.active, intensity: posGate.intensity,
+    });
   }
 
-  // NOTE: Vipreet Raj Yoga (2-8-4 all present) is now sourced from
-  // analyzeColumnYogas() below — analyzeRow3's all-present branch in
-  // column_yogas.js — with the fuller description.
+  // NOTE: Uplifting 319 / Full Power Triad (3-1-9 all present) and Vipreet
+  // Raj Yoga (2-8-4 all present) are now sourced from analyzeColumnYogas()
+  // below — analyzeRow1's and analyzeRow3's all-present branches in
+  // column_yogas.js — with fuller descriptions and, for 319, the Raj Yoga
+  // tier determined from each number's individual dasha polarity.
 
-  // ── COLUMN 1 (3-6-2), COLUMN 2 (1-7-8), COLUMN 3 (9-5-4), ROW 3 (2-8-4) ───
+  // ── COLUMN 1 (3-6-2), COLUMN 2 (1-7-8), COLUMN 3 (9-5-4), ROW 1 (3-1-9), ROW 3 (2-8-4) ──
   // Sourced from column_yogas.js — shared with prediction_engine.js so this
   // logic can never drift between the astrologer tools and the chatbot.
   // Every presence/absence check uses the full combined (natal+dasha) view,
@@ -463,7 +486,7 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
 
   // 6-7-5 Stable Luxury
   if (nums.includes(6) && nums.includes(7) && nums.includes(5)) {
-    detected.push({ yoga: 'Stable Luxury Life (6-7-5)', description: 'Maintains status even in hard times, luxurious lifestyle.' });
+    detected.push({ yoga: 'Stable Luxury Life (6-7-5)', description: 'Maintains status even in hard times, luxurious lifestyle.', active: posGate.active, intensity: posGate.intensity });
   }
 
   return detected;

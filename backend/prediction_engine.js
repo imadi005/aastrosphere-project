@@ -16,7 +16,7 @@ import {
 
 import { classifyHourDeep } from './hour_library.js';
 import { analyzeColumnYogas } from './column_yogas.js';
-import { dashaNumberPolarity, currentDashaGate } from './dasha_polarity.js';
+import { dashaNumberPolarity, currentDashaGate, currentPositiveDashaGate } from './dasha_polarity.js';
 import { DAILY_QUOTES } from './quotes_library.js';
 import { DAILY_QUOTES_I18N } from './quotes_library_i18n.js';
 import {
@@ -137,6 +137,7 @@ export function getHonestWarnings(yogas, freqMap, maha, antar, lang = null) {
   const freq9 = freqMap[9] || 0;
   const freq4 = freqMap[4] || 0;
   if (freq7 >= 2) warnings.push(W('multiple_7_active'));
+  if (freq7 >= 3) warnings.push(W('multiple_7_relationship'));
   if (freq9 >= 2) warnings.push(W('multiple_9_active'));
   if (freq4 >= 2) warnings.push(W('double_4_active'));
 
@@ -242,10 +243,13 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
         (basic === 2 && destiny === 1) ||
         (basic === 2 && destiny === 2);
       const isWeak = destiny === 4 || destiny === 8 || onePolarity.negative;
+      const posGate = currentPositiveDashaGate({ maha, antar, natalFreq, fullFreq: annualFreq, basic, destiny });
       yogas.push({
         id: 'raj_yoga',
         name: isStrong ? 'Strong Raj Yoga' : (isWeak ? 'Weak Raj Yoga' : 'Raj Yoga'),
         positive: true,
+        active: posGate.active,
+        intensity: posGate.intensity,
       });
     }
     // If path is blocked — no Raj Yoga, don't push anything
@@ -266,7 +270,8 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
   // ── EASY MONEY (5+7) ──────────────────────────────────────────────────────
   // Can be triggered by annual chart (Dasha bringing 5 or 7 is valid)
   if (annualNums.includes(5) && annualNums.includes(7)) {
-    yogas.push({ id: 'easy_money', name: 'Easy Money', positive: true });
+    const posGate = currentPositiveDashaGate({ maha, antar, natalFreq, fullFreq: annualFreq, basic, destiny });
+    yogas.push({ id: 'easy_money', name: 'Easy Money', positive: true, active: posGate.active, intensity: posGate.intensity });
   }
 
   // NOTE: Bandhan (9-4 no 5), Financial Bandhan (5-4 no 9), Row Bandhan
@@ -279,20 +284,42 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
   // analyzeColumnYogas() call above — analyzeRow3's all-present branch in
   // column_yogas.js — with the fuller description instead of this bare flag.
 
-  // ── 3-1-9 UPLIFTING ───────────────────────────────────────────────────────
-  // Annual chart — Dasha can add the missing number
-  if (annualNums.includes(3) && annualNums.includes(1) && annualNums.includes(9)) {
-    yogas.push({ id: 'uplifting_319', name: 'Full Power Triad', positive: true });
-  }
+  // Shared positive-dasha gate for the remaining simple positive combos below —
+  // per the source rule, positive yogas (natal or dasha-triggered) only truly
+  // activate while the currently running dasha is itself positive.
+  const posGate = currentPositiveDashaGate({ maha, antar, natalFreq, fullFreq: annualFreq, basic, destiny });
+
+  // NOTE: Uplifting 319 / Full Power Triad (3-1-9 all present) is now sourced
+  // from the shared analyzeColumnYogas() call above — analyzeRow1's
+  // all-present branch in column_yogas.js — which also determines the
+  // Raj Yoga tier from each number's individual dasha polarity.
 
   // ── SPIRITUAL (3+7+9) ─────────────────────────────────────────────────────
   if (annualNums.includes(3) && annualNums.includes(7) && annualNums.includes(9)) {
-    yogas.push({ id: 'spiritual', name: 'Spiritual Alignment', positive: true });
+    yogas.push({
+      id: 'spiritual', name: 'Spiritual Alignment', positive: true, active: posGate.active, intensity: posGate.intensity,
+      description: 'Jupiter, Ketu and Mars together — spiritual, god-loving, and a real believer in fate. ' +
+        'Spiritual pursuits get given as much value and time as work does, not treated as separate from it.',
+    });
+  }
+
+  // ── FEMININE CREATIVE (6+2+8) ───────────────────────────────────────────────
+  // Venus + Moon + Saturn — a "female numbers" combination per the source rule.
+  if (annualNums.includes(6) && annualNums.includes(2) && annualNums.includes(8)) {
+    yogas.push({
+      id: 'feminine_creative', name: 'Feminine Creative', positive: true, active: posGate.active, intensity: posGate.intensity,
+      description: 'Venus, Moon and Saturn together — a "female numbers" combination, giving real feminine ' +
+        'qualities regardless of the person\'s own gender: generally soft-spoken with motherly behavior, and ' +
+        'more emotional in nature. Highly artistic and creative, with a real pull toward media-related work — ' +
+        'very successful when the profession itself involves media or communication. Saturn\'s presence ' +
+        'disciplines the creative energy, giving it a positive direction that produces genuinely focused, ' +
+        'excellent creative work rather than scattered talent.',
+    });
   }
 
   // ── STABLE LUXURY (6+7+5) ─────────────────────────────────────────────────
   if (annualNums.includes(6) && annualNums.includes(7) && annualNums.includes(5)) {
-    yogas.push({ id: 'stable_luxury', name: 'Stable Luxury', positive: true });
+    yogas.push({ id: 'stable_luxury', name: 'Stable Luxury', positive: true, active: posGate.active, intensity: posGate.intensity });
   }
 
   // NOTE: High Intuition (1+7+8), Defamation Risk (1+8 no 7), Misfortune (7+8

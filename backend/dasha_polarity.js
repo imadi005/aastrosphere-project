@@ -134,4 +134,26 @@ export function currentDashaGate(ctx) {
   return { active: false, intensity: 'none' };
 }
 
+/**
+ * Symmetric counterpart to currentDashaGate — the gate used to decide
+ * whether a structural POSITIVE yoga (Raj Yoga, Easy Money, Spiritual,
+ * Vipreet Raj, etc.) is actually manifesting right now. Per the same source
+ * rule: any yoga only truly activates while the CURRENTLY RUNNING dasha is
+ * itself of the matching polarity — positive dasha activates positive
+ * yogas (from natal chart or from the dasha itself), negative dasha
+ * activates negative ones (see currentDashaGate). Antardasha dominates when
+ * it is itself positive (strong/fast); Mahadasha being positive with a
+ * negative Antardasha still gives a mild activation.
+ */
+export function currentPositiveDashaGate(ctx) {
+  const { maha, antar, natalFreq, fullFreq, basic, destiny } = ctx;
+  const base = { natalFreq, fullFreq, basic, destiny };
+  const antarPolarity = antar ? dashaNumberPolarity(antar, base) : null;
+  const mahaPolarity = maha ? dashaNumberPolarity(maha, base) : null;
+
+  if (antarPolarity && !antarPolarity.negative) return { active: true, intensity: 'strong', source: 'antar', polarity: antarPolarity };
+  if (mahaPolarity && !mahaPolarity.negative) return { active: true, intensity: 'mild', source: 'maha', polarity: mahaPolarity };
+  return { active: false, intensity: 'none' };
+}
+
 export { has, count, isEven };

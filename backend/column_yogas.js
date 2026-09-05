@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // COLUMN & ROW YOGAS — Grid Column 1 (3-6-2), Column 2 (1-7-8),
-// Column 3 (9-5-4), and Row 3 / bottom row (2-8-4)
+// Column 3 (9-5-4), Row 1 / top row (3-1-9), and Row 3 / bottom row (2-8-4)
 //
 // Source: recorded explanations by Pankajj Kumar Mishra (astrologer),
 // July + Sept 2026. Transcribed and encoded here as the SINGLE source of
@@ -13,6 +13,7 @@
 //   Column 1 (left):   3 (top) · 6 (middle) · 2 (bottom)
 //   Column 2 (middle): 1 (top) · 7 (middle) · 8 (bottom)
 //   Column 3 (right):  9 (top) · 5 (middle) · 4 (bottom)
+//   Row 1 (top):       3 (left) · 1 (middle) · 9 (right)
 //   Row 3 (bottom):    2 (left) · 8 (middle) · 4 (right)
 //
 // CORE RULE FROM THE RECORDING (applies to every combination below):
@@ -36,7 +37,7 @@
 // to get this gating; omitting it just skips the active/dormant framing.
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { currentDashaGate, dashaNumberPolarity } from './dasha_polarity.js';
+import { currentDashaGate, currentPositiveDashaGate, dashaNumberPolarity } from './dasha_polarity.js';
 
 const has = (freq, n) => (freq[n] || 0) > 0;
 const count = (freq, n) => freq[n] || 0;
@@ -53,6 +54,17 @@ function gateSuffix(annualFreq, dashaCtx) {
   return { active: gate.active, intensity: gate.intensity, suffix };
 }
 
+// Symmetric counterpart — appends an "active/dormant" sentence for a
+// positive-flagged combination, using the dasha-positive gate.
+function positiveGateSuffix(annualFreq, dashaCtx) {
+  if (!dashaCtx) return { active: undefined, intensity: undefined, suffix: '' };
+  const gate = currentPositiveDashaGate({ ...dashaCtx, fullFreq: annualFreq });
+  const suffix = gate.active
+    ? ` Currently active — the running ${gate.source === 'antar' ? 'Antardasha' : 'Mahadasha'} is positive, so this is ${gate.intensity === 'strong' ? 'strongly and quickly' : 'more slowly'} in effect right now.`
+    : ' Currently dormant — the running dasha is not itself positive, so this combination is not actively expressing right now.';
+  return { active: gate.active, intensity: gate.intensity, suffix };
+}
+
 // ─── COLUMN 1 — Jupiter(3) / Venus(6) / Moon(2) ─────────────────────────────
 export function analyzeColumn1(annualFreq, dashaCtx) {
   const n3 = has(annualFreq, 3), n6 = has(annualFreq, 6), n2 = has(annualFreq, 2);
@@ -61,14 +73,11 @@ export function analyzeColumn1(annualFreq, dashaCtx) {
 
   // ── All three present — a distinct, generally constructive combination ──
   if (n3 && n6 && n2) {
-    out.push({
-      id: 'col1_all_present',
-      name: 'Grounded Creativity',
-      positive: true,
-      description: 'Jupiter, Venus and Moon all active together — creative or artistic instincts backed by ' +
-        'ethics and emotional steadiness, rather than any single one of the individual 3-6 or 6-2 or 3-2 ' +
-        'patterns pulling on its own.',
-    });
+    let desc = 'Jupiter, Venus and Moon all active together — creative or artistic instincts backed by ' +
+      'ethics and emotional steadiness, rather than any single one of the individual 3-6 or 6-2 or 3-2 ' +
+      'patterns pulling on its own.';
+    const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'col1_all_present', name: 'Grounded Creativity', positive: true, active, intensity, description: desc + suffix });
     return out; // all-three overrides the individual missing-based readings below
   }
 
@@ -118,14 +127,11 @@ export function analyzeColumn2(annualFreq, dashaCtx) {
 
   // ── All three present — "High Intuition", already a known positive read ──
   if (n1 && n7 && n8) {
-    out.push({
-      id: 'high_intuition',
-      name: 'High Intuition',
-      positive: true,
-      description: 'Sun, Ketu and Saturn all active together — sharp intuitive instincts backed by discipline. ' +
-        'This is its own distinct combination, not the bad-luck or defamation reading that applies when one ' +
-        'of the three is missing.',
-    });
+    let desc = 'Sun, Ketu and Saturn all active together — sharp intuitive instincts backed by discipline. ' +
+      'This is its own distinct combination, not the bad-luck or defamation reading that applies when one ' +
+      'of the three is missing.';
+    const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'high_intuition', name: 'High Intuition', positive: true, active, intensity, description: desc + suffix });
     return out; // all-three overrides the individual missing-based readings below
   }
 
@@ -164,7 +170,8 @@ export function analyzeColumn2(annualFreq, dashaCtx) {
       'classical Vedic terms — influential, lucky, prosperous.';
     if (c7 > 1) desc += ' Repeated 7 introduces some instability and repeated change — but such people still succeed, building real inner strength to push through it.';
     desc += ' A repeated 1 makes no difference either way to this particular reading.';
-    out.push({ id: 'sun_ketu_raj', name: 'Sun-Ketu (no Saturn) — Raj Yoga', positive: true, description: desc });
+    const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'sun_ketu_raj', name: 'Sun-Ketu (no Saturn) — Raj Yoga', positive: true, active, intensity, description: desc + suffix });
   }
 
   return out;
@@ -179,15 +186,12 @@ export function analyzeColumn3(annualFreq, dashaCtx) {
 
   // ── All three present — Multi-Skilling Yoga ──
   if (n9 && n5 && n4) {
-    out.push({
-      id: 'col3_all_present',
-      name: 'Multi-Skilling Yoga',
-      positive: true,
-      description: 'Mars, Mercury and Rahu all active together — a multi-skilled, multi-talented, ' +
-        'multi-tasking jack-of-all-trades combination. Mostly positive: it mitigates and stabilizes Rahu’s ' +
-        'usual negative impact rather than any single one of the individual 9-5, 9-4, or 5-4 patterns pulling ' +
-        'on its own. One real downside — mastery in any single field tends to stay out of reach.',
-    });
+    let desc = 'Mars, Mercury and Rahu all active together — a multi-skilled, multi-talented, ' +
+      'multi-tasking jack-of-all-trades combination. Mostly positive: it mitigates and stabilizes Rahu’s ' +
+      'usual negative impact rather than any single one of the individual 9-5, 9-4, or 5-4 patterns pulling ' +
+      'on its own. One real downside — mastery in any single field tends to stay out of reach.';
+    const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'col3_all_present', name: 'Multi-Skilling Yoga', positive: true, active, intensity, description: desc + suffix });
     return out; // all-three overrides the individual missing-based readings below
   }
 
@@ -246,16 +250,13 @@ export function analyzeRow3(annualFreq, dashaCtx) {
 
   // ── All three present — Vipreet Raj Yoga ──
   if (n2 && n8 && n4) {
-    out.push({
-      id: 'vipreet_raj',
-      name: 'Vipreet Raj Yoga',
-      positive: true,
-      description: 'Moon, Saturn and Rahu all active together — Vipreet Raj Yoga. A lot of ups and downs, ' +
-        'real struggle along the way, but despite all of it, real success is achievable. Any kind of addiction ' +
-        'must be avoided — it undermines this combination badly. Two real downsides: difficulties in married ' +
-        'life are common, and the unpredictable nature of life events under this combination can keep a ' +
-        'person living with underlying fear.',
-    });
+    let desc = 'Moon, Saturn and Rahu all active together — Vipreet Raj Yoga. A lot of ups and downs, ' +
+      'real struggle along the way, but despite all of it, real success is achievable. Any kind of addiction ' +
+      'must be avoided — it undermines this combination badly. Two real downsides: difficulties in married ' +
+      'life are common, and the unpredictable nature of life events under this combination can keep a ' +
+      'person living with underlying fear.';
+    const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'vipreet_raj', name: 'Vipreet Raj Yoga', positive: true, active, intensity, description: desc + suffix });
     return out; // all-three overrides the individual missing-based readings below
   }
 
@@ -302,14 +303,79 @@ export function analyzeRow3(annualFreq, dashaCtx) {
   return out;
 }
 
-// Convenience: run all four (both columns + column 3 + row 3) and return a
-// flat array in the same {id, name, positive, description} shape used
-// across the codebase. dashaCtx = { natalFreq, basic, destiny, maha, antar }
-// is optional — omit it to skip active/dormant gating (structural-only view).
+// ─── ROW 1 (top row) — Jupiter(3) / Sun(1) / Mars(9) ────────────────────────
+export function analyzeRow1(annualFreq, dashaCtx) {
+  const n3 = has(annualFreq, 3), n1 = has(annualFreq, 1), n9 = has(annualFreq, 9);
+  const c1 = count(annualFreq, 1), c3 = count(annualFreq, 3), c9 = count(annualFreq, 9);
+  const out = [];
+
+  // ── All three present — Full Power Triad, Raj Yoga if each number reads positive ──
+  if (n3 && n1 && n9) {
+    let desc = 'Jupiter, Sun and Mars all active together — a very powerful combination that brings the best ' +
+      'out of a person. Highly ambitious, hardworking, and natural leaders. Knowledge-driven and full of ' +
+      'imagination, which gives real leverage to work independently and differently.';
+    let isRajYoga = false;
+    if (dashaCtx) {
+      const polCtx = { natalFreq: dashaCtx.natalFreq, fullFreq: annualFreq, basic: dashaCtx.basic, destiny: dashaCtx.destiny };
+      isRajYoga = !dashaNumberPolarity(3, polCtx).negative && !dashaNumberPolarity(1, polCtx).negative && !dashaNumberPolarity(9, polCtx).negative;
+    }
+    desc += isRajYoga
+      ? ' With all three numbers reading positive individually, this rises to the level of a genuine Raj Yoga.'
+      : '';
+    desc += ' Repetition of these numbers — via dasha or otherwise — does not affect this combination\'s own ' +
+      'result; each number\'s individual positive or negative reading still applies exactly as it does on its own.';
+    const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'uplifting_319', name: isRajYoga ? 'Full Power Triad — Raj Yoga' : 'Full Power Triad', positive: true, active, intensity, description: desc + suffix });
+    return out; // all-three overrides the individual missing-based readings below
+  }
+
+  // ── 1 & 9 present, 3 missing ──
+  if (n1 && n9 && !n3) {
+    let desc = 'Sun and Mars present, Jupiter missing — a very high temperament, quick to anger, and anger ' +
+      'management is essential or it causes real problems in life. Very intelligent, inclined toward and ' +
+      'achieves higher education. Dislikes working under someone — wants independence in whatever work they ' +
+      'do. Achieves real success in life, but anger management remains the key requirement. Career leans ' +
+      'toward engineering, and also medicine — where their intelligence can lead toward surgery-type choices.';
+    if (c9 > 1) desc += ' Repeated Mars can turn this into frustration and suppressed anger — anger that stays bottled up rather than coming out.';
+    if (c1 > 1) desc += ' Repeated Sun amplifies both the anger and the authoritative nature further.';
+    out.push({ id: 'row1_1_9', name: 'Sun-Mars (no Jupiter)', positive: false, description: desc });
+  }
+
+  // ── 3 & 1 present, 9 missing ──
+  if (n3 && n1 && !n9) {
+    let desc = 'Jupiter and Sun present, Mars missing — generally highly educated, working hard and with ' +
+      'intelligence to achieve professional success. Knowledge and wisdom earn real respect in society, and ' +
+      'the highest positions in their profession are reachable. Very effective communicators, with a real ' +
+      'chance of becoming educational heads in their profession.';
+    if (c3 > 1) desc += ' Repeated Jupiter can result in lesser moral values — an attraction toward unfair means — though the other characteristics stay the same.';
+    if (c1 > 1) desc += ' Repeated Sun can result in ego and a demand for authority.';
+    const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'row1_3_1', name: 'Jupiter-Sun (no Mars)', positive: true, active, intensity, description: desc + suffix });
+  }
+
+  // ── 3 & 9 present, 1 missing ──
+  if (n3 && n9 && !n1) {
+    let desc = 'Jupiter and Mars present, Sun missing — Jupiter represents wisdom and intellect, Mars ' +
+      'represents energy and aggression, so this combination is generally very energetic and drawn toward ' +
+      'educational pursuits. However, the absence of Sun means leadership qualities and authoritative ' +
+      'abilities can be lacking.';
+    if (c9 > 1) desc += ' Repeated Mars can lead to aggression in behavior.';
+    if (c3 > 1) desc += ' Repeated Jupiter can cause a deviation from moral values.';
+    out.push({ id: 'row1_3_9', name: 'Jupiter-Mars (no Sun)', positive: false, description: desc });
+  }
+
+  return out;
+}
+
+// Convenience: run all five (both columns + column 3 + row 1 + row 3) and
+// return a flat array in the same {id, name, positive, description} shape
+// used across the codebase. dashaCtx = { natalFreq, basic, destiny, maha,
+// antar } is optional — omit it to skip active/dormant gating (structural-only view).
 export function analyzeColumnYogas(annualFreq, dashaCtx) {
   return [
     ...analyzeColumn1(annualFreq, dashaCtx),
     ...analyzeColumn2(annualFreq, dashaCtx),
+    ...analyzeRow1(annualFreq, dashaCtx),
     ...analyzeColumn3(annualFreq, dashaCtx),
     ...analyzeRow3(annualFreq, dashaCtx),
   ];
