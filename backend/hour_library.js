@@ -257,6 +257,19 @@ export const ANTAR_HOUR_LAYER = {
   9: { peak_hours: [1, 9, 5], low_hours: [4], peak_note: 'Mars inner chapter amplifies courage and energy this hour.', low_note: 'Frustration risk peaks this hour — physical activity recommended.' },
 };
 
+// ─── MONTHLY dasha modifiers — this month's sub-window effect on hours ────────
+export const MONTHLY_HOUR_LAYER = {
+  1: { peak_hours: [1, 3, 9], low_hours: [8, 4], peak_note: 'This month’s energy supports authority and boldness this hour.', low_note: 'This month’s energy adds friction to this hour — be patient.' },
+  2: { peak_hours: [2, 5, 6], low_hours: [8, 4], peak_note: 'This month’s emotional depth enhances this hour.', low_note: 'This month’s emotional weight makes this hour heavy.' },
+  3: { peak_hours: [1, 3, 5], low_hours: [4], peak_note: 'This month’s wisdom makes this a particularly clear hour.', low_note: null },
+  4: { peak_hours: [7], low_hours: [1, 5, 8], peak_note: 'Intuition cuts through this month’s disruption this hour.', low_note: 'This month’s Rahu volatility is elevated this hour — verify before committing.' },
+  5: { peak_hours: [5, 1, 7, 9], low_hours: [4], peak_note: 'This month’s Mercury sharpens the financial instinct this hour.', low_note: 'Impulsive spending risk is elevated this hour.' },
+  6: { peak_hours: [2, 6, 7], low_hours: [9], peak_note: 'This month’s Venus deepens the beauty and connection of this hour.', low_note: 'The tongue is sharper than usual this hour — choose words carefully.' },
+  7: { peak_hours: [5, 7, 1], low_hours: [8], peak_note: 'This month’s Ketu brings quiet luck to this hour.', low_note: 'This month’s spiritual heaviness is felt this hour.' },
+  8: { peak_hours: [3, 5, 8], low_hours: [7, 1], peak_note: 'This month’s Saturn gives this hour staying power — effort compounds.', low_note: 'This month’s karmic resistance peaks this hour.' },
+  9: { peak_hours: [1, 9, 5], low_hours: [4], peak_note: 'This month’s Mars amplifies courage and energy this hour.', low_note: 'Frustration risk peaks this hour — physical activity recommended.' },
+};
+
 // ─── NATAL number modifiers — permanent chart effects on hours ────────────────
 export const NATAL_HOUR_EFFECT = {
   // What natal numbers do to specific hour qualities
@@ -360,6 +373,7 @@ export function classifyHourDeep(hour, hourNum, dailyNum, maha, antar, monthly, 
   const profile = HOUR_PROFILES[hourNum];
   const mahaLayer = MAHA_HOUR_LAYER[maha]?.(hourNum);
   const antarLayer = ANTAR_HOUR_LAYER[antar];
+  const monthlyLayer = MONTHLY_HOUR_LAYER[monthly];
   const yogaIds = yogas.map(y => y.id);
 
   // Base quality from daily × hour combination
@@ -397,6 +411,17 @@ export function classifyHourDeep(hour, hourNum, dailyNum, maha, antar, monthly, 
   } else if (isAntarLow && antarLayer.low_note) {
     layers.push({ source: 'chapter', text: antarLayer.low_note });
     if (type === 'neutral') type = 'caution'; // antar can lower a neutral
+  }
+
+  // Layer 3.5: Monthly dasha window
+  const isMonthlyPeak = monthlyLayer?.peak_hours?.includes(hourNum);
+  const isMonthlyLow = monthlyLayer?.low_hours?.includes(hourNum);
+  if (isMonthlyPeak && monthlyLayer.peak_note) {
+    layers.push({ source: 'monthly', text: monthlyLayer.peak_note });
+    if (type === 'caution') type = 'neutral'; // monthly can lift a caution
+  } else if (isMonthlyLow && monthlyLayer.low_note) {
+    layers.push({ source: 'monthly', text: monthlyLayer.low_note });
+    if (type === 'neutral') type = 'caution'; // monthly can lower a neutral
   }
 
   // Layer 4: Natal numbers

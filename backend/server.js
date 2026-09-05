@@ -36,6 +36,7 @@ import { PAIR_DYNAMICS, NUMBER_IN_RELATIONSHIP, getTodayCompatibility } from './
 import { NUMBER_IN_RELATIONSHIP_I18N, localizedCompat } from './compatibility_library_i18n.js';
 import { PAIR_DYNAMICS_I18N } from './compatibility_pair_dynamics_i18n.js';
 import { analyzeDayChart, getDayScore } from './chart_analysis_library.js';
+import { currentDashaGate } from './dasha_polarity.js';
 import { buildSystemPrompt, classifyQuestion, extractOtherDob, extractDateTimeFromQuestion, buildHistoricalContext, extractYearFromQuestion, buildYearAccidentAnalysis, buildFullChartForChat, smartParseDob, neutralizeAnswer } from './ask_engine.js';
 import { buildScanContext } from './event_scanner.js';
 import { buildDayCharacteristics } from './day_characteristics.js';
@@ -258,6 +259,25 @@ app.post('/api/today', (req, res) => {
       else if (ctx.daily === 4 && ctx.monthly === 9 && (dn.includes(4) || dn.includes(9))) return { level: 'medium', reason: 'Accident risk today. Extra care with driving, physical tasks, and machinery.' };
       else if (ctx.daily === 9 && ctx.monthly === 4 && (dn.includes(4) || dn.includes(9))) return { level: 'medium', reason: 'Accident risk today. Verify before acting — impulsive decisions cause physical damage.' };
       if (hasDailyRisk) return { level: 'medium', reason: 'Elevated physical caution recommended today' };
+
+      // Bandhan Yoga structural check (Sept 2026 update) — runs alongside the
+      // layer-crossing checks above, only as a fallback if nothing matched.
+      // Same rule as chart_analysis_library.js: Rahu+Mars present with
+      // Mercury missing across the full chart, gated by the currently
+      // running dasha's own negativity (dasha_polarity.js).
+      const fullFreq = { ...(ctx.natalFreq || {}) };
+      for (const n of [ctx.maha, ctx.antar, ctx.monthly, ctx.daily]) {
+        if (n) fullFreq[n] = (fullFreq[n] || 0) + 1;
+      }
+      const has9 = (fullFreq[9] || 0) > 0, has4 = (fullFreq[4] || 0) > 0, has5 = (fullFreq[5] || 0) > 0;
+      if (has9 && has4 && !has5) {
+        const gate = currentDashaGate({ maha: ctx.maha, antar: ctx.antar, natalFreq: ctx.natalFreq || {}, fullFreq, basic: ctx.basic, destiny: ctx.destiny });
+        if (gate.active) {
+          return gate.intensity === 'strong'
+            ? { level: 'high', reason: 'Bandhan Yoga is strongly active — Rahu and Mars connected with Mercury missing, and your running Antardasha is negative. Elevated accident and hospitalization risk today.' }
+            : { level: 'medium', reason: 'Bandhan Yoga is mildly active — Rahu and Mars connected with Mercury missing, and your running Mahadasha is negative. Some accident risk present today.' };
+        }
+      }
       return null;
     })();
 
@@ -718,6 +738,7 @@ app.post('/api/predict/health', (req, res) => {
     const maha = currentMahadasha(dob);
     const antar = currentAntardasha(dob);
     const freqMap = buildFrequencyMap(dob, maha.number, antar.number);
+    const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
 
     const watchNumbers = [...new Set([basic, destiny, maha.number, antar.number])];
     const healthWatch = watchNumbers.map(n => ({
@@ -727,12 +748,14 @@ app.post('/api/predict/health', (req, res) => {
       ...HEALTH_MAP[n],
     }));
 
-    // Period warnings
+    // Period warnings — 9-4 (Bandhan) and 5-4 (Financial Bandhan) only listed
+    // while the currently running dasha is itself negative (Sept 2026 gate).
     const warnings = [];
     if (antar.number === 4) warnings.push('Yearly Dasha 4 is hazardous — extra health caution needed.');
     if (antar.number === 2) warnings.push('Yearly Dasha 2 — watch emotional and mental health.');
-    if (freqMap[9] && freqMap[4]) warnings.push('9-4 combination active — mental health and accident risk elevated.');
-    if (freqMap[5] && freqMap[4]) warnings.push('5-4 combination active — health and litigation risk.');
+    const healthGate = currentDashaGate({ maha: maha.number, antar: antar.number, natalFreq, fullFreq: freqMap, basic, destiny });
+    if (freqMap[9] && freqMap[4] && !freqMap[5] && healthGate.active) warnings.push('9-4 combination active — mental health and accident risk elevated.');
+    if (freqMap[5] && freqMap[4] && !freqMap[9] && healthGate.active) warnings.push('5-4 combination active — health and litigation risk.');
 
     res.json({ healthWatch, warnings, freqMap });
   } catch (e) {
@@ -745,9 +768,12 @@ app.post('/api/predict/finance', (req, res) => {
   try {
     const { dob } = req.body;
     if (!dob) return res.status(400).json({ error: 'dob required' });
+    const basic = basicNumber(new Date(dob).getDate());
+    const destiny = destinyNumber(dob);
     const maha = currentMahadasha(dob);
     const antar = currentAntardasha(dob);
     const freqMap = buildFrequencyMap(dob, maha.number, antar.number);
+    const natalFreq = buildFrequencyMap(dob, undefined, undefined, undefined, true);
     const nums = Object.keys(freqMap).map(Number);
 
     const positive_indicators = [];
@@ -760,10 +786,13 @@ app.post('/api/predict/finance', (req, res) => {
     if (nums.includes(1) && nums.includes(9) && nums.includes(3)) positive_indicators.push('319 combination — uplifting period for finances.');
     if (nums.includes(6) && nums.includes(7) && nums.includes(5)) positive_indicators.push('675 combination — realization of desires.');
 
+    // Bandhan / Financial Bandhan / multiple-9 only listed while the
+    // currently running dasha is itself negative (Sept 2026 gate).
+    const financeGate = currentDashaGate({ maha: maha.number, antar: antar.number, natalFreq, fullFreq: freqMap, basic, destiny });
     if (nums.includes(4) && (freqMap[4] % 2 !== 0)) negative_indicators.push('Odd 4 present — expenses, impulsive spending, financial caution needed.');
-    if (nums.includes(9) && nums.includes(4) && !nums.includes(5)) negative_indicators.push('Bandhan Yoga (9-4) — financial restrictions, feeling stuck.');
-    if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) negative_indicators.push('Financial Bandhan (5-4) — debt risk, impulsive spending.');
-    if ((freqMap[9] || 0) >= 2) negative_indicators.push('Multiple 9 — frustration may affect financial decisions.');
+    if (nums.includes(9) && nums.includes(4) && !nums.includes(5) && financeGate.active) negative_indicators.push('Bandhan Yoga (9-4) — financial restrictions, feeling stuck.');
+    if (nums.includes(5) && nums.includes(4) && !nums.includes(9) && financeGate.active) negative_indicators.push('Financial Bandhan (5-4) — debt risk, impulsive spending.');
+    if ((freqMap[9] || 0) >= 2 && !(basic === 9 && destiny === 9)) negative_indicators.push('Multiple 9 — frustration may affect financial decisions.');
 
     res.json({
       maha, antar, freqMap,
@@ -1212,6 +1241,9 @@ app.post('/api/predict/future-risks', (req, res) => {
         const antar      = ((raw - 1) % 9) + 1; // reduce to 1-9
 
         const annualNums = [...new Set([...natalNums, maha.number, antar])];
+        const annualFreq = { ...natalFreq };
+        for (const n of [maha.number, antar]) annualFreq[n] = (annualFreq[n] || 0) + 1;
+        const yearDashaGate = currentDashaGate({ maha: maha.number, antar, natalFreq, fullFreq: annualFreq, basic, destiny });
         const risks = [];
 
         // ── ACCIDENT RISK ──────────────────────────────────────
@@ -1265,8 +1297,8 @@ app.post('/api/predict/future-risks', (req, res) => {
             title: 'Overspending Risk',
             msg: 'Money goes out fast this year. Make a budget and stick to it.' });
         }
-        if (annualNums.includes(9) && annualNums.includes(4) && !annualNums.includes(5)) {
-          risks.push({ type: 'finance', level: 'high',
+        if (annualNums.includes(9) && annualNums.includes(4) && !annualNums.includes(5) && yearDashaGate.active) {
+          risks.push({ type: 'finance', level: yearDashaGate.intensity === 'strong' ? 'high' : 'medium',
             title: 'Bandhan Yoga',
             msg: 'Feeling stuck financially. Do not take big loans this year.' });
         }

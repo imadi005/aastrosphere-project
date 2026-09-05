@@ -9,6 +9,7 @@ import {
   buildFrequencyMap, PLANET_NAMES
 } from './numerology.js';
 import { analyzeColumnYogas } from './column_yogas.js';
+import { dashaNumberPolarity } from './dasha_polarity.js';
 
 // ─── Planet descriptions ──────────────────────────────────────
 export const PLANET_DESC = {
@@ -400,10 +401,22 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
   // Condition: 1 & 2 present in annual chart
   // AND left-path of 1 must be CLEAR in natal:
   //   3 (left of 1 in grid) absent  AND  6 (below 3, above 2) absent
+  const basic = basicNumber(dob);
+  const destiny = destinyNumber(dob);
+
   if (nums.includes(1) && nums.includes(2)) {
     const leftPathClear = !natalNums.includes(3) && !natalNums.includes(6);
     if (leftPathClear) {
-      detected.push({ yoga: 'Raj Yoga', description: YOGAS.raj_yoga.benefits.join(', ') });
+      const onePolarity = dashaNumberPolarity(1, { natalFreq, fullFreq: freqMap, basic, destiny });
+      const isStrong =
+        (basic === 1 && destiny === 1) ||
+        (basic === 2 && destiny === 1) ||
+        (basic === 2 && destiny === 2);
+      const isWeak = destiny === 4 || destiny === 8 || onePolarity.negative;
+      detected.push({
+        yoga: isStrong ? 'Strong Raj Yoga' : (isWeak ? 'Weak Raj Yoga' : 'Raj Yoga'),
+        description: YOGAS.raj_yoga.benefits.join(', '),
+      });
     }
   }
 
@@ -412,15 +425,9 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
     detected.push({ yoga: 'Easy Money (5-7)', description: YOGAS.easy_money.benefits.join(', ') });
   }
 
-  // Bandhan Yoga
-  if (nums.includes(9) && nums.includes(4) && !nums.includes(5)) {
-    detected.push({ yoga: 'Bandhan Yoga', description: 'Feeling of suffocation, legal/health risks.', isNegative: true });
-  }
-
-  // Financial Bandhan
-  if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) {
-    detected.push({ yoga: 'Financial Bandhan', description: 'Impulsive spending, debt accumulation risk.', isNegative: true });
-  }
+  // NOTE: Bandhan Yoga (9-4 no 5) and Financial Bandhan (5-4 no 9) are now
+  // sourced from analyzeColumn3() in column_yogas.js below, with the full
+  // annual view and the dasha-negative gate — see that call for both.
 
   // Spiritual Yoga
   if (nums.includes(3) && nums.includes(7) && nums.includes(9)) {
@@ -432,23 +439,25 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
     detected.push({ yoga: '3-1-9 Uplifting', description: 'Strong decisions, potential for high achievement.' });
   }
 
-  // Vipreet Raj
-  if (nums.includes(2) && nums.includes(8) && nums.includes(4)) {
-    detected.push({ yoga: 'Vipreet Raj Yoga', description: 'Rollercoaster but can overcome adversity if addictions avoided.' });
-  }
+  // NOTE: Vipreet Raj Yoga (2-8-4 all present) is now sourced from
+  // analyzeColumnYogas() below — analyzeRow3's all-present branch in
+  // column_yogas.js — with the fuller description.
 
-  // ── COLUMN 1 (3-6-2) and COLUMN 2 (1-7-8) ─────────────────────────────────
+  // ── COLUMN 1 (3-6-2), COLUMN 2 (1-7-8), COLUMN 3 (9-5-4), ROW 3 (2-8-4) ───
   // Sourced from column_yogas.js — shared with prediction_engine.js so this
   // logic can never drift between the astrologer tools and the chatbot.
   // Every presence/absence check uses the full combined (natal+dasha) view,
   // so a dasha completing a missing slot correctly shows the all-three
   // reading instead of also still showing the old "missing number" one.
-  for (const cy of analyzeColumnYogas(freqMap)) {
+  const dashaCtx = { natalFreq, basic, destiny, maha: mahaNum, antar: antarNum };
+  for (const cy of analyzeColumnYogas(freqMap, dashaCtx)) {
     detected.push({
       yoga: cy.name,
       description: cy.description,
       isPositive: cy.positive,
       isNegative: !cy.positive,
+      active: cy.active,
+      intensity: cy.intensity,
     });
   }
 

@@ -21,6 +21,7 @@ function rel(a,b){const r=PLANET_RELS[a];if(!r)return'n';if(r.f.includes(b))retu
 const PNAMES = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'Ketu',8:'Saturn',9:'Mars'};
 
 import { PNAMES_I18N, STATIC_FINDINGS_I18N, DYNAMIC_TEMPLATES_I18N } from './chart_analysis_library_i18n.js';
+import { currentDashaGate } from './dasha_polarity.js';
 
 // ─── COMPREHENSIVE combination analysis ───────────────────────────────────────
 export function analyzeDayChart({ basic, destiny, maha, antar, monthly, daily, hourly, natalNums, lang }) {
@@ -112,6 +113,38 @@ export function analyzeDayChart({ basic, destiny, maha, antar, monthly, daily, h
     // Rahu destiny + double Mars (any 2 of monthly/daily/hourly)
     else if (has4.destiny && has4.natal && [has9.monthly, has9.daily, has9.hourly].filter(Boolean).length >= 2) {
       findings.push({ type: 'accident', level: 'medium', label: 'Rahu + Double Mars', detail: 'Accident-prone combination today. Your Rahu destiny amplifies the Mars energy — physical caution strongly recommended.' });
+    }
+  }
+
+  // ── Bandhan Yoga structural check (Sept 2026 update) ──────────────────────
+  // Column 3 (9-5-4): Rahu + Mars present with Mercury missing anywhere across
+  // the full combined chart (natal + maha + antar + monthly + today's daily/
+  // hourly), gated by whether the CURRENTLY RUNNING dasha is itself negative
+  // (dasha_polarity.js — antardasha negative = strong, mahadasha negative =
+  // mild). Runs alongside the layer-crossing checks above, not instead of
+  // them — only fires if nothing already matched, to avoid stacking alerts.
+  if (!findings.some(f => f.type === 'accident')) {
+    const fullFreq = {};
+    for (const n of natalNums) fullFreq[n] = (fullFreq[n] || 0) + 1;
+    for (const n of [maha, antar, monthly, daily, hourly]) {
+      if (n) fullFreq[n] = (fullFreq[n] || 0) + 1;
+    }
+    const natalFreq = {};
+    for (const n of natalNums) natalFreq[n] = (natalFreq[n] || 0) + 1;
+
+    const has9Full = (fullFreq[9] || 0) > 0, has4Full = (fullFreq[4] || 0) > 0, has5Full = (fullFreq[5] || 0) > 0;
+    if (has9Full && has4Full && !has5Full) {
+      const gate = currentDashaGate({ maha, antar, natalFreq, fullFreq, basic, destiny });
+      if (gate.active) {
+        findings.push({
+          type: 'accident',
+          level: gate.intensity === 'strong' ? 'high' : 'medium',
+          label: 'Bandhan Yoga Active',
+          detail: gate.intensity === 'strong'
+            ? 'Rahu and Mars are directly connected with Mercury missing between them, and your running Antardasha is currently negative — Bandhan Yoga is strongly active. Elevated accident and hospitalization risk, extra physical caution needed.'
+            : 'Rahu and Mars are directly connected with Mercury missing between them, and your running Mahadasha is currently negative — Bandhan Yoga is mildly active. Some accident risk present, stay reasonably careful.',
+        });
+      }
     }
   }
 

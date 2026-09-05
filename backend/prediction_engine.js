@@ -16,6 +16,7 @@ import {
 
 import { classifyHourDeep } from './hour_library.js';
 import { analyzeColumnYogas } from './column_yogas.js';
+import { dashaNumberPolarity, currentDashaGate } from './dasha_polarity.js';
 import { DAILY_QUOTES } from './quotes_library.js';
 import { DAILY_QUOTES_I18N } from './quotes_library_i18n.js';
 import {
@@ -204,7 +205,7 @@ export function buildChartContext(dob, targetDate = new Date().toISOString()) {
   const annualNums = Object.keys(annualFreq).map(Number);
 
   const yogas     = detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic, destiny, maha.number, antar.number, monthly.number, dailyDasha(dob, targetDate));
-  const modifiers = getChartModifiers(annualNums, annualFreq, basic, destiny, natalNums);
+  const modifiers = getChartModifiers(annualNums, annualFreq, basic, destiny, natalNums, natalFreq, maha.number, antar.number);
 
   return {
     basic, destiny,
@@ -232,10 +233,18 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
   if (annualNums.includes(1) && annualNums.includes(2)) {
     const leftPathClear = !natalNums.includes(3) && !natalNums.includes(6);
     if (leftPathClear) {
-      const isStrong = destiny === 1 || destiny === 2 || basic === 2;
+      // 1's presence must itself be "positive" (per dasha_polarity's Destiny-1
+      // rule) for Raj Yoga to hold at full strength — multiple 1 without
+      // Destiny 1 doesn't cancel the yoga, it downgrades it to weak.
+      const onePolarity = dashaNumberPolarity(1, { natalFreq, fullFreq: annualFreq, basic, destiny });
+      const isStrong =
+        (basic === 1 && destiny === 1) ||
+        (basic === 2 && destiny === 1) ||
+        (basic === 2 && destiny === 2);
+      const isWeak = destiny === 4 || destiny === 8 || onePolarity.negative;
       yogas.push({
         id: 'raj_yoga',
-        name: isStrong ? 'Strong Raj Yoga' : 'Raj Yoga',
+        name: isStrong ? 'Strong Raj Yoga' : (isWeak ? 'Weak Raj Yoga' : 'Raj Yoga'),
         positive: true,
       });
     }
@@ -249,8 +258,9 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
   // view for every presence/absence check, so a dasha completing a missing
   // slot correctly shifts to the all-three reading instead of also still
   // firing the old "missing number" yoga alongside it.
-  for (const cy of analyzeColumnYogas(annualFreq)) {
-    yogas.push({ id: cy.id, name: cy.name, positive: cy.positive, description: cy.description });
+  const dashaCtx = { natalFreq, basic, destiny, maha, antar };
+  for (const cy of analyzeColumnYogas(annualFreq, dashaCtx)) {
+    yogas.push({ id: cy.id, name: cy.name, positive: cy.positive, active: cy.active, intensity: cy.intensity, description: cy.description });
   }
 
   // ── EASY MONEY (5+7) ──────────────────────────────────────────────────────
@@ -259,39 +269,15 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
     yogas.push({ id: 'easy_money', name: 'Easy Money', positive: true });
   }
 
-  // ── BANDHAN YOGA (9+4 without 5) ──────────────────────────────────────────
-  // 5 is the grid blocker between 9 and 4 (last column: 9-5-4) — check natal
-  // for absence of 5. Also carries elevated surgery risk (per source rule).
-  if (natalNums.includes(9) && natalNums.includes(4) && !natalNums.includes(5)) {
-    yogas.push({ id: 'bandhan', name: 'Constraint Energy', positive: false });
-  }
+  // NOTE: Bandhan (9-4 no 5), Financial Bandhan (5-4 no 9), Row Bandhan
+  // (8-4 no 2), and Depression Yoga (2-8 no 4) are now sourced from the
+  // shared analyzeColumnYogas() call above — analyzeColumn3/analyzeRow3 in
+  // column_yogas.js — using the full annual view plus the dasha-negative
+  // gate, instead of the old natal-only checks with no gating.
 
-  // ── FINANCIAL BANDHAN (5+4 without 9) ─────────────────────────────────────
-  // Check natal — Dasha bringing 9 should not cancel a natal financial bandhan
-  if (natalNums.includes(5) && natalNums.includes(4) && !natalNums.includes(9)) {
-    yogas.push({ id: 'financial_bandhan', name: 'Financial Caution', positive: false });
-  }
-
-  // ── ROW BANDHAN (8+4 without 2) ───────────────────────────────────────────
-  // Last row is 2-8-4. 2 is the blocker between 8 and 4 — its absence lets 8
-  // and 4 connect directly, an accident-risk combination (source rule).
-  if (natalNums.includes(8) && natalNums.includes(4) && !natalNums.includes(2)) {
-    yogas.push({ id: 'row_bandhan', name: 'Physical Constraint', positive: false });
-  }
-
-  // ── DEPRESSION YOGA (2+8 without 4) ───────────────────────────────────────
-  // Same last row (2-8-4), missing 4 instead of 2 — a different gap in the
-  // same row, and per the source rule this one carries both depression risk
-  // and accident/mishap risk, not just one or the other.
-  if (natalNums.includes(2) && natalNums.includes(8) && !natalNums.includes(4)) {
-    yogas.push({ id: 'depression_yoga', name: 'Emotional Weight', positive: false });
-  }
-
-  // ── VIPREET RAJ (2+8+4) ───────────────────────────────────────────────────
-  // Annual chart — Dasha can trigger this
-  if (annualNums.includes(2) && annualNums.includes(8) && annualNums.includes(4)) {
-    yogas.push({ id: 'vipreet_raj', name: 'Adversity to Triumph', positive: true });
-  }
+  // NOTE: Vipreet Raj Yoga (2-8-4 all present) is now sourced from the shared
+  // analyzeColumnYogas() call above — analyzeRow3's all-present branch in
+  // column_yogas.js — with the fuller description instead of this bare flag.
 
   // ── 3-1-9 UPLIFTING ───────────────────────────────────────────────────────
   // Annual chart — Dasha can add the missing number
@@ -371,18 +357,39 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
 }
 
 // ─── Get chart modifiers ─────────────────────────────────────────────────────
-function getChartModifiers(nums, freq, basic, destiny, natalNums = []) {
+// natalFreq/maha/antar are optional — pass them to get the Sept 2026
+// dasha-negative gate applied to the negative modifiers (has_bandhan,
+// has_financial_bandhan, has_row_bandhan, has_depression_yoga only fire
+// while the currently running dasha is itself negative) and the Raj Yoga
+// strength tier. Omitting them falls back to the old structural-only check.
+function getChartModifiers(nums, freq, basic, destiny, natalNums = [], natalFreq, maha, antar) {
   const mods = [];
   if (nums.includes(3) && nums.includes(1) && nums.includes(9)) mods.push('has_319');
   if (nums.includes(6) && nums.includes(7) && nums.includes(5)) mods.push('has_675');
   if (nums.includes(2) && nums.includes(8) && nums.includes(4)) mods.push('has_284');
   if (nums.includes(1) && nums.includes(7) && nums.includes(8)) mods.push('has_178');
-  if (nums.includes(1) && nums.includes(2) && !natalNums.includes(3) && !natalNums.includes(6)) mods.push('has_raj_yoga');
+
+  if (nums.includes(1) && nums.includes(2) && !natalNums.includes(3) && !natalNums.includes(6)) {
+    mods.push('has_raj_yoga');
+    const isStrong = (basic === 1 && destiny === 1) || (basic === 2 && destiny === 1) || (basic === 2 && destiny === 2);
+    const onePolarity = dashaNumberPolarity(1, { natalFreq: natalFreq || {}, fullFreq: freq, basic, destiny });
+    const isWeak = destiny === 4 || destiny === 8 || onePolarity.negative;
+    if (isStrong) mods.push('has_raj_yoga_strong');
+    else if (isWeak) mods.push('has_raj_yoga_weak');
+  }
+
   if (nums.includes(5) && nums.includes(7)) mods.push('has_easy_money');
-  if (nums.includes(9) && nums.includes(4) && !nums.includes(5)) mods.push('has_bandhan');
-  if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) mods.push('has_financial_bandhan');
-  if (nums.includes(8) && nums.includes(4) && !nums.includes(2)) mods.push('has_row_bandhan');
-  if (nums.includes(2) && nums.includes(8) && !nums.includes(4)) mods.push('has_depression_yoga');
+
+  // No dasha context supplied — fall back to old always-on behavior
+  const gate = (natalFreq && maha !== undefined && antar !== undefined)
+    ? currentDashaGate({ maha, antar, natalFreq, fullFreq: freq, basic, destiny })
+    : { active: true };
+
+  if (nums.includes(9) && nums.includes(4) && !nums.includes(5) && gate.active) mods.push('has_bandhan');
+  if (nums.includes(5) && nums.includes(4) && !nums.includes(9) && gate.active) mods.push('has_financial_bandhan');
+  if (nums.includes(8) && nums.includes(4) && !nums.includes(2) && gate.active) mods.push('has_row_bandhan');
+  if (nums.includes(2) && nums.includes(8) && !nums.includes(4) && gate.active) mods.push('has_depression_yoga');
+
   if (nums.includes(3) && nums.includes(7) && nums.includes(9)) mods.push('has_spiritual_379');
   if ((freq[2] || 0) >= 2) mods.push('multiple_2');
   if ((freq[4] || 0) >= 2 && (freq[4] % 2 !== 0)) mods.push('multiple_4_odd');
@@ -803,7 +810,7 @@ export function generateWeeklyPrediction(ctx, targetDate = new Date().toISOStrin
     })),
     opportunities: deepText?.opportunities || buildOpportunities(maha, antar, yogas, 'weekly'),
     watch_out: deepText?.watch_out || buildWatchOut(maha, antar, yogas, freqMap, 'weekly'),
-    money_this_week: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'weekly'),
+    money_this_week: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'weekly', monthly, null, ctx.natalFreq, basic, destiny),
     love_this_week: deepText?.relationships || getRelationshipSignal(maha, antar, yogas, 'weekly'),
     health_this_week: deepText?.health || getHealthWatch(basic, destiny, maha, antar),
     days_breakdown,
@@ -900,7 +907,7 @@ export function generateMonthlyPrediction(ctx, targetDate = new Date().toISOStri
       },
     ],
     finance: {
-      signal: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'monthly'),
+      signal: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'monthly', monthly, null, ctx.natalFreq, basic, destiny),
       action: getFinanceAction(maha, antar, yogas),
     },
     relationships: {
@@ -986,7 +993,7 @@ export function generateYearlyPrediction(ctx, targetDate = new Date().toISOStrin
     risky_months: deepText?.risky_months || (riskyMonths.length > 0 ? `${riskyMonths.join(', ')} require more caution` : null),
     this_year_specifically: cleanText(comboText.split('.').slice(0,2).join('.')),
     finance: {
-      year_signal: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'yearly'),
+      year_signal: deepText?.finance || getFinanceSignal(freqMap, maha, antar, 'yearly', null, null, ctx.natalFreq, basic, destiny),
       your_pattern: personalPattern?.money || null,
     },
     relationships: {
@@ -1201,14 +1208,17 @@ function getYogaContext(yogas, period) {
   };
 }
 
-function getFinanceSignal(freqMap, maha, antar, period, monthly = null, daily = null) {
+function getFinanceSignal(freqMap, maha, antar, period, monthly = null, daily = null, natalFreq = null, basic = null, destiny = null) {
   const signals = [];
   const nums = Object.keys(freqMap).map(Number);
   const c8 = freqMap[8] || 0;
 
   // Natal combinations
   if (nums.includes(5) && nums.includes(7)) signals.push("Easy Money combination in your chart — financial opportunities arrive with less friction than average.");
-  if (nums.includes(5) && nums.includes(4) && !nums.includes(9)) signals.push("Financial Bandhan in your natal — save actively and defer large purchases.");
+  const financialBandhanGate = natalFreq
+    ? currentDashaGate({ maha, antar, natalFreq, fullFreq: freqMap, basic, destiny })
+    : { active: true }; // no dasha context supplied — fall back to old always-on behavior
+  if (nums.includes(5) && nums.includes(4) && !nums.includes(9) && financialBandhanGate.active) signals.push("Financial Bandhan in your natal — save actively and defer large purchases.");
   if (c8 >= 2 && c8 % 2 === 0) signals.push("Even 8s in your chart support disciplined wealth accumulation this period.");
 
   // Maha+antar combination

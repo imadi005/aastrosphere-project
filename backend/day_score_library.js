@@ -269,6 +269,8 @@ export function getDayScore(ctx) {
     else if (ENEMY[maha]?.includes(daily)) score -= 8;
     if (FRIENDLY[antar]?.includes(daily)) score += 5;
     else if (ENEMY[antar]?.includes(daily)) score -= 5;
+    if (FRIENDLY[monthly]?.includes(daily)) score += 3;
+    else if (ENEMY[monthly]?.includes(daily)) score -= 3;
     if (!natalNums.includes(daily)) score += 6;
     if (daily === basic) score += 5;
     if (daily === destiny) score += 3;
