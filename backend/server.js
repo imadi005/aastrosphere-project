@@ -790,8 +790,8 @@ app.post('/api/predict/finance', (req, res) => {
     // currently running dasha is itself negative (Sept 2026 gate).
     const financeGate = currentDashaGate({ maha: maha.number, antar: antar.number, natalFreq, fullFreq: freqMap, basic, destiny });
     if (nums.includes(4) && (freqMap[4] % 2 !== 0)) negative_indicators.push('Odd 4 present — expenses, impulsive spending, financial caution needed.');
-    if (nums.includes(9) && nums.includes(4) && !nums.includes(5) && financeGate.active) negative_indicators.push('Bandhan Yoga (9-4) — financial restrictions, feeling stuck.');
-    if (nums.includes(5) && nums.includes(4) && !nums.includes(9) && financeGate.active) negative_indicators.push('Financial Bandhan (5-4) — debt risk, impulsive spending.');
+    if (nums.includes(9) && nums.includes(4) && !nums.includes(5) && financeGate.active) negative_indicators.push('Bandhan Yoga — financial restrictions, feeling stuck.');
+    if (nums.includes(5) && nums.includes(4) && !nums.includes(9) && financeGate.active) negative_indicators.push('Financial Bandhan — debt risk, impulsive spending.');
     if ((freqMap[9] || 0) >= 2 && !(basic === 9 && destiny === 9)) negative_indicators.push('Multiple 9 — frustration may affect financial decisions.');
 
     res.json({

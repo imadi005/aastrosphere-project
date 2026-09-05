@@ -14,7 +14,9 @@
 //   Column 2 (middle): 1 (top) · 7 (middle) · 8 (bottom)
 //   Column 3 (right):  9 (top) · 5 (middle) · 4 (bottom)
 //   Row 1 (top):       3 (left) · 1 (middle) · 9 (right)
+//   Row 2 (middle):    6 (left) · 7 (middle) · 5 (right)
 //   Row 3 (bottom):    2 (left) · 8 (middle) · 4 (right)
+//   Diagonal 1:        3 (top-left) · 7 (center) · 4 (bottom-right) — all-or-nothing, no missing-number reading
 //
 // CORE RULE FROM THE RECORDING (applies to every combination below):
 //   Whether a number counts as "present" or "missing" is judged against the
@@ -73,9 +75,7 @@ export function analyzeColumn1(annualFreq, dashaCtx) {
 
   // ── All three present — a distinct, generally constructive combination ──
   if (n3 && n6 && n2) {
-    let desc = 'Jupiter, Venus and Moon all active together — creative or artistic instincts backed by ' +
-      'ethics and emotional steadiness, rather than any single one of the individual 3-6 or 6-2 or 3-2 ' +
-      'patterns pulling on its own.';
+    let desc = 'Creative or artistic instincts, backed by ethics and emotional steadiness.';
     const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
     out.push({ id: 'col1_all_present', name: 'Grounded Creativity', positive: true, active, intensity, description: desc + suffix });
     return out; // all-three overrides the individual missing-based readings below
@@ -127,9 +127,7 @@ export function analyzeColumn2(annualFreq, dashaCtx) {
 
   // ── All three present — "High Intuition", already a known positive read ──
   if (n1 && n7 && n8) {
-    let desc = 'Sun, Ketu and Saturn all active together — sharp intuitive instincts backed by discipline. ' +
-      'This is its own distinct combination, not the bad-luck or defamation reading that applies when one ' +
-      'of the three is missing.';
+    let desc = 'Sharp intuitive instincts, backed by real discipline.';
     const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
     out.push({ id: 'high_intuition', name: 'High Intuition', positive: true, active, intensity, description: desc + suffix });
     return out; // all-three overrides the individual missing-based readings below
@@ -186,10 +184,9 @@ export function analyzeColumn3(annualFreq, dashaCtx) {
 
   // ── All three present — Multi-Skilling Yoga ──
   if (n9 && n5 && n4) {
-    let desc = 'Mars, Mercury and Rahu all active together — a multi-skilled, multi-talented, ' +
-      'multi-tasking jack-of-all-trades combination. Mostly positive: it mitigates and stabilizes Rahu’s ' +
-      'usual negative impact rather than any single one of the individual 9-5, 9-4, or 5-4 patterns pulling ' +
-      'on its own. One real downside — mastery in any single field tends to stay out of reach.';
+    let desc = 'A multi-skilled, multi-talented, multi-tasking jack-of-all-trades quality. Mostly positive, ' +
+      'and it eases the usual difficulty around impulsive spending and instability that can otherwise show up. ' +
+      'One real downside — mastery in any single field tends to stay out of reach.';
     const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
     out.push({ id: 'col3_all_present', name: 'Multi-Skilling Yoga', positive: true, active, intensity, description: desc + suffix });
     return out; // all-three overrides the individual missing-based readings below
@@ -200,17 +197,16 @@ export function analyzeColumn3(annualFreq, dashaCtx) {
   // connect directly — the classic accident-and-hospitalization combination,
   // and per the source rule also carries a notably higher surgery chance.
   if (n9 && n4 && !n5) {
-    let desc = 'Rahu and Mars connect directly with Mercury missing between them — Bandhan Yoga: suffocation, ' +
-      'a chronically unsatisfied feeling, legal issues, and hospitalization risk. This combination also ' +
-      'carries a notably higher chance of surgery.';
+    let desc = 'A suffocating, chronically unsatisfied feeling, legal issues, and hospitalization risk. ' +
+      'Also carries a notably higher chance of surgery.';
     const { active, intensity, suffix } = gateSuffix(annualFreq, dashaCtx);
     out.push({ id: 'bandhan', name: 'Bandhan Yoga', positive: false, active, intensity, description: desc + suffix });
   }
 
   // ── 9 & 5 present, 4 missing — sharp financial mind, manipulative/fraud risk ──
   if (n9 && n5 && !n4) {
-    let desc = 'Mars and Mercury present, Rahu missing — a sharp, talkative mind with a strong grasp of ' +
-      'financial matters, but a manipulative streak that can tip into fraudulent tendencies.';
+    let desc = 'A sharp, talkative mind with a strong grasp of financial matters, but a manipulative streak ' +
+      'that can tip into fraudulent tendencies.';
     if (c5 >= 3 && c9 === 1) {
       desc += ' Mercury repeating 3 or more times alongside a single Mars is the specific fraud-committer ' +
         'signature — real risk of getting involved in fraudulent activity.';
@@ -227,8 +223,7 @@ export function analyzeColumn3(annualFreq, dashaCtx) {
 
   // ── 5 & 4 present, 9 missing — Financial Bandhan, with a fraud-victim escalation ──
   if (n5 && n4 && !n9) {
-    let desc = 'Mercury and Rahu present, Mars missing — Financial Bandhan: impulsive spending and ' +
-      'debt-accumulation risk.';
+    let desc = 'Impulsive spending and debt-accumulation risk.';
     const maleMissing = ![1, 3, 9].some(m => has(annualFreq, m));
     const femalePresent = [2, 6, 8].every(f => has(annualFreq, f));
     if (c5 >= 3 && maleMissing && femalePresent) {
@@ -250,10 +245,9 @@ export function analyzeRow3(annualFreq, dashaCtx) {
 
   // ── All three present — Vipreet Raj Yoga ──
   if (n2 && n8 && n4) {
-    let desc = 'Moon, Saturn and Rahu all active together — Vipreet Raj Yoga. A lot of ups and downs, ' +
-      'real struggle along the way, but despite all of it, real success is achievable. Any kind of addiction ' +
-      'must be avoided — it undermines this combination badly. Two real downsides: difficulties in married ' +
-      'life are common, and the unpredictable nature of life events under this combination can keep a ' +
+    let desc = 'A lot of ups and downs, real struggle along the way, but despite all of it, real success is ' +
+      'achievable. Any kind of addiction must be avoided — it undermines this badly. Two real downsides: ' +
+      'difficulties in married life are common, and the unpredictable nature of life events can keep a ' +
       'person living with underlying fear.';
     const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
     out.push({ id: 'vipreet_raj', name: 'Vipreet Raj Yoga', positive: true, active, intensity, description: desc + suffix });
@@ -264,12 +258,12 @@ export function analyzeRow3(annualFreq, dashaCtx) {
   // 2 is the blocker between 8 and 4; its absence lets Saturn and Rahu
   // connect directly. Also layers in 8's own odd/even repetition polarity.
   if (n8 && n4 && !n2) {
-    let desc = 'Saturn and Rahu connect directly with Moon missing between them — an accident-risk combination.';
+    let desc = 'Elevated accident risk.';
     if (dashaCtx) {
       const polarity8 = dashaNumberPolarity(8, { natalFreq: dashaCtx.natalFreq, fullFreq: annualFreq, basic: dashaCtx.basic, destiny: dashaCtx.destiny });
       desc += polarity8.negative
-        ? ' Saturn’s own repetition pattern in the chart is currently unfavorable, adding to the risk.'
-        : ' Saturn’s own repetition pattern in the chart is currently favorable, easing this.';
+        ? ' The current pattern in the chart is unfavorable, adding to the risk.'
+        : ' The current pattern in the chart is favorable, easing this.';
     }
     const { active, intensity, suffix } = gateSuffix(annualFreq, dashaCtx);
     out.push({ id: 'row_bandhan', name: 'Row Bandhan — Accident Risk', positive: false, active, intensity, description: desc + suffix });
@@ -279,17 +273,16 @@ export function analyzeRow3(annualFreq, dashaCtx) {
   // Same bottom row, missing 4 instead of 2 — per the source rule this
   // carries both depression risk AND accident/mishap risk together.
   if (n2 && n8 && !n4) {
-    let desc = 'Moon and Saturn present, Rahu missing — Depression Yoga. Carries emotional-weight and ' +
-      'depression risk alongside accident and mishap risk, together capable of significantly disturbing the ' +
-      'person overall.';
+    let desc = 'Carries emotional-weight and depression risk alongside accident and mishap risk, together ' +
+      'capable of significantly disturbing the person overall.';
     const { active, intensity, suffix } = gateSuffix(annualFreq, dashaCtx);
     out.push({ id: 'depression_yoga', name: 'Depression Yoga', positive: false, active, intensity, description: desc + suffix });
   }
 
   // ── 2 & 4 present, 8 missing ──
   if (n2 && n4 && !n8) {
-    let desc = 'Moon and Rahu present, Saturn missing — mostly a negative combination: negative thought ' +
-      'process, legal issues, difficult financial situations, and disturbances on the emotional front.';
+    let desc = 'Mostly negative: negative thought process, legal issues, difficult financial situations, ' +
+      'and disturbances on the emotional front.';
     if (c2 > 1 && !isEven(c4) && c4 > 1) {
       desc += ' Moon repeating multiple times alongside Rahu appearing in odd multiples amplifies the ' +
         'negative impact further.';
@@ -311,9 +304,9 @@ export function analyzeRow1(annualFreq, dashaCtx) {
 
   // ── All three present — Full Power Triad, Raj Yoga if each number reads positive ──
   if (n3 && n1 && n9) {
-    let desc = 'Jupiter, Sun and Mars all active together — a very powerful combination that brings the best ' +
-      'out of a person. Highly ambitious, hardworking, and natural leaders. Knowledge-driven and full of ' +
-      'imagination, which gives real leverage to work independently and differently.';
+    let desc = 'A very powerful combination that brings the best out of a person. Highly ambitious, ' +
+      'hardworking, and a natural leader. Knowledge-driven and full of imagination, which gives real leverage ' +
+      'to work independently and differently.';
     let isRajYoga = false;
     if (dashaCtx) {
       const polCtx = { natalFreq: dashaCtx.natalFreq, fullFreq: annualFreq, basic: dashaCtx.basic, destiny: dashaCtx.destiny };
@@ -331,11 +324,11 @@ export function analyzeRow1(annualFreq, dashaCtx) {
 
   // ── 1 & 9 present, 3 missing ──
   if (n1 && n9 && !n3) {
-    let desc = 'Sun and Mars present, Jupiter missing — a very high temperament, quick to anger, and anger ' +
-      'management is essential or it causes real problems in life. Very intelligent, inclined toward and ' +
-      'achieves higher education. Dislikes working under someone — wants independence in whatever work they ' +
-      'do. Achieves real success in life, but anger management remains the key requirement. Career leans ' +
-      'toward engineering, and also medicine — where their intelligence can lead toward surgery-type choices.';
+    let desc = 'A very high temperament, quick to anger, and anger management is essential or it causes real ' +
+      'problems in life. Very intelligent, inclined toward and achieves higher education. Dislikes working ' +
+      'under someone — wants independence in whatever work they do. Achieves real success in life, but anger ' +
+      'management remains the key requirement. Career leans toward engineering, and also medicine — where ' +
+      'their intelligence can lead toward surgery-type choices.';
     if (c9 > 1) desc += ' Repeated Mars can turn this into frustration and suppressed anger — anger that stays bottled up rather than coming out.';
     if (c1 > 1) desc += ' Repeated Sun amplifies both the anger and the authoritative nature further.';
     out.push({ id: 'row1_1_9', name: 'Sun-Mars (no Jupiter)', positive: false, description: desc });
@@ -343,10 +336,9 @@ export function analyzeRow1(annualFreq, dashaCtx) {
 
   // ── 3 & 1 present, 9 missing ──
   if (n3 && n1 && !n9) {
-    let desc = 'Jupiter and Sun present, Mars missing — generally highly educated, working hard and with ' +
-      'intelligence to achieve professional success. Knowledge and wisdom earn real respect in society, and ' +
-      'the highest positions in their profession are reachable. Very effective communicators, with a real ' +
-      'chance of becoming educational heads in their profession.';
+    let desc = 'Generally highly educated, working hard and with intelligence to achieve professional success. ' +
+      'Knowledge and wisdom earn real respect in society, and the highest positions in their profession are ' +
+      'reachable. Very effective communicators, with a real chance of becoming educational heads in their profession.';
     if (c3 > 1) desc += ' Repeated Jupiter can result in lesser moral values — an attraction toward unfair means — though the other characteristics stay the same.';
     if (c1 > 1) desc += ' Repeated Sun can result in ego and a demand for authority.';
     const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
@@ -355,13 +347,75 @@ export function analyzeRow1(annualFreq, dashaCtx) {
 
   // ── 3 & 9 present, 1 missing ──
   if (n3 && n9 && !n1) {
-    let desc = 'Jupiter and Mars present, Sun missing — Jupiter represents wisdom and intellect, Mars ' +
-      'represents energy and aggression, so this combination is generally very energetic and drawn toward ' +
-      'educational pursuits. However, the absence of Sun means leadership qualities and authoritative ' +
-      'abilities can be lacking.';
+    let desc = 'Generally very energetic and drawn toward educational pursuits, combining wisdom and ' +
+      'intellect with real energy and drive. However, leadership qualities and authoritative abilities can be lacking.';
     if (c9 > 1) desc += ' Repeated Mars can lead to aggression in behavior.';
     if (c3 > 1) desc += ' Repeated Jupiter can cause a deviation from moral values.';
     out.push({ id: 'row1_3_9', name: 'Jupiter-Mars (no Sun)', positive: false, description: desc });
+  }
+
+  return out;
+}
+
+// ─── ROW 2 (middle row) — Venus(6) / Ketu(7) / Mercury(5) ───────────────────
+export function analyzeRow2(annualFreq, dashaCtx) {
+  const n6 = has(annualFreq, 6), n7 = has(annualFreq, 7), n5 = has(annualFreq, 5);
+  const c6 = count(annualFreq, 6), c7 = count(annualFreq, 7), c5 = count(annualFreq, 5);
+  const out = [];
+
+  // ── 6 & 7 present, 5 missing ──
+  if (n6 && n7 && !n5) {
+    let desc = 'An attractive aura that naturally draws other people in. Artistic inclination, and a real ' +
+      'tendency toward multiple love affairs and flirting. Even so, their love affairs tend to be mostly ' +
+      'stable, thanks to that same attractive aura and a real depth of emotion underneath it.';
+    if (c6 > 1) desc += ' Repetition can bring foul-mouthed, blunt, and abusive behavior — hurting their relationships and communication with others.';
+    if (c7 > 1) desc += ' Repetition can cause instability, fluctuations, and challenges of all kinds.';
+    const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'row2_6_7', name: 'Venus-Ketu (no Mercury)', positive: true, active, intensity, description: desc + suffix });
+  }
+
+  // ── 6 & 5 present, 7 missing ──
+  if (n6 && n5 && !n7) {
+    let desc = 'An anti-combination — real challenges in communication, love affairs, and family ' +
+      'relationships. Good understanding of and genuine interest in business, but tends to fail at proper ' +
+      'negotiation in financial matters. Obstructions in reaching higher education are common, whether from ' +
+      'personal performance or from family circumstances. Repetition of either number doesn\'t change this ' +
+      'combination\'s core nature — it stays the same regardless of how many times 5 or 6 appear.';
+    const { active, intensity, suffix } = gateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'row2_6_5', name: 'Venus-Mercury (no Ketu)', positive: false, active, intensity, description: desc + suffix });
+  }
+
+  // ── 7 & 5 present, 6 missing ──
+  if (n7 && n5 && !n6) {
+    let desc = 'A lack of emotional attachment, which tends to disturb relationships — sometimes leading to ' +
+      'several relationships over a lifetime. Very good communication skills, both verbal and written. A real ' +
+      'interest in the occult, and generally a good relationship with their mother.';
+    if (c5 > 1) desc += ' Repetition of Mercury can lead to alcohol consumption, stress, and lack of sleep — insomnia.';
+    if (c7 > 1 && c5 > 1) desc += ' When both Ketu and Mercury appear in multiples together, it brings instability in relationships as well as in other aspects of life.';
+    const { active, intensity, suffix } = gateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'row2_7_5', name: 'Ketu-Mercury (no Venus)', positive: false, active, intensity, description: desc + suffix });
+  }
+
+  return out;
+}
+
+// ─── DIAGONAL 1 — Jupiter(3) / Ketu(7) / Rahu(4) ────────────────────────────
+// Unlike the rows/columns above, this diagonal is all-or-nothing per the
+// source rule: there is no "missing one number" reading at all. All three
+// must be present (natal, or completed by a running dasha) for any result;
+// if the combination is completed by a dasha, the result only lasts for as
+// long as that dasha runs — dasha ends, result ends. Since presence is
+// always checked against the full combined chart here already, that timing
+// falls out naturally without extra code.
+export function analyzeDiagonal1(annualFreq, dashaCtx) {
+  const n3 = has(annualFreq, 3), n7 = has(annualFreq, 7), n4 = has(annualFreq, 4);
+  const out = [];
+
+  if (n3 && n7 && n4) {
+    let desc = 'Early and easy success. If this reading arrived through a currently running dasha rather ' +
+      'than being present from birth, it lasts exactly as long as that dasha does.';
+    const { active, intensity, suffix } = positiveGateSuffix(annualFreq, dashaCtx);
+    out.push({ id: 'diagonal1_374', name: 'Jupiter-Ketu-Rahu — Raj Yoga', positive: true, active, intensity, description: desc + suffix });
   }
 
   return out;
@@ -377,6 +431,8 @@ export function analyzeColumnYogas(annualFreq, dashaCtx) {
     ...analyzeColumn2(annualFreq, dashaCtx),
     ...analyzeRow1(annualFreq, dashaCtx),
     ...analyzeColumn3(annualFreq, dashaCtx),
+    ...analyzeRow2(annualFreq, dashaCtx),
     ...analyzeRow3(annualFreq, dashaCtx),
+    ...analyzeDiagonal1(annualFreq, dashaCtx),
   ];
 }

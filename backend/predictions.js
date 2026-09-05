@@ -313,15 +313,13 @@ export const YOGAS = {
   },
   stable_luxury: {
     name: 'Stable Luxury / Multimillionaire',
-    trigger: '2-7-9 or 3-7-4',
+    trigger: '6-7-5',
     benefits: ['Financial stability', 'Wealth accumulation', 'Multimillionaire potential'],
   },
-  profession_stable: {
-    name: 'Profession Stable',
-    trigger: '3-7-4',
-    benefits: ['Stable career', 'Consistent growth', 'Professional security'],
-    warning: 'If any of 3/7/4 becomes negative via Dasha = negative effects added.',
-  },
+  // NOTE: The old 3-7-4 "profession_stable" entry that used to live here was
+  // never actually wired to any detection code (dead reference text). The
+  // real 3-7-4 combination is now implemented as analyzeDiagonal1() in
+  // column_yogas.js — id 'diagonal1_374', "Jupiter-Ketu-Rahu — Raj Yoga".
   vipreet_raj: {
     name: 'Vipreet Raj Yoga',
     trigger: '2-8-4',
@@ -429,7 +427,7 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
 
   // Easy Money
   if (nums.includes(5) && nums.includes(7)) {
-    detected.push({ yoga: 'Easy Money (5-7)', description: YOGAS.easy_money.benefits.join(', '), active: posGate.active, intensity: posGate.intensity });
+    detected.push({ yoga: 'Easy Money', description: YOGAS.easy_money.benefits.join(', '), active: posGate.active, intensity: posGate.intensity });
   }
 
   // NOTE: Bandhan Yoga (9-4 no 5) and Financial Bandhan (5-4 no 9) are now
@@ -439,23 +437,22 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
   // Spiritual Yoga
   if (nums.includes(3) && nums.includes(7) && nums.includes(9)) {
     detected.push({
-      yoga: 'Spiritual Yoga (3-7-9)',
-      description: 'Jupiter, Ketu and Mars together — spiritual, god-loving, and a real believer in fate. ' +
-        'Spiritual pursuits get given as much value and time as work does, not treated as separate from it.',
+      yoga: 'Spiritual Alignment',
+      description: 'Spiritual, god-loving, and a real believer in fate. Spiritual pursuits get given as much ' +
+        'value and time as work does, not treated as separate from it.',
       active: posGate.active, intensity: posGate.intensity,
     });
   }
 
-  // Feminine Creative (6-2-8) — Venus + Moon + Saturn, a "female numbers" combination
+  // Feminine Creative — a "female numbers" combination
   if (nums.includes(6) && nums.includes(2) && nums.includes(8)) {
     detected.push({
-      yoga: 'Feminine Creative (6-2-8)',
-      description: 'Venus, Moon and Saturn together — a "female numbers" combination, giving real feminine ' +
-        'qualities regardless of the person\'s own gender: generally soft-spoken with motherly behavior, and ' +
-        'more emotional in nature. Highly artistic and creative, with a real pull toward media-related work — ' +
-        'very successful when the profession itself involves media or communication. Saturn\'s presence ' +
-        'disciplines the creative energy, giving it a positive direction that produces genuinely focused, ' +
-        'excellent creative work rather than scattered talent.',
+      yoga: 'Feminine Creative',
+      description: 'Real feminine qualities regardless of the person\'s own gender: generally soft-spoken ' +
+        'with motherly behavior, and more emotional in nature. Highly artistic and creative, with a real pull ' +
+        'toward media-related work — very successful when the profession itself involves media or ' +
+        'communication. A disciplined creative energy that produces genuinely focused, excellent creative ' +
+        'work rather than scattered talent.',
       active: posGate.active, intensity: posGate.intensity,
     });
   }
@@ -486,7 +483,7 @@ export function analyzeGrid(dob, mahaNum, antarNum) {
 
   // 6-7-5 Stable Luxury
   if (nums.includes(6) && nums.includes(7) && nums.includes(5)) {
-    detected.push({ yoga: 'Stable Luxury Life (6-7-5)', description: 'Maintains status even in hard times, luxurious lifestyle.', active: posGate.active, intensity: posGate.intensity });
+    detected.push({ yoga: 'Stable Luxury Life', description: 'Maintains status even in hard times, luxurious lifestyle.', active: posGate.active, intensity: posGate.intensity });
   }
 
   return detected;

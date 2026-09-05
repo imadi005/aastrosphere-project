@@ -298,8 +298,8 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
   if (annualNums.includes(3) && annualNums.includes(7) && annualNums.includes(9)) {
     yogas.push({
       id: 'spiritual', name: 'Spiritual Alignment', positive: true, active: posGate.active, intensity: posGate.intensity,
-      description: 'Jupiter, Ketu and Mars together — spiritual, god-loving, and a real believer in fate. ' +
-        'Spiritual pursuits get given as much value and time as work does, not treated as separate from it.',
+      description: 'Spiritual, god-loving, and a real believer in fate. Spiritual pursuits get given as much ' +
+        'value and time as work does, not treated as separate from it.',
     });
   }
 
@@ -308,12 +308,11 @@ export function detectYogas(natalNums, annualNums, natalFreq, annualFreq, basic,
   if (annualNums.includes(6) && annualNums.includes(2) && annualNums.includes(8)) {
     yogas.push({
       id: 'feminine_creative', name: 'Feminine Creative', positive: true, active: posGate.active, intensity: posGate.intensity,
-      description: 'Venus, Moon and Saturn together — a "female numbers" combination, giving real feminine ' +
-        'qualities regardless of the person\'s own gender: generally soft-spoken with motherly behavior, and ' +
-        'more emotional in nature. Highly artistic and creative, with a real pull toward media-related work — ' +
-        'very successful when the profession itself involves media or communication. Saturn\'s presence ' +
-        'disciplines the creative energy, giving it a positive direction that produces genuinely focused, ' +
-        'excellent creative work rather than scattered talent.',
+      description: 'Real feminine qualities regardless of the person\'s own gender: generally soft-spoken ' +
+        'with motherly behavior, and more emotional in nature. Highly artistic and creative, with a real pull ' +
+        'toward media-related work — very successful when the profession itself involves media or ' +
+        'communication. A disciplined creative energy that produces genuinely focused, excellent creative ' +
+        'work rather than scattered talent.',
     });
   }
 
