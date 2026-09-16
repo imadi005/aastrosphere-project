@@ -172,14 +172,6 @@ class _SplashScreenState extends State<SplashScreen>
                             letterSpacing: 0.6,
                           )),
 
-                      const SizedBox(height: 4),
-
-                      Text('Palmist',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 10,
-                            color: AppColors.textSecondaryLight.withOpacity(0.5),
-                            letterSpacing: 1.2,
-                          )),
                     ],
                   ),
                 ),
