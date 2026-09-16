@@ -10,15 +10,13 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      vars:
-        BUNDLE_ID: "com.aastrosphere.app"
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.aastrosphere.app
     scripts:
       - name: Set up code signing
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create
           keychain add-certificates
           xcode-project use-profiles
       - name: Get Flutter packages
