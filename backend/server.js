@@ -390,6 +390,7 @@ app.post('/api/purchase/verify', requireAuth, async (req, res) => {
     const result = await verifyAndGrant({ uid: req.uid, platform, productId, purchaseToken, receiptData });
     res.json({ success: true, product: result.product, already_processed: result.alreadyProcessed });
   } catch (e) {
+    console.error('purchase/verify failed:', e.message, e.stack);
     res.status(400).json({ success: false, error: e.message });
   }
 });
