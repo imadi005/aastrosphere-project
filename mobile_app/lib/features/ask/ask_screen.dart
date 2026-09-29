@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/services/analytics_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
@@ -148,14 +150,16 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
     }
   }
 
+  // Chat history lives ONLY on-device (SharedPreferences), never on the
+  // server — nobody but the user, not even us, can read past conversations.
+  // Keyed by uid so a shared/borrowed device still keeps histories separate.
   Future<void> _loadHistory(String uid) async {
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users').doc(uid)
-          .collection('chat_history').doc('messages').get();
-      
-      if (doc.exists && doc.data() != null) {
-        final history = (doc.data()!['messages'] as List? ?? []);
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('chat_history_$uid');
+
+      if (raw != null) {
+        final history = jsonDecode(raw) as List;
         final loaded = history.map((m) {
           final ts = m['ts'] as int?;
           return ChatMessage(
@@ -202,10 +206,8 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
               })
           .toList();
       
-      await FirebaseFirestore.instance
-          .collection('users').doc(_uid!)
-          .collection('chat_history').doc('messages')
-          .set({'messages': toSave, 'updated_at': FieldValue.serverTimestamp()});
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('chat_history_${_uid!}', jsonEncode(toSave));
     } catch (e) {
       debugPrint('History save error: $e');
     }
@@ -390,12 +392,10 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
       _messages.clear();
       _addWelcomeMessage(context);
     });
-    // Clear from Firestore too
+    // Clear the on-device copy too
     if (_uid != null) {
-      FirebaseFirestore.instance
-          .collection('users').doc(_uid!)
-          .collection('chat_history').doc('messages')
-          .delete().catchError((_) {});
+      SharedPreferences.getInstance()
+          .then((prefs) => prefs.remove('chat_history_${_uid!}'));
     }
   }
 
