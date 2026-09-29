@@ -56,15 +56,19 @@ async function verifyAndroidPurchase({ productId, purchaseToken, isSubscription 
   const packageName = process.env.ANDROID_PACKAGE_NAME;
   if (!packageName) throw new Error('ANDROID_PACKAGE_NAME env var is not set.');
 
+  console.log('purchaseVerify: requesting OAuth access token...');
   const client = getPlayClient();
   const { token } = await client.getAccessToken();
+  console.log('purchaseVerify: got access token, length', token?.length);
 
   const path = isSubscription
     ? `purchases/subscriptions/${productId}`
     : `purchases/products/${productId}`;
   const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/${path}/tokens/${purchaseToken}`;
 
+  console.log('purchaseVerify: calling Android Publisher API', url);
   const resp = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  console.log('purchaseVerify: Android Publisher API responded', resp.status);
   if (!resp.ok) {
     throw new Error(`Play verification failed: HTTP ${resp.status} — ${await resp.text()}`);
   }
