@@ -100,7 +100,14 @@ class PurchaseService {
 
         case PurchaseStatus.purchased:
           final verified = await _verifyWithBackend(purchase);
-          if (purchase.pendingCompletePurchase) await _iap.completePurchase(purchase);
+          // Only acknowledge/complete with the store once our backend has
+          // actually granted the entitlement. If verification failed (e.g.
+          // a transient backend/network error), leave the purchase
+          // unacknowledged so the store redelivers it — via restorePurchases()
+          // or automatically on next launch — instead of silently losing it.
+          if (verified && purchase.pendingCompletePurchase) {
+            await _iap.completePurchase(purchase);
+          }
           _completeOnce(verified ? PurchaseOutcome.success : PurchaseOutcome.failed);
           break;
 

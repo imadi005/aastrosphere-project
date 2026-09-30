@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/providers/role_provider.dart';
 import '../../core/services/midnight_refresh.dart';
+import '../../core/services/purchase_service.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/widgets/language_picker.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -59,15 +60,23 @@ class _UserShellState extends ConsumerState<_UserShell> with WidgetsBindingObser
     ChartScreen(),
   ];
 
+  final PurchaseService _purchaseService = PurchaseService();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Silent safety net: redelivers any purchase the store completed but our
+    // backend never got to grant (e.g. a past verification outage) so it
+    // gets retried without the user having to find "Restore Purchases"
+    // themselves. Backend grants are idempotent, so this is safe every launch.
+    _purchaseService.restorePurchases().catchError((_) {});
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _purchaseService.dispose();
     super.dispose();
   }
 
