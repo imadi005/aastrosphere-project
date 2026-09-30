@@ -28,6 +28,13 @@ class ChatMessage {
   final String? replySnippet;
   final bool? replyIsUser;
   final DateTime timestamp;
+  /// True for client-generated notices (out-of-credits, not-signed-in,
+  /// server/network errors) — shown in the chat for the user's own
+  /// continuity, but NEVER sent back to the model as conversation history.
+  /// Without this, an old "You're out of questions" bubble gets fed back to
+  /// Claude as a prior assistant turn, and it naturally continues that
+  /// refusal pattern on the next question even after credits are restored.
+  final bool isSystemNotice;
 
   ChatMessage({
     String? id,
@@ -37,6 +44,7 @@ class ChatMessage {
     this.replySnippet,
     this.replyIsUser,
     DateTime? timestamp,
+    this.isSystemNotice = false,
   })  : id = id ?? '${DateTime.now().microsecondsSinceEpoch}',
         apiContent = apiContent ?? content,
         timestamp = timestamp ?? DateTime.now();
@@ -200,6 +208,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
             replySnippet: m['replySnippet'] as String?,
             replyIsUser: m['replyIsUser'] as bool?,
             timestamp: ts != null ? DateTime.fromMillisecondsSinceEpoch(ts) : null,
+            isSystemNotice: m['isSystemNotice'] as bool? ?? false,
           );
         }).toList();
         
@@ -223,10 +232,14 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   Future<void> _saveHistory() async {
     if (_uid == null) return;
     try {
-      // Save last 50 messages (skip welcome message)
-      final toSave = _messages
-          .skip(1)
-          .take(50)
+      // Save the most recent 50 messages (skip welcome message). Was
+      // `.skip(1).take(50)`, which always kept the OLDEST 50 turns after the
+      // welcome message and silently stopped persisting anything new once a
+      // conversation passed 51 messages — fixed to keep the latest 50.
+      final afterWelcome = _messages.skip(1).toList();
+      final toSave = (afterWelcome.length > 50
+              ? afterWelcome.sublist(afterWelcome.length - 50)
+              : afterWelcome)
           .map((m) => {
                 'role': m.role,
                 'content': m.content,
@@ -234,6 +247,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
                 if (m.replySnippet != null) 'replySnippet': m.replySnippet,
                 if (m.replyIsUser != null) 'replyIsUser': m.replyIsUser,
                 'ts': m.timestamp.millisecondsSinceEpoch,
+                if (m.isSystemNotice) 'isSystemNotice': true,
               })
           .toList();
       
@@ -278,9 +292,13 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
     _focusNode.unfocus();
 
     try {
-      // Send last 20 messages for context (memory window)
-      final allHistory = _messages.skip(1).toList();
-      final recentMessages = allHistory.length > 20 
+      // Send last 20 real turns for context (memory window). System notices
+      // (out-of-credits, auth, server/network errors) are excluded — they're
+      // client-only UI, and feeding one back as a prior "assistant" turn
+      // makes the model naturally continue that refusal on later questions
+      // even after the underlying issue (e.g. credits) is resolved.
+      final allHistory = _messages.skip(1).where((m) => !m.isSystemNotice).toList();
+      final recentMessages = allHistory.length > 20
           ? allHistory.sublist(allHistory.length - 20)
           : allHistory;
       final apiMessages = recentMessages
@@ -312,6 +330,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
           _messages.add(ChatMessage(
             role: 'assistant',
             content: '✨ **${e.message}**',
+            isSystemNotice: true,
           ));
           _loading = false;
           _creditsRemaining = 0;
@@ -328,6 +347,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
           _messages.add(ChatMessage(
             role: 'assistant',
             content: '🔒 ${e.message}',
+            isSystemNotice: true,
           ));
           _loading = false;
         });
@@ -338,6 +358,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
           _messages.add(ChatMessage(
             role: 'assistant',
             content: '⚠️ **${e.message}**',
+            isSystemNotice: true,
           ));
           _loading = false;
         });
@@ -351,8 +372,9 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
       if (mounted) {
         setState(() {
           _messages.add(ChatMessage(
-            role: 'assistant', 
-            content: '🔌 **No internet connection**\n\nCheck your network and try again. 🙏'
+            role: 'assistant',
+            content: '🔌 **No internet connection**\n\nCheck your network and try again. 🙏',
+            isSystemNotice: true,
           ));
           _loading = false;
         });
