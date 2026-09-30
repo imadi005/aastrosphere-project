@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'package:in_app_purchase_storekit/store_kit_wrappers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 
 /// Product ids that are consumed (spent) — question packs. Everything else
@@ -32,8 +35,57 @@ class PurchaseService {
   Completer<PurchaseOutcome>? _pending;
   String? _pendingProductId;
 
+  /// The `product` object the backend returned for the most recent
+  /// successful verify — {type, id, label, questions?/periodDays?,
+  /// priceInr, expiresAtMs? (subscriptions only)}. Read this right after
+  /// [buy] resolves with [PurchaseOutcome.success] to show a specific
+  /// confirmation ("+10 questions added" / "Active until 30 Oct") instead
+  /// of a generic one.
+  Map<String, dynamic>? lastVerifiedProduct;
+
   void dispose() {
     _sub?.cancel();
+  }
+
+  static const _pendingKeyPrefix = 'pending_purchase_';
+
+  /// A UPI/store purchase can stay in [PurchaseStatus.pending] for minutes —
+  /// persisted (not just an in-memory flag) so it survives navigating away
+  /// from whatever screen started the purchase, and can be surfaced
+  /// elsewhere (e.g. the Account screen) until it resolves or expires.
+  static Future<void> _savePendingPurchase(String productId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('$_pendingKeyPrefix$uid', jsonEncode({
+      'productId': productId,
+      'startedAt': DateTime.now().millisecondsSinceEpoch,
+    }));
+  }
+
+  static Future<void> clearPendingPurchase() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('$_pendingKeyPrefix$uid');
+  }
+
+  /// The still-unresolved pending purchase for the signed-in user, if any
+  /// and if it hasn't expired (30 min — well past any realistic UPI
+  /// confirmation delay, so a stuck flag doesn't nag forever).
+  static Future<Map<String, dynamic>?> getPendingPurchase() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('$_pendingKeyPrefix$uid');
+    if (raw == null) return null;
+    final data = jsonDecode(raw) as Map<String, dynamic>;
+    final startedAt = data['startedAt'] as int? ?? 0;
+    if (DateTime.now().millisecondsSinceEpoch - startedAt > 30 * 60 * 1000) {
+      await clearPendingPurchase();
+      return null;
+    }
+    return data;
   }
 
   Future<bool> isAvailable() => _iap.isAvailable();
@@ -85,21 +137,27 @@ class PurchaseService {
       switch (purchase.status) {
         case PurchaseStatus.pending:
           // Keep waiting — a later event in this same stream will resolve it.
+          // Persisted so it's visible even if the user navigates away (a
+          // UPI confirmation can take minutes).
+          await _savePendingPurchase(purchase.productID);
           break;
 
         case PurchaseStatus.canceled:
+          await clearPendingPurchase();
           if (purchase.pendingCompletePurchase) await _iap.completePurchase(purchase);
           _completeOnce(PurchaseOutcome.cancelled);
           break;
 
         case PurchaseStatus.error:
           debugPrint('PurchaseService: store reported error — ${purchase.error}');
+          await clearPendingPurchase();
           if (purchase.pendingCompletePurchase) await _iap.completePurchase(purchase);
           _completeOnce(PurchaseOutcome.failed);
           break;
 
         case PurchaseStatus.purchased:
           final verified = await _verifyWithBackend(purchase);
+          await clearPendingPurchase();
           // Only acknowledge/complete with the store once our backend has
           // actually granted the entitlement. If verification failed (e.g.
           // a transient backend/network error), leave the purchase
@@ -119,24 +177,26 @@ class PurchaseService {
 
   Future<bool> _verifyWithBackend(PurchaseDetails purchase) async {
     try {
+      Map<String, dynamic> result;
       if (Platform.isAndroid) {
         final androidPurchase = (purchase as GooglePlayPurchaseDetails).billingClientPurchase;
-        await ApiService.verifyPurchase(
+        result = await ApiService.verifyPurchase(
           platform: 'android',
           productId: purchase.productID,
           purchaseToken: androidPurchase.purchaseToken,
         );
-        return true;
       } else if (Platform.isIOS) {
         final receipt = await SKReceiptManager.retrieveReceiptData();
-        await ApiService.verifyPurchase(
+        result = await ApiService.verifyPurchase(
           platform: 'ios',
           productId: purchase.productID,
           receiptData: receipt,
         );
-        return true;
+      } else {
+        return false;
       }
-      return false;
+      lastVerifiedProduct = result['product'] as Map<String, dynamic>?;
+      return true;
     } catch (e) {
       debugPrint('PurchaseService: backend verification failed — $e');
       return false;

@@ -67,6 +67,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   bool _isTyping = false;
   int? _creditsRemaining;
   bool _viaSubscription = false;
+  bool _lowCreditNudgeShown = false;
   bool _welcomeMessageAdded = false;
   bool _initialQuestionSent = false;
   ChatMessage? _replyTarget;
@@ -109,6 +110,18 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
     }
   }
   
+  void _maybeShowLowCreditNudge() {
+    if (_viaSubscription || _creditsRemaining != 1 || _lowCreditNudgeShown) return;
+    _lowCreditNudgeShown = true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('1 question left — top up?'),
+        action: SnackBarAction(label: 'Top up', onPressed: () => PlansScreen.open(context).then((_) => _loadCredits())),
+        duration: const Duration(seconds: 6),
+      ),
+    );
+  }
+
   Future<void> _loadCredits() async {
     try {
       final r = await ApiService.getCredits();
@@ -116,6 +129,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
         setState(() {
           _creditsRemaining = r['credits'] as int?;
           _viaSubscription = r['subscriptionActive'] == true;
+          if ((_creditsRemaining ?? 0) > 1 || _viaSubscription) _lowCreditNudgeShown = false;
         });
       }
     } catch (_) {
@@ -290,6 +304,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
         });
         _scrollToBottom();
         _saveHistory(); // persist locally on-device only
+        _maybeShowLowCreditNudge();
       }
     } on OutOfCreditsException catch (e) {
       if (mounted) {

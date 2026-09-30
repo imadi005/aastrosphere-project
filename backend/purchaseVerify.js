@@ -182,13 +182,13 @@ export async function verifyAndGrant({ uid, platform, productId, purchaseToken, 
     if (product.type === 'pack') {
       const { grantCredits } = await import('./authMiddleware.js');
       await grantCredits(uid, product.questions);
+      return { alreadyProcessed: false, product };
     } else {
       const { activateSubscription } = await import('./authMiddleware.js');
       const expiresAtMs = result.expiryMs ?? (Date.now() + product.periodDays * 86400000);
       await activateSubscription(uid, expiresAtMs);
+      return { alreadyProcessed: false, product: { ...product, expiresAtMs } };
     }
-
-    return { alreadyProcessed: false, product };
   } catch (e) {
     // Verification failed — release the claim so a legitimate retry isn't
     // permanently blocked by our own idempotency guard.

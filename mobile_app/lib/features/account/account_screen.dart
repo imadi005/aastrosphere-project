@@ -6,6 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/plans_screen.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/purchase_service.dart';
 import '../auth/providers/user_provider.dart';
 
 /// Full account page: editable profile (name/DOB), subscription status,
@@ -23,12 +24,19 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   List<dynamic>? _purchases;
   bool _loadingCredits = true;
   bool _loadingPurchases = true;
+  Map<String, dynamic>? _pendingPurchase;
 
   @override
   void initState() {
     super.initState();
     _loadCredits();
     _loadPurchases();
+    _checkPending();
+  }
+
+  Future<void> _checkPending() async {
+    final p = await PurchaseService.getPendingPurchase();
+    if (mounted) setState(() => _pendingPurchase = p);
   }
 
   Future<void> _loadCredits() async {
@@ -51,7 +59,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
 
   Future<void> _refreshAfterPlansScreen() async {
     setState(() { _loadingCredits = true; _loadingPurchases = true; });
-    await Future.wait([_loadCredits(), _loadPurchases()]);
+    await Future.wait([_loadCredits(), _loadPurchases(), _checkPending()]);
   }
 
   @override
@@ -76,10 +84,14 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         data: (user) {
           if (user == null) return Center(child: Text('No profile found.', style: GoogleFonts.dmSans(color: secondary)));
           return RefreshIndicator(
-            onRefresh: () async { await Future.wait([_loadCredits(), _loadPurchases()]); },
+            onRefresh: () async { await Future.wait([_loadCredits(), _loadPurchases(), _checkPending()]); },
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
               children: [
+                if (_pendingPurchase != null) ...[
+                  PendingPurchaseBanner(isDark: isDark, gold: gold, secondary: secondary),
+                  const SizedBox(height: 16),
+                ],
                 _EditableProfileCard(user: user, isDark: isDark, gold: gold),
                 SectionLabel('Subscription'),
                 _SubscriptionCard(

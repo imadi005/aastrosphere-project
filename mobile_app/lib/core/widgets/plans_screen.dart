@@ -41,14 +41,21 @@ class _PlansScreenState extends State<PlansScreen> {
   Map<String, dynamic>? _pricing;
   bool _loading = true;
   String? _error;
-  String _selectedSubPlanId = 'sub_annual';
+  String _selectedSubPlanId = 'sub_monthly';
   bool _purchasing = false;
   final PurchaseService _purchaseService = PurchaseService();
+  Map<String, dynamic>? _pendingPurchase;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _checkPending();
+  }
+
+  Future<void> _checkPending() async {
+    final p = await PurchaseService.getPendingPurchase();
+    if (mounted) setState(() => _pendingPurchase = p);
   }
 
   @override
@@ -100,6 +107,10 @@ class _PlansScreenState extends State<PlansScreen> {
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                     children: [
+                      if (_pendingPurchase != null) ...[
+                        PendingPurchaseBanner(isDark: isDark, gold: gold, secondary: secondary),
+                        const SizedBox(height: 16),
+                      ],
                       Text(
                         '✨ Unlock Everything',
                         style: GoogleFonts.cormorantGaramond(fontSize: 30, fontWeight: FontWeight.bold, color: gold),
@@ -268,7 +279,7 @@ class _PlansScreenState extends State<PlansScreen> {
     final packs = (_pricing?['question_packs'] as List? ?? []).cast<Map<String, dynamic>>();
     return [
       SizedBox(
-        height: 100,
+        height: 128,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: packs.length,
@@ -276,6 +287,12 @@ class _PlansScreenState extends State<PlansScreen> {
           itemBuilder: (ctx, i) {
             final pack = packs[i];
             final popular = pack['popular'] == true;
+            const packIcons = [
+              Icons.chat_bubble_outline_rounded,
+              Icons.forum_rounded,
+              Icons.workspace_premium_rounded,
+            ];
+            final icon = packIcons[i % packIcons.length];
             return GestureDetector(
               onTap: _purchasing ? null : () => _handlePurchase(kind: 'pack', id: pack['id'] as String),
               child: Container(
@@ -290,9 +307,20 @@ class _PlansScreenState extends State<PlansScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Container(
+                      width: 26, height: 26,
+                      decoration: BoxDecoration(color: gold.withOpacity(0.12), borderRadius: BorderRadius.circular(7)),
+                      child: Icon(icon, size: 14, color: gold),
+                    ),
+                    const SizedBox(height: 8),
                     Text('${pack['questions']} questions', style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
                     Text('₹${pack['priceInr']}', style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.bold, color: gold)),
+                    const SizedBox(height: 2),
+                    Text(
+                      '₹${((pack['priceInr'] as int) / (pack['questions'] as int)).toStringAsFixed(2)}/question',
+                      style: GoogleFonts.dmSans(fontSize: 9, color: secondary),
+                    ),
                     if (popular) ...[
                       const SizedBox(height: 4),
                       Text('Popular', style: GoogleFonts.dmSans(fontSize: 10, color: gold, fontWeight: FontWeight.w600)),
@@ -336,15 +364,18 @@ class _PlansScreenState extends State<PlansScreen> {
 
       switch (outcome) {
         case PurchaseOutcome.success:
-          showMessage('✨ Unlocked! Enjoy.');
+          showMessage(_successMessage(_purchaseService.lastVerifiedProduct));
           Navigator.of(context).pop(); // returns to whatever screen prompted this
           return; // popped — don't touch state below
         case PurchaseOutcome.cancelled:
+          setState(() => _pendingPurchase = null);
           break; // user backed out of the store sheet — nothing to say
         case PurchaseOutcome.pending:
+          setState(() => _pendingPurchase = {'productId': id, 'startedAt': DateTime.now().millisecondsSinceEpoch});
           showMessage('Your purchase is being processed — this can take a moment.');
           break;
         case PurchaseOutcome.failed:
+          setState(() => _pendingPurchase = null);
           showMessage('The purchase couldn\'t be completed. Please try again.');
           break;
       }
@@ -353,6 +384,25 @@ class _PlansScreenState extends State<PlansScreen> {
     } finally {
       if (mounted) setState(() => _purchasing = false);
     }
+  }
+
+  String _successMessage(Map<String, dynamic>? product) {
+    if (product == null) return '✨ Unlocked! Enjoy.';
+    final type = product['type'] as String?;
+    if (type == 'pack') {
+      final questions = product['questions'];
+      return '✨ +$questions questions added!';
+    }
+    if (type == 'subscription') {
+      final expiresAtMs = product['expiresAtMs'] as int?;
+      if (expiresAtMs != null) {
+        final d = DateTime.fromMillisecondsSinceEpoch(expiresAtMs);
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return '✨ Active until ${d.day} ${months[d.month - 1]} ${d.year}';
+      }
+      return '✨ Subscription active. Enjoy!';
+    }
+    return '✨ Unlocked! Enjoy.';
   }
 
   Future<void> _handleRestore() async {
@@ -370,5 +420,38 @@ class _PlansScreenState extends State<PlansScreen> {
         );
       }
     }
+  }
+}
+
+/// Persistent (not a snackbar) notice shown while a UPI/store purchase is
+/// still settling — so it doesn't get missed if the user navigates away
+/// while waiting. Shown here and on the Account screen; clears itself once
+/// the purchase resolves (see PurchaseService._onPurchaseUpdate).
+class PendingPurchaseBanner extends StatelessWidget {
+  final bool isDark;
+  final Color gold;
+  final Color secondary;
+  const PendingPurchaseBanner({super.key, required this.isDark, required this.gold, required this.secondary});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: gold.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: gold.withOpacity(0.25), width: 0.5),
+      ),
+      child: Row(children: [
+        SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: gold)),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            'Your last purchase is still processing (UPI payments can take a few minutes). We\'ll update this automatically.',
+            style: GoogleFonts.dmSans(fontSize: 11.5, height: 1.4, color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+          ),
+        ),
+      ]),
+    );
   }
 }
