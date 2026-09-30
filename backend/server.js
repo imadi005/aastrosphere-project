@@ -342,14 +342,52 @@ app.post('/api/user/credits', requireAuth, async (req, res) => {
     const db = getDb();
     const snap = await db.collection('users').doc(req.uid).get();
     if (!snap.exists) {
-      return res.json({ credits: FREE_TRIAL_CREDITS, subscriptionActive: false });
+      return res.json({ credits: FREE_TRIAL_CREDITS, subscriptionActive: false, subscriptionExpiresAt: null });
     }
     const data = snap.data();
     const expiresAt = data.subscriptionExpiresAt?.toMillis?.() ?? 0;
+    const subscriptionActive = (data.subscriptionActive === true) && expiresAt > Date.now();
     res.json({
       credits: data.credits ?? 0,
-      subscriptionActive: (data.subscriptionActive === true) && expiresAt > Date.now(),
+      subscriptionActive,
+      subscriptionExpiresAt: subscriptionActive ? expiresAt : null,
     });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── /api/user/purchases — past pack/subscription purchases for the Account
+// screen. Reads processed_purchases (the same idempotency ledger purchase
+// verification writes to), newest first, and attaches each product's current
+// label/price from pricing.js for display.
+app.post('/api/user/purchases', requireAuth, async (req, res) => {
+  try {
+    const db = getDb();
+    // Sorted here instead of via .orderBy() so this doesn't need a composite
+    // Firestore index (uid equality + createdAt order) just for one small,
+    // per-user list.
+    const snap = await db.collection('processed_purchases')
+      .where('uid', '==', req.uid)
+      .limit(200)
+      .get();
+
+    const allProducts = [...QUESTION_PACKS, ...SUBSCRIPTION_PLANS];
+    const purchases = snap.docs
+      .map((doc) => {
+        const d = doc.data();
+        const product = allProducts.find((p) => p.id === d.productId);
+        return {
+          productId: d.productId,
+          label: product?.label ?? d.productId,
+          priceInr: product?.priceInr ?? null,
+          platform: d.platform,
+          createdAt: d.createdAt?.toMillis?.() ?? null,
+        };
+      })
+      .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
+      .slice(0, 50);
+    res.json({ purchases });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

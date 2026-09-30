@@ -5,6 +5,7 @@ import '../../core/providers/role_provider.dart';
 import '../../core/services/midnight_refresh.dart';
 import '../../core/services/purchase_service.dart';
 import '../../core/providers/theme_provider.dart';
+import '../account/account_screen.dart';
 import '../../core/widgets/language_picker.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
@@ -276,6 +277,16 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
         }),
         const SizedBox(width: 4),
         ThemeToggleButton(isDark: isDark, onToggle: onThemeToggle),
+        const SizedBox(width: 4),
+        GestureDetector(
+          onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AccountScreen())),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Icon(Icons.account_circle_outlined, size: 20,
+                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+          ),
+        ),
         const SizedBox(width: 4),
         Consumer(builder: (context, ref, _) {
           return GestureDetector(

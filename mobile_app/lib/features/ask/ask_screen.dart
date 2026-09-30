@@ -65,6 +65,8 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   String? _userDob;
   String? _uid;
   bool _isTyping = false;
+  int? _creditsRemaining;
+  bool _viaSubscription = false;
   bool _welcomeMessageAdded = false;
   bool _initialQuestionSent = false;
   ChatMessage? _replyTarget;
@@ -75,6 +77,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _loadUserDob().then((_) => _maybeSendInitialQuestion());
+    _loadCredits();
 
     _fadeController = AnimationController(
       vsync: this,
@@ -106,6 +109,20 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
     }
   }
   
+  Future<void> _loadCredits() async {
+    try {
+      final r = await ApiService.getCredits();
+      if (mounted) {
+        setState(() {
+          _creditsRemaining = r['credits'] as int?;
+          _viaSubscription = r['subscriptionActive'] == true;
+        });
+      }
+    } catch (_) {
+      // Non-critical — the badge just stays hidden if this fails.
+    }
+  }
+
   void _maybeSendInitialQuestion() {
     if (_initialQuestionSent) return;
     final q = widget.initialQuestion;
@@ -268,9 +285,11 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
         setState(() {
           _messages.add(ChatMessage(role: 'assistant', content: answer));
           _loading = false;
+          _creditsRemaining = result['credits_remaining'] as int? ?? _creditsRemaining;
+          _viaSubscription = result['via_subscription'] == true;
         });
         _scrollToBottom();
-        _saveHistory(); // persist to Firestore
+        _saveHistory(); // persist locally on-device only
       }
     } on OutOfCreditsException catch (e) {
       if (mounted) {
@@ -280,6 +299,7 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
             content: '✨ **${e.message}**',
           ));
           _loading = false;
+          _creditsRemaining = 0;
         });
         // Push the full plans screen right at the moment of friction — this
         // is the highest-intent moment in the whole app to offer it. Popping
@@ -468,6 +488,23 @@ class _AskScreenState extends State<AskScreen> with TickerProviderStateMixin {
         ],
       ),
       actions: [
+        if (_creditsRemaining != null)
+          GestureDetector(
+            onTap: () => PlansScreen.open(context).then((_) => _loadCredits()),
+            child: Container(
+              margin: const EdgeInsets.only(right: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: gold.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: gold.withOpacity(0.3), width: 0.5),
+              ),
+              child: Text(
+                _viaSubscription ? '∞' : '$_creditsRemaining left',
+                style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, color: gold),
+              ),
+            ),
+          ),
         if (_messages.length > 1)
           IconButton(
             icon: Icon(Icons.delete_outline_rounded, size: 20, color: secondary),

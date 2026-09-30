@@ -336,6 +336,12 @@ class ApiService {
   static Future<Map<String, dynamic>> getCredits() =>
       _authedPost('/api/user/credits', {});
 
+  /// Past pack/subscription purchases, newest first — for the Account screen.
+  static Future<List<dynamic>> getPurchaseHistory() async {
+    final r = await _authedPost('/api/user/purchases', {});
+    return r['purchases'] as List<dynamic>? ?? [];
+  }
+
   static Future<Map<String, dynamic>> checkName(String name, String dob) =>
       _post('/api/name', {'name': name, 'dob': dob});
 
